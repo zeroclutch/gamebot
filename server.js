@@ -76,8 +76,8 @@ client.help = function(msg, command) {
       response += '\n**In-game Commands**\n`' +
       options.prefix + 'kick <@user>` - Kick a user from the game (game leader only).\n`' +
       options.prefix + 'add <@user>` - Add a user to the game (game leader only).\n`' +
-      options.prefix + 'join <@user>` - Join the game. Only available at the start of each game.\n`' +
-      options.prefix + 'leave <@user>` - Leave the game you are playing in that channel.\n'
+      options.prefix + 'join` - Join the game. Only available at the start of each game.\n`' +
+      options.prefix + 'leave` - Leave the game you are playing in that channel.\n'
       return response
     })();
     msg.channel.sendMsgEmbed(commandList, 'HELP')

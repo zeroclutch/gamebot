@@ -24,6 +24,7 @@ module.exports = {
       response = await eval('(function(){'+msg.content.substring(6,msg.content.length)+'})();')
       msg.channel.send("```css\neval completed```\nResponse Time: `" + (Date.now()-msg.createdTimestamp) + "ms`\nresponse:```json\n" + clean(response) + "```\nType: `" + typeof(response) + "`");
     } catch (err) {
+      console.error(err)
       msg.channel.send("```diff\n- eval failed -```\nResponse Time: `" + (Date.now()-msg.createdTimestamp) + "ms`\nerror:```json\n" + clean(err) + "```");
     }
   }
