@@ -8,6 +8,9 @@ module.exports = {
     dmCommand: true,
     args: false,
     run: function(msg, args) {
-        msg.channel.send('Pong!').then(m => m.edit(`Pong! \`${m.createdTimestamp - msg.createdTimestamp} ms\``))
+        const time = Date.now()
+        const response = time - msg.createdTimestamp
+        const resMessage = `Pong!\nServer latency: \`${response}ms\``
+        msg.channel.send(resMessage).then(m => m.edit(resMessage + `\nAPI latency\`${m.createdTimestamp - time} ms\``))
     }
   }
