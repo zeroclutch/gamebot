@@ -16,7 +16,7 @@ Join the [Discord Support Server here](https://discord.gg/7pNEJQC).
 ### *A party game for horrible people.*
 Each round, a black card is selected, and everyone else answers with their funniest white card. Your white cards will be DMed to you, and you will select them from your DMs. One player is selected to be the Card Czar each round, and they give a point to the player with the funniest white card.
 
-*More games in development.*
+>**Note:** More games are in development.
 
 # Contributing
 

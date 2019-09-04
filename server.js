@@ -160,12 +160,6 @@ client.on('consoleError', async message => {
   if(loggingChannel) loggingChannel.sendMsgEmbed(message, 'Error', 13632027)
 })
 
-client.on('channelCreate', channel => {
-  if(channel.guild && channel.guild.id == '618337929152036865' && channel.parent.id == '618604952608178214') {
-    channel.sendMsgEmbed('You have created a bug report ticket for Gamebot. Please describe your bug in detail, and if possible, include steps to reproduce it. The next available helper will get back to you shortly.')
-  }
-})
-
 // Handle all GET requests
 app.get('/', function (request, response) {
     response.sendFile(__dirname + '/index.html');
