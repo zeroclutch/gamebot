@@ -6,5 +6,6 @@ module.exports = {
     game: 'Cards Against Humanity',
     type: 'PLAYING'
   },
-  loggingChannel: process.env.LOGGING_CHANNEL
+  loggingChannel: process.env.LOGGING_CHANNEL,
+  serverInvite: 'https://discord.gg/7pNEJQC'
 }

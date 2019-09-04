@@ -1,3 +1,5 @@
+const options = require('./../../config/options')
+
 module.exports = {
     name: 'invite',
     usage: 'invite',
@@ -10,7 +12,7 @@ module.exports = {
     run: function(msg, args) {
         msg.channel.sendMsgEmbed(`\
         [**Invite** Gamebot to your server](https://discordapp.com/oauth2/authorize?client_id=584266407764819970&scope=bot&permissions=1547041872)\n\
-        [**Join** the support server](https://discord.gg/7pNEJQC)\n\
+        [**Join** the support server](${options.serverInvite})\n\
         [**Star** Gamebot on Github](https://github.com/zeroclutch/gamebot)\n\
         **Support** Gamebot on Patreon - *Coming Soon*\n\
         `, 'Important Links')
