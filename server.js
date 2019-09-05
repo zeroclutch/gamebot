@@ -165,10 +165,10 @@ app.get('/', function (request, response) {
     response.sendFile(__dirname + '/index.html');
 })
 
-// Listen on port 3000
-app.listen(3000, function (error) {
+// Listen on port 5000
+app.listen(process.env.PORT || 5000, function (error) {
   if (error) throw error
-  console.log('Server is running on port 3000')
+  console.log('Server is running on port ' + (process.env.PORT || 5000))
 })
 
 setInterval(() => {
