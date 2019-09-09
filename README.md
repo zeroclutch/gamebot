@@ -1,6 +1,6 @@
 # Gamebot for Discord
 
-Add multiplayer games to Discord with Gamebot! **You can invite the bot to your server [using this link.](https://discordapp.com/oauth2/authorize?client_id=584266407764819970&scope=bot&permissions=1547041872)**
+Add multiplayer games to Discord with Gamebot! **You can invite the bot to your server [using this link.](https://discordapp.com/oauth2/authorize?client_id=620307267241377793&scope=bot&permissions=1547041872)**
 
 *This bot is still in development, so you may experience bugs.*
 
