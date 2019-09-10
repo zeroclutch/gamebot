@@ -53,9 +53,9 @@ Discord.User.prototype.createDBInfo = function() {
       created: Date.now()
     }
 
-    this.client.database.collection('users').findOne({ userID: this.id }).then(user => {
+    this.client.database.collection('users').findOne({ userID: this.id }).then(async user => {
       if(!user) {
-        this.client.database.collection('users').insertOne(defaultInfo)
+        await this.client.database.collection('users').insertOne(defaultInfo)
         resolve(defaultInfo)
       } else {
         resolve(user)
