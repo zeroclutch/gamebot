@@ -46,21 +46,30 @@ dbClient.connect(err => {
 });
 
 /*/ configure DBL 
-const dbl = new DBL(process.env.DBL_TOKEN, { webhookPort: 5000, webhookAuth: process.env.WEBHOOK_AUTH });
+const dbl = new DBL(process.env.DBL_TOKEN, { webhookPort: 5000, webhookAuth: process.env.WEBHOOK_AUTH })
 
-dbl.webhook.on('ready', hook => {
-  console.log(`Webhook running at http://${hook.hostname}:${hook.port}${hook.path}`);
-});
-dbl.webhook.on('vote', vote => {
-  console.log(`User with ID ${vote.user} just voted!`);
-  client.database.collection('users').updateOne({userID: vote.user.id}).then(data => {
+if(dbl) {
+  dbl.webhook.on('ready', hook => {
+    console.log(`Webhook running at http://${hook.hostname}:${hook.port}${hook.path}`);
+  });
+  dbl.webhook.on('vote', vote => {
+    console.log(`User with ID ${vote.user} just voted!`);
     // set dailyClaimed to false
-    // check if last vote was fewer than 48 hours ago
-    // if yes, add to streak
-    // if no, reset streak
+    // update lastVote
+    client.database.collection('users').updateOne(
+      { userID: vote.user },
+      {
+        $set: {
+          lastVote: Date.now(),
+          dailyClaimed: false
+        }
+      }
+      ).then(data => {
+
+    })
   })
-})
-//*/
+}
+// */
 
 // initialization
 client.login(options.token); 
