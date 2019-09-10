@@ -24,7 +24,7 @@ Discord.TextChannel.prototype.startTypingAsync = function (channelResolvable) {
 }
 
 // easily send a message as an embed
-Discord.TextChannel.prototype.sendMsgEmbed = function(description, title, embedColor) {
+Discord.DMChannel.prototype.sendMsgEmbed = Discord.TextChannel.prototype.sendMsgEmbed = function(description, title, embedColor) {
   return this.send('', {
     embed: {
       color:  embedColor || 4513714,

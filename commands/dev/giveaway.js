@@ -1,4 +1,6 @@
 const options = require('./../../config/options')
+const Discord = require('./../../discord_mod')
+
 module.exports = {
     name: 'giveaway',
     usage: 'giveaway <channel> <time (minutes)> <amount> <reaction> <message>',
@@ -14,7 +16,7 @@ module.exports = {
         var time =  parseFloat(args[1])
         const amount = parseInt(args[2])
         const reaction = args[3].replace(/\D/g, '')
-        const message = args.slice(4, args.length).join(' ') || `React to the message in the next ${time} minute${time == 1 ? '' : 's'} to get ${amount}${options.creditIcon}`
+        const message = args.slice(4, args.length).join(' ') || `React to the message in the next ${time} minute${time == 1 ? '' : 's'} to get ${amount}${options.creditIcon}.`
         time *= 60000 // convert time to ms
         var reactionMessage
         const collection = msg.client.database.collection('users')
@@ -25,42 +27,47 @@ module.exports = {
             reactionMessage = message
         })
 
-        // create callback
-        const callback = (message) => {
-            if(!message) return
+        const filter = r => r.emoji.id == reaction
+        const collector = reactionMessage.createReactionCollector(filter, { time });
+        var collectedUsers = []
+        collector.on('collect', async r => {
+            const user = r.users.last()
+            // avoid duplicates 
+            if(collectedUsers.includes(user.id) || user.id == msg.client.user.id) return
+            collectedUsers.push(user.id) 
 
-            const users = message.reactions.find(r => r._emoji.id == reaction).users
-            const query = users.map((value, index, array) => {
-                return { userID: value.id }
-            })
-            collection.updateMany(
-                { $or: query },
+            await user.createDBInfo()
+
+            await collection.updateOne(
+                { userID: user.id },
                 { $inc: { balance: amount } }
-            ).then(res => {
+            ).catch(console.error)
+            
+            
+        });
+        collector.on('end', collected => {
+            try {
                 msg.author.createDM().then(c => {
-                    c.send(`The giveaway you started in ${channel} at ${new Date(Date.now() - args[2] * 1000).toLocaleTimeString('en-us')} is over. There were ${users.size - 1} participants who earned ${amount}${options.creditIcon}.`)
+                    c.send(`The giveaway you started in ${channel} at ${new Date(Date.now() - args[2] * 1000).toLocaleTimeString('en-us')} is over. There were ${collectedUsers.length - 1} participants who earned ${amount}${options.creditIcon}.`)
                 })
-    
-                message.edit({
+
+                reactionMessage.edit({
                     embed: {
                         title: 'The giveaway is now over!',
-                        description: 'If you participated, your credits will be rewarded shortly.',
+                        description: 'If you participated, your credits should have been rewarded.',
                         color: 4513714
                     }
                 })
-            })
-            .catch(err => {
+            } catch (err) {
                 console.error(err)
-                message.edit({
+                reactionMessage.edit({
                     embed: {
                         title: 'The giveaway is now over!',
-                        description: 'There was an error in giving away all the credits.',
-                        color: 13632027
+                        description: 'If you participated, your credits should be rewarded shortly.',
+                        color: 4513714
                     }
                 })
-            })
-
-        }
-        setTimeout(() => { callback(reactionMessage) }, time)
+            }
+        });
     }
   }

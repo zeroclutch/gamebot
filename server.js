@@ -2,7 +2,6 @@ require('dotenv').config();
 const Discord = require("./discord_mod.js");
 const client = new Discord.Client();
 const app = require("express")();
-const http = require("http");
 const fs = require('fs');
 const options = require('./config/options')
 
@@ -10,6 +9,27 @@ const options = require('./config/options')
 const MongoClient = require('mongodb').MongoClient;
 const uri = process.env.MONGO_DB_URI;
 const dbClient = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Discord Bot List dependencies
+const DBL = require('dblapi.js');
+
+// configure Discord logging
+const oldConsole = {
+  error: console.error,
+  log: console.log
+}
+
+console.log = (message) => {
+  client.emit('consoleLog', message)
+  oldConsole.log(message)
+}
+
+console.error = (message) => {
+  client.emit('consoleError', message)
+  oldConsole.error(message)
+}
+
+// configure database
 client.dbClient = dbClient
 dbClient.connect(err => {
   if(err) {
@@ -25,21 +45,19 @@ dbClient.connect(err => {
   });
 });
 
-// configure message sending
-const oldConsole = {
-  error: console.error,
-  log: console.log
-}
+/*/ configure DBL 
+const dbl = new DBL(process.env.DBL_TOKEN, { webhookPort: 5000, webhookAuth: process.env.WEBHOOK_AUTH });
 
-console.log = (message) => {
-  client.emit('consoleLog', message)
-  oldConsole.log(message)
-}
+dbl.webhook.on('ready', hook => {
+  console.log(`Webhook running at http://${hook.hostname}:${hook.port}${hook.path}`);
+});
+dbl.webhook.on('vote', vote => {
+  console.log(`User with ID ${vote.user} just voted!`);
+  client.database.collection('users').updateOne({userID: vote.user.id}).then(data => {
 
-console.error = (message) => {
-  client.emit('consoleError', message)
-  oldConsole.error(message)
-}
+  })
+})
+//*/
 
 // initialization
 client.login(options.token); 
@@ -120,7 +138,7 @@ client.help = function(msg, command) {
         embed.addField('Category: ' + category.toUpperCase(), commandList)
       })
       embed.addField('Category: IN-GAME',
-      options.prefix + '`kick <@user>` - Kick a user from the game (game leader only).\n`' +
+      '`' + options.prefix + 'kick <@user>` - Kick a user from the game (game leader only).\n`' +
       options.prefix + 'add <@user>` - Add a user to the game (game leader only).\n`' +
       options.prefix + 'join` - Join the game. Only available at the start of each game.\n`' +
       options.prefix + 'leave` - Leave the game you are playing in that channel.\n')
@@ -151,7 +169,7 @@ client.on('message', async function(msg) {
   }
 
   // check database if user is stored
-  if(cmd && cmd.category && (cmd.category == 'economy' || cmd.category == 'dev')) {
+  if(cmd && cmd.category && (cmd.category == 'economy' /*|| cmd.category == 'dev'*/)) {
     await msg.author.createDBInfo().catch(err => {
       console.error(err)
     })

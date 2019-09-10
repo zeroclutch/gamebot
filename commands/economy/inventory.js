@@ -15,10 +15,17 @@ module.exports = {
         const itemType = args.join(' ')
         var items = []
         msg.author.fetchDBInfo().then(async info => {
+            // check if user has items
+            if(info.unlockedItems.length == 0) {
+                msg.channel.sendMsgEmbed(`View available items in the shop by typing \`${options.prefix}shop\`.`, 'You do not have any items in your inventory!', 13632027)
+                return
+            }
+
             // get user's items
             const filter = await info.unlockedItems.map((value, index, array) => {
                 return { itemID: value }
             })
+
             const inventoryItems = await collection.find({
                 $or: filter
             }).toArray()
@@ -31,11 +38,6 @@ module.exports = {
                     if(!itemTypes.includes(item.type)) {
                         itemTypes.push(item.type)
                     }
-                }
-
-                if(itemTypes.length == 0) {
-                    msg.channel.sendMsgEmbed(`You do not have any items in your inventory. View available items in the shop by typing \`${options.prefix}shop\`.`, 'You do not have any items in your inventory!', 13632027)
-                    return
                 }
 
                 // make a new embed 
