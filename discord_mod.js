@@ -34,6 +34,61 @@ Discord.TextChannel.prototype.sendMsgEmbed = function(description, title, embedC
   })
 }
 
+Discord.User.prototype.createDBInfo = function() {
+  return new Promise((resolve, reject) => {
+    if(!this.client.database || !this.client.database.collection('users')) {
+      reject('Error: Database not found.')
+      return
+    }
+
+    const defaultInfo = {
+      userID: this.id,
+      balance: 0,
+      dailyClaimed: false,
+      lastVote: -1,
+      voteStreak: 0,
+      amountDonated: 0,
+      unlockedGames: [],
+      unlockedItems: [],
+      created: Date.now()
+    }
+
+    this.client.database.collection('users').findOne({ userID: this.id }).then(user => {
+      if(!user) {
+        this.client.database.collection('users').insertOne(defaultInfo)
+        resolve(defaultInfo)
+      } else {
+        resolve(user)
+      }
+    })
+  })
+}
+
+Discord.User.prototype.fetchDBInfo = function() {
+  return new Promise((resolve, reject) => {
+    if(!this.client.database || !this.client.database.collection('users')) {
+      reject('Error: Database not found.')
+      return
+    }
+    
+    this.client.database.collection('users').findOne({ userID: this.id }).then(resolve)
+  })
+}
+
+Discord.User.prototype.hasItem = async function (itemID) {
+  var isItemUnlocked = false
+  await this.fetchDBInfo()
+  .then(info => {
+    if(info && info.unlockedItems && info.unlockedItems.find(item => item == itemID)) {
+      isItemUnlocked = true
+    }
+  })
+  .catch(err => {
+    console.error(err)
+  })
+  return isItemUnlocked
+}
+
 // 
 /**
  * MessageOptions or Attachment or RichEmbed or StringResolvable message

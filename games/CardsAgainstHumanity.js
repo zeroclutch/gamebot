@@ -31,6 +31,22 @@ for (const cardSet of cardFolder) {
   }
 }
 
+const CARD_PACKS = {
+    '90sn_pack': '90s',
+    'can_pack': 'Canadian',
+    'pax_pset': ['PAX2015', 'PAXE2013', 'PAXE2014', 'PAXEP2014', 'PAXP2013', 'PAXPP2014'],
+    'pol_pset': ['trumpbag', 'trumpvote', 'hillary'],
+    'ram_pset': ['misprint', 'reject', 'reject2'],
+    'bep_set': ['Box', 'greenbox'],
+    'weed_pack': 'weed',
+    'food_pack': 'food',
+    'fant_pack': 'fantasy',
+    'prd_pack': 'period',
+    'www_pack': 'www',
+    'sci_pack': 'science',
+    'hol_pset': ['xmas2012', 'xmas2013']
+}
+
 
 class CAHDeck {
     constructor(sets) {
@@ -159,11 +175,11 @@ module.exports = class CardsAgainstHumanity extends Game {
             try {
                 this.settings = JSON.parse(settings)
             } catch (err) {
-                console.log(err)
+                console.error(err)
                 this.msg.channel.sendMsgEmbed('Invalid settings. Settings must be valid JSON. Now starting the game with default settings.', 'Error!', 13632027)
             }
         }
-        if(!this.settings.sets)        this.settings.sets        = ['Base', 'CAHe1', 'CAHe2', 'CAHe3', 'CAHe4', 'CAHe5', 'CAHe6']
+        this.settings.sets = ['Base', 'CAHe1', 'CAHe2', 'CAHe3', 'CAHe4', 'CAHe5', 'CAHe6']
         if(!this.settings.timeLimit)   this.settings.timeLimit   = 60000
         if(!this.settings.handLimit)   this.settings.handLimit   = 10
         if(!this.settings.pointsToWin) this.settings.pointsToWin = 5
@@ -356,19 +372,20 @@ module.exports = class CardsAgainstHumanity extends Game {
         }
     }
 
-    chooseSets () {
+    async chooseSets () {
         if(this.ending) return
         this.stage = 'choose'
+
         // send or edit setlist
         if(!this.lastMessageID) {
             this.msg.channel.send({
-                embed: this.renderSetList()
+                embed: await this.renderSetList()
             }).then(m => this.lastMessageID = m.id)
         } else {
             this.msg.channel.fetchMessage(this.lastMessageID)
-            .then(msg => {
+            .then(async msg => {
                 msg.edit({
-                    embed: this.renderSetList()
+                    embed: await this.renderSetList()
                 }).then(m => this.lastMessageID = m.id)
             })
         }
@@ -391,6 +408,7 @@ module.exports = class CardsAgainstHumanity extends Game {
                     // add appropriate sets
                     whiteCards.forEach((cards, metadata) => {
                         if(!metadata.official) return
+                        if(!this.availableSets.includes(metadata.abbr)) return
                         setIndex += 1
                         if(`${setIndex}` == message.content) {
                             //check if settings has it
@@ -434,14 +452,31 @@ module.exports = class CardsAgainstHumanity extends Game {
         })
     }
 
-    renderSetList () {
+    async renderSetList () {
          // Build the list of sets
          var setList = ''
          var setIndex = 0
          var whiteCount = 0
 
+        // check available setLists
+        this.availableSets = this.settings.sets.slice(0)
+        // add defaults
+        this.availableSets = this.settings.sets.concat(['BaseUK'])
+        await this.gameMaster.fetchDBInfo().then(info => {
+            // get unlocked items
+            info.unlockedItems.forEach(item => {
+                if(CARD_PACKS[item]) {
+                    // map item ids to availableSets
+                    var packs = CARD_PACKS[item]
+                    if(typeof packs == 'string') this.availableSets.push(packs)
+                    if(typeof packs == 'object') this.availableSets = this.availableSets.concat(packs)
+                }
+            })
+        })
+
          whiteCards.forEach((cards, metadata) => {
              if(!metadata.official) return
+             if(!this.availableSets.includes(metadata.abbr)) return
              setIndex += 1
              setList += `${this.settings.sets.includes(metadata.abbr) ? '**✓**' : '☐'} ${setIndex}: **${metadata.name}** *(${cards.length} cards)*\n`
              if(this.settings.sets.includes(metadata.abbr)) whiteCount += cards.length
@@ -920,7 +955,7 @@ module.exports = class CardsAgainstHumanity extends Game {
         this.msg.channel.sendMsgEmbed(this.renderSubmissionStatus(), 'Submission status').then(m => {
             this.lastMessageID = m.id
         }).catch(err => {
-            console.log(err)
+            console.error(err)
         })
     }
 
