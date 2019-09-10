@@ -1,3 +1,4 @@
+const options = require('./../../config/options')
 module.exports = {
     name: 'daily',
     usage: 'daily',
@@ -8,9 +9,10 @@ module.exports = {
     dmCommand: true,
     args: false,
     run: function(msg, args) {
-        // check if 24 hours have passed since last voting
-        // if no, check if daily has already been claimed
-        // 
+        const collection = msg.client.database.collection('users')
+        // check if daily hasn't been claimed and check if lastVoted was in last 24 hours
+        // if true, credit rewards, and set dailyClaimed to true / display vote streak
+        // if false, tell them to vote on discordbots.org and vote, then type daily. Have brief explanation of vote streak.
         msg.channel.sendMsgEmbed('This command will be available once this bot is approved on [DiscordBots](https://discordbots.org).')
     }
   }

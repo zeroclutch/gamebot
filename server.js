@@ -54,7 +54,10 @@ dbl.webhook.on('ready', hook => {
 dbl.webhook.on('vote', vote => {
   console.log(`User with ID ${vote.user} just voted!`);
   client.database.collection('users').updateOne({userID: vote.user.id}).then(data => {
-
+    // set dailyClaimed to false
+    // check if last vote was fewer than 48 hours ago
+    // if yes, add to streak
+    // if no, reset streak
   })
 })
 //*/

@@ -48,7 +48,7 @@ module.exports = {
         collector.on('end', collected => {
             try {
                 msg.author.createDM().then(c => {
-                    c.send(`The giveaway you started in ${channel} at ${new Date(Date.now() - args[2] * 1000).toLocaleTimeString('en-us')} is over. There were ${collectedUsers.length - 1} participants who earned ${amount}${options.creditIcon}.`)
+                    c.send(`The giveaway you started in ${channel} at ${new Date(Date.now() - args[2] * 1000).toLocaleTimeString('en-us')} is over. There were ${collectedUsers.length} participants who earned ${amount}${options.creditIcon}.`)
                 })
 
                 reactionMessage.edit({
