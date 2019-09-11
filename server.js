@@ -45,6 +45,7 @@ dbClient.connect(err => {
   });
 });
 
+
 /*/ configure DBL 
 const dbl = new DBL(process.env.DBL_TOKEN, { webhookPort: 5000, webhookAuth: process.env.WEBHOOK_AUTH })
 
@@ -52,8 +53,13 @@ if(dbl) {
   dbl.webhook.on('ready', hook => {
     console.log(`Webhook running at http://${hook.hostname}:${hook.port}${hook.path}`);
   });
-  dbl.webhook.on('vote', vote => {
-    console.log(`User with ID ${vote.user} just voted!`);
+  dbl.webhook.on('vote', async vote => {
+    if(!client.database) {
+      // handle downtime votes
+      return
+    }
+
+    await client.users.get(vote.user).createDBInfo()
     // set dailyClaimed to false
     // update lastVote
     client.database.collection('users').updateOne(
@@ -64,8 +70,8 @@ if(dbl) {
           dailyClaimed: false
         }
       }
-      ).then(data => {
-
+    ).then(data => {
+      console.log(`User with ID ${vote.user} just voted!`)
     })
   })
 }
