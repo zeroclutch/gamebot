@@ -1,14 +1,15 @@
-require('dotenv').config();
-const Discord = require("./discord_mod.js");
-const client = new Discord.Client();
-const app = require("express")();
-const fs = require('fs');
+require('dotenv').config()
+const Discord = require("./discord_mod.js")
+const client = new Discord.Client()
+const express = require("express")
+const app = express()
+const fs = require('fs')
 const options = require('./config/options')
 
 // database dependencies
 const MongoClient = require('mongodb').MongoClient;
 const uri = process.env.MONGO_DB_URI;
-const dbClient = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+const dbClient = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true })
 
 // Discord Bot List dependencies
 const DBL = require('dblapi.js');
@@ -47,7 +48,10 @@ dbClient.connect(err => {
 
 
 /*/ configure DBL 
-const dbl = new DBL(process.env.DBL_TOKEN, { webhookPort: 5000, webhookAuth: process.env.WEBHOOK_AUTH })
+const dbl = new DBL(process.env.DBL_TOKEN, {
+  webhookPort: 5000,
+  webhookAuth: process.env.DBL_WEBHOOK_AUTH
+}, client)
 
 if(dbl) {
   dbl.webhook.on('ready', hook => {
@@ -246,12 +250,25 @@ client.on('consoleError', async message => {
 })
 
 // Handle all GET requests
-app.get('/', function (request, response) {
-    response.sendFile(__dirname + '/index.html');
+app.use(express.static(__dirname + '/public'))
+
+app.get('/thanks', function (request, response) {
+  response.sendFile(__dirname + '/public/thanks.html');
+})
+
+app.get('*', function (request, response) {
+    response.sendFile(__dirname + '/public/index.html');
 })
 
 // Listen on port 5000
 app.listen(process.env.PORT || 5000, function (error) {
   if (error) throw error
   console.log('Server is running on port ' + (process.env.PORT || 5000))
+})
+
+// Handle PayPal requests
+app.use(express.json())
+
+app.post('/donations', (req, res) => {
+  console.log(req.body)
 })

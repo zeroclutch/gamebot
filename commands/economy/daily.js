@@ -10,6 +10,7 @@ const DAILY_REWARDS = [
     600
 ]
 const HOUR_LENGTH = (60 * 60 * 1000)
+const RESET_LENGTH = (12 * HOUR_LENGTH)
 const DAY_LENGTH = (24 * HOUR_LENGTH)
 
 module.exports = {
@@ -28,9 +29,9 @@ module.exports = {
 
             // check if user can claim credits
             // daily hasn't been claimed and check if lastVoted was in last 24 hours
-            if (info.lastVote < Date.now() - DAY_LENGTH) {
+            if (info.lastVote < Date.now() - RESET_LENGTH) {
                 // tell them to vote on discordbots.org and vote, then type daily. Have brief explanation of vote streak.
-                const msExpire = info.lastVote + DAY_LENGTH * 2 - Date.now()
+                const msExpire = info.lastVote + DAY_LENGTH + RESET_LENGTH - Date.now()
                 const hoursExpire = Math.floor(msExpire / HOUR_LENGTH)
                 const minutesExpire = Math.round((msExpire / HOUR_LENGTH- hoursExpire) * 60)
 
@@ -76,7 +77,7 @@ module.exports = {
                 msg.channel.send({
                     embed: {
                         title: `Thank you for voting on Gamebot!`,
-                        description: `You can vote again in 24 hours.`,
+                        description: `You can vote again in about 12 hours.`,
                         fields: [{
                             name: 'Current vote streak',
                             value: voteStreak(info.voteStreak + 1)
@@ -89,7 +90,8 @@ module.exports = {
                 })
                 
             } else if (info.dailyClaimed) {
-                const msWait = info.lastVote + DAY_LENGTH - Date.now()
+                // check how much longer it takes for another vote 
+                const msWait = info.lastVote + RESET_LENGTH - Date.now()
                 const hoursWait = Math.floor(msWait / HOUR_LENGTH)
                 const minutesWait = Math.round((msWait / HOUR_LENGTH - hoursWait) * 60)
 
