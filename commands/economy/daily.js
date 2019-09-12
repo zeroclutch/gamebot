@@ -76,8 +76,8 @@ module.exports = {
                 // display vote streak
                 msg.channel.send({
                     embed: {
-                        title: `Thank you for voting on Gamebot!`,
-                        description: `You can vote again in about 12 hours.`,
+                        title: `Daily reward claimed! - ${DAILY_REWARDS[Math.min(info.voteStreak, 7)]}${options.creditIcon}`,
+                        description: `Thank you for voting on Gamebot! You can vote again in about 12 hours.`,
                         fields: [{
                             name: 'Current vote streak',
                             value: voteStreak(info.voteStreak + 1)

@@ -981,8 +981,6 @@ module.exports = class CardsAgainstHumanity extends Game {
     forceStop() {
         this.ending = true
         this.end()
-        // delete instance
-        //throw Error("The game was force stopped.");
     }
 
 }

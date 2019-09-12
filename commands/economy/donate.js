@@ -11,12 +11,6 @@ module.exports = {
     dmCommand: true,
     args: false,
     run: function(msg, args) {
-
-
-        //`https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=pranav.grover%40gmail.com&item_name=Gamebot&currency_code=USD&source=url&return_url=&notify_url=`
-
-        //https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=3NHGJNR5VHPLN&lc=US&item_name=Pokecord&no_note=1&no_shipping=1&rm=1&return=https%3a%2f%2fwww%2epokecord%2ecom%2fdonation%2dthanks&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted&custom=354442895119351809
-
         const donationLink = new URL('https://www.paypal.com/cgi-bin/webscr')
         const params = donationLink.searchParams
 
@@ -50,10 +44,10 @@ module.exports = {
                             **$10+:** Access to beta testing and a special role in the Gamebot Support Discord.`
                         }
                     ], 
-                    footer: 'All values are in US Dollars.'
+                    footer: { text: 'All values are in US Dollars.' }
                 }
             })
-            msg.channel.sendMsgEmbed('A donation link has been sent!', 'To donate, check your DMs!')
+            if(msg.channel.type != 'dm') msg.channel.sendMsgEmbed('A donation link has been sent!', 'To donate, check your DMs!')
         }).catch(err => {
             console.error(err)
             msg.channel.sendMsgEmbed('Unable to start a DM with you. Check your Discord settings and try again.', 'Error!', options.colors.error)
