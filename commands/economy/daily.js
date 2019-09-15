@@ -114,8 +114,5 @@ module.exports = {
                 msg.channel.sendMsgEmbed(`There seems to be an issue with the ${options.prefix}daily command. Please submit a bug report in the [support server](${options.serverInvite}).`, 'Error!')
             }
         })
-        // check if 
-        // if true, 
-        msg.channel.sendMsgEmbed('This command will be available once this bot is approved on [DiscordBots](https://discordbots.org).')
     }
   }

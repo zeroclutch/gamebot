@@ -47,9 +47,9 @@ dbClient.connect(err => {
 });
 
 
-/*/ configure DBL 
+// configure DBL 
 const dbl = new DBL(process.env.DBL_TOKEN, {
-  webhookPort: 5000,
+  webhookPort: 6000,
   webhookAuth: process.env.DBL_WEBHOOK_AUTH
 }, client)
 

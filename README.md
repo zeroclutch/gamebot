@@ -49,4 +49,4 @@ Each round, a black card is selected, and everyone else answers with their funni
 
 # Contributing
 
-Contributing guidelines coming soon.
+If you want to contribute to game development, read [the creating a game guide.](./CREATING_A_GAME.md) If you have any questions, contact zerooo#1234 on Discord.

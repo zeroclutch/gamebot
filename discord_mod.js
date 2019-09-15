@@ -65,13 +65,13 @@ Discord.User.prototype.createDBInfo = function() {
 }
 
 Discord.User.prototype.fetchDBInfo = function() {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     if(!this.client.database || !this.client.database.collection('users')) {
       reject('Error: Database not found.')
       return
     }
-    
-    this.client.database.collection('users').findOne({ userID: this.id }).then(resolve)
+    await this.createDBInfo()
+    await this.client.database.collection('users').findOne({ userID: this.id }).then(resolve)
   })
 }
 

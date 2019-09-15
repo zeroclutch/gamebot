@@ -70,7 +70,7 @@ module.exports = class MyGame extends Game {
 
 ## 6. Implement the required methods.
 
-As JavaScript ES6 does not have interface capabilities, `Game.js` has no required properties or methods for classes that implement it. However, you are required to override each of the methods in the Game class.
+As JavaScript ES6 does not have interface capabilities, `Game.js` is not at true interface. However, you are required to override each of the methods in the Game class.
 
 ```js
 // ...
