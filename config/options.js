@@ -7,5 +7,11 @@ module.exports = {
     type: 'PLAYING'
   },
   loggingChannel: process.env.LOGGING_CHANNEL,
-  serverInvite: 'https://discord.gg/7pNEJQC'
+  serverInvite: 'https://discord.gg/7pNEJQC',
+  creditIcon: '<:credit:619756127101386762>',
+  colors: {
+    info: 4513714,
+    error: 13632027,
+    economy: 3510190
+  }
 }

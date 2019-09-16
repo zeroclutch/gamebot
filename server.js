@@ -1,12 +1,20 @@
-require('dotenv').config();
-const Discord = require("./discord_mod.js");
-const client = new Discord.Client();
-const app = require("express")();
-const http = require("http");
-const fs = require('fs');
+require('dotenv').config()
+const Discord = require("./discord_mod.js")
+const client = new Discord.Client()
+const express = require("express")
+const app = express()
+const fs = require('fs')
 const options = require('./config/options')
 
-// configure message sending
+// database dependencies
+const MongoClient = require('mongodb').MongoClient;
+const uri = process.env.MONGO_DB_URI;
+const dbClient = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+
+// Discord Bot List dependencies
+const DBL = require('dblapi.js');
+
+// configure Discord logging
 const oldConsole = {
   error: console.error,
   log: console.log
@@ -22,10 +30,31 @@ console.error = (message) => {
   oldConsole.error(message)
 }
 
+// configure database
+client.dbClient = dbClient
+dbClient.connect(err => {
+  if(err) {
+    console.error(err)
+    return
+  }
+  console.log('Connected to server');
+  const database = dbClient.db(process.env.MONGO_DB_NAME)
+  Object.defineProperty(client, 'database', {
+    value: database,
+    writable: false,
+    enumerable: true
+  });
+});
+
+
+// configure DBL 
+var dbl
+if(process.env.DBL_TOKEN)
+  dbl = new DBL(process.env.DBL_TOKEN, client)
+client.dbl = dbl
+
 // initialization
 client.login(options.token); 
-
-client.data = {};
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`); 
@@ -50,13 +79,25 @@ for (const commandFolder of commandFiles) {
   }
 }
 
+
+client.games = new Discord.Collection()
+const folder = fs.readdirSync('./games');
+
+// add game classes to collection
+for(const file of folder) {
+  // ignore Game class
+  if(file == 'Game.js') continue
+  let game = require(`./games/${file}`);
+  client.games.set(game.id.toLowerCase(), game);
+}
+
 // provide help
 client.help = function(msg, command) {
   const prefix = msg.prefix
   // find command in question
   const helpCmd = client.commands.find(cmd => cmd.name === command.args.join(" ")) ||  client.commands.find(cmd => cmd.aliases.includes(command.args.join(" ")))
   // find help for a specific command
-  if(helpCmd && helpCmd.category !== 'dev') {
+  if(helpCmd && (helpCmd.category !== 'dev' || msg.author.id == process.env.OWNER_ID)) {
     msg.channel.sendMsgEmbed(`**__HELP:__**
                     \nCommand: \`${prefix}${helpCmd.name}\`
                     \nDescription: ${helpCmd.description}
@@ -64,23 +105,38 @@ client.help = function(msg, command) {
                     \nAliases: \`${(helpCmd.aliases.join(", ")||'None')}\``)
     // find list of commands
   } else {
-    const commandList = (function() {
       var list = {},
           response = '**Commands**\n'
       // sort each command by category
-      client.commands.forEach(cmd => {
-        if(cmd.category !== 'dev') {
-          response += `\`${options.prefix}${cmd.usage}\` - ${cmd.description}\n`
+      // get category list
+      var categories = []
+      for(var item of client.commands) {
+        var key = item[0],
+            value = item[1]
+        if(!categories.includes(value.category) && value.category != 'dev') {
+          categories.push(value.category)
         }
+      }
+
+      var embed = new Discord.RichEmbed()
+      embed.setTitle('Help - List of Commands for Gamebot')
+      embed.setThumbnail(client.user.avatarURL)
+      embed.setColor(3510190)
+      categories.forEach(category => {
+        var commandList = ''
+        client.commands.forEach(cmd => {
+          if(cmd.category == category) {
+            commandList += `\`${options.prefix}${cmd.usage}\` - ${cmd.description}\n`
+          }
+        })
+        embed.addField('Category: ' + category.toUpperCase(), commandList)
       })
-      response += '\n**In-game Commands**\n`' +
-      options.prefix + 'kick <@user>` - Kick a user from the game (game leader only).\n`' +
+      embed.addField('Category: IN-GAME',
+      '`' + options.prefix + 'kick <@user>` - Kick a user from the game (game leader only).\n`' +
       options.prefix + 'add <@user>` - Add a user to the game (game leader only).\n`' +
       options.prefix + 'join` - Join the game. Only available at the start of each game.\n`' +
-      options.prefix + 'leave` - Leave the game you are playing in that channel.\n'
-      return response
-    })();
-    msg.channel.sendMsgEmbed(commandList, 'HELP')
+      options.prefix + 'leave` - Leave the game you are playing in that channel.\n')
+      msg.channel.send(embed)
   }
   return false
 }
@@ -99,11 +155,18 @@ client.on('message', async function(msg) {
     args: message.splice(1)
   }
   const cmd = client.commands.find(cmd => cmd.name === command.name) || client.commands.find(cmd => cmd.aliases.includes(command.name))
-  var initialData = client.data
 
   // if the message is just a tag, reveal prefix
   if((!command.name || command.name.length == 0) && command.args.length == 0) {
     msg.channel.sendMsgEmbed(`The prefix for this bot is \`${options.prefix}\`. You can also use ${client.user} as a prefix.`)
+    return
+  }
+
+  // check database if user is stored
+  if(cmd && cmd.category && (cmd.category == 'economy' /*|| cmd.category == 'dev'*/)) {
+    await msg.author.createDBInfo().catch(err => {
+      console.error(err)
+    })
   }
 
   // provide help
@@ -113,11 +176,9 @@ client.on('message', async function(msg) {
   
   if(cmd) {
     // test for permissions
-    if(cmd.permissions && msg.author.id !== process.env.OWNER_ID) {
-      if(!msg.member.hasPermission(cmd.permissions) || cmd.permissions.includes('GOD')) {
-        msg.channel.sendMsgEmbed('Sorry, you don\'t have the necessary permissions for this command.')
-        return
-      }
+    if(cmd.permissions && msg.author.id !== process.env.OWNER_ID && (cmd.permissions.includes('GOD') || !msg.member.hasPermission(cmd.permissions))) {
+      msg.channel.sendMsgEmbed('Sorry, you don\'t have the necessary permissions for this command.')
+      return
     }
 
     // start typing if message requires load time
@@ -125,7 +186,7 @@ client.on('message', async function(msg) {
       await msg.channel.startTypingAsync(msg.channel)
     }
     //try running command
-    if(msg.channel.type == 'dm' && !cmd.dmChannel) {
+    if(msg.channel.type == 'dm' && cmd.dmChannel) {
       msg.channel.send('This command is not available in a DM channel. Please try this again in a server.')
     } else if(cmd.args && command.args.join('') === '') {
         msg.channel.sendMsgEmbed(`Incorrect usage of this command. Usage: \`${msg.prefix}${cmd.usage}\`.`)
@@ -151,18 +212,24 @@ client.on('message', async function(msg) {
 client.on('consoleLog', async message => {
   if(!client.readyAt) return
   const loggingChannel = client.channels.get(options.loggingChannel)
-  if(loggingChannel) loggingChannel.sendMsgEmbed(message)
+  if(loggingChannel) loggingChannel.sendMsgEmbed(JSON.stringify(message))
 })
 
 client.on('consoleError', async message => {
   if(!client.readyAt) return
   const loggingChannel = client.channels.get(options.loggingChannel)
-  if(loggingChannel) loggingChannel.sendMsgEmbed(message, 'Error', 13632027)
+  if(loggingChannel) loggingChannel.sendMsgEmbed(JSON.stringify(message), 'Error', 13632027)
 })
 
 // Handle all GET requests
-app.get('/', function (request, response) {
-    response.sendFile(__dirname + '/index.html');
+app.use(express.static(__dirname + '/public'))
+
+app.get('/thanks', function (request, response) {
+  response.sendFile(__dirname + '/public/thanks.html');
+})
+
+app.get('*', function (request, response) {
+    response.sendFile(__dirname + '/public/index.html');
 })
 
 // Listen on port 5000
@@ -171,6 +238,9 @@ app.listen(process.env.PORT || 5000, function (error) {
   console.log('Server is running on port ' + (process.env.PORT || 5000))
 })
 
-setInterval(() => {
-  http.get(`http://${process.env.PROJECT_DOMAIN}.glitch.me/`);
-}, 280000);
+// Handle PayPal requests
+app.use(express.json())
+
+app.post('/donations', (req, res) => {
+  console.log(req.body)
+})

@@ -24,7 +24,7 @@ Discord.TextChannel.prototype.startTypingAsync = function (channelResolvable) {
 }
 
 // easily send a message as an embed
-Discord.TextChannel.prototype.sendMsgEmbed = function(description, title, embedColor) {
+Discord.DMChannel.prototype.sendMsgEmbed = Discord.TextChannel.prototype.sendMsgEmbed = function(description, title, embedColor) {
   return this.send('', {
     embed: {
       color:  embedColor || 4513714,
@@ -32,6 +32,60 @@ Discord.TextChannel.prototype.sendMsgEmbed = function(description, title, embedC
       description
     }
   })
+}
+
+Discord.User.prototype.createDBInfo = function() {
+  return new Promise((resolve, reject) => {
+    if(!this.client.database || !this.client.database.collection('users')) {
+      reject('Error: Database not found.')
+      return
+    }
+
+    const defaultInfo = {
+      userID: this.id,
+      balance: 0,
+      lastClaim: -1000000000000,
+      voteStreak: 0,
+      amountDonated: 0.001,
+      unlockedGames: [],
+      unlockedItems: [],
+      created: Date.now()
+    }
+
+    this.client.database.collection('users').findOne({ userID: this.id }).then(async user => {
+      if(!user) {
+        await this.client.database.collection('users').insertOne(defaultInfo)
+        resolve(defaultInfo)
+      } else {
+        resolve(user)
+      }
+    })
+  })
+}
+
+Discord.User.prototype.fetchDBInfo = function() {
+  return new Promise(async (resolve, reject) => {
+    if(!this.client.database || !this.client.database.collection('users')) {
+      reject('Error: Database not found.')
+      return
+    }
+    await this.createDBInfo()
+    await this.client.database.collection('users').findOne({ userID: this.id }).then(resolve)
+  })
+}
+
+Discord.User.prototype.hasItem = async function (itemID) {
+  var isItemUnlocked = false
+  await this.fetchDBInfo()
+  .then(info => {
+    if(info && info.unlockedItems && info.unlockedItems.find(item => item == itemID)) {
+      isItemUnlocked = true
+    }
+  })
+  .catch(err => {
+    console.error(err)
+  })
+  return isItemUnlocked
 }
 
 // 

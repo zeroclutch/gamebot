@@ -11,7 +11,7 @@ const clean = text => {
 module.exports = {
   name: 'eval',
   usage: 'eval',
-  aliases: [],
+  aliases: ['ev'],
   description: 'Test code',
   category: 'dev',
   permissions: ["GOD"],
@@ -19,9 +19,8 @@ module.exports = {
   args: true,
   run: async function(msg, args) {
     var response = '';
-    args = msg.content.split(" ").slice(1);
     try {
-      response = await eval('(function(){'+msg.content.substring(6,msg.content.length)+'})();')
+      response = await eval('(function(){'+args.join(' ')+'})();')
       msg.channel.send("```css\neval completed```\nResponse Time: `" + (Date.now()-msg.createdTimestamp) + "ms`\nresponse:```json\n" + clean(response) + "```\nType: `" + typeof(response) + "`");
     } catch (err) {
       console.error(err)
