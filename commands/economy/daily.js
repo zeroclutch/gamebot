@@ -30,7 +30,6 @@ module.exports = {
 
         msg.author.fetchDBInfo().then(async info => {
             const voteStreak = streak => `**${streak} day streak!**\n${'🔥'.repeat(Math.min(streak, 7))}${'⬜'.repeat(Math.max(7 - streak, 0))} | **Next Reward: ${DAILY_REWARDS[Math.min(streak, 7)]}${options.creditIcon}**`
-            console.log(hasVoted)
 
             if(!hasVoted) {
                 info.voteStreak = 0
@@ -92,7 +91,7 @@ module.exports = {
                 msg.channel.send({
                     embed: {
                         title: `You've already claimed your rewards!`,
-                        description: `You have to wait ${hoursWait} hours and ${minutesWait} minutes before voting again.`,
+                        description: `You have to wait ${hoursWait} hours and ${minutesWait} minutes before claiming again.`,
                         fields: [{
                             name: 'Current vote streak',
                             value: voteStreak(info.voteStreak)

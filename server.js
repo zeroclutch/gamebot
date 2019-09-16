@@ -50,34 +50,6 @@ dbClient.connect(err => {
 // configure DBL 
 const dbl = new DBL(process.env.DBL_TOKEN, client)
 client.dbl = dbl
-/*
-if(dbl) {
-  dbl.webhook.on('ready', hook => {
-    console.log(`Webhook running at http://${hook.hostname}:${hook.port}${hook.path}`);
-  });
-  dbl.webhook.on('vote', async vote => {
-    if(!client.database) {
-      // handle downtime votes
-      return
-    }
-
-    await client.users.get(vote.user).createDBInfo()
-    // set dailyClaimed to false
-    // update lastVote
-    client.database.collection('users').updateOne(
-      { userID: vote.user },
-      {
-        $set: {
-          lastVote: Date.now(),
-          dailyClaimed: false
-        }
-      }
-    ).then(data => {
-      console.log(`User with ID ${vote.user} just voted!`)
-    })
-  })
-}
-// */
 
 // initialization
 client.login(options.token); 
