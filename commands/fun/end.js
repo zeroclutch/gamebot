@@ -9,9 +9,9 @@ module.exports = {
   permissions: [],
   dmCommand: false,
   args: false,
-  run: function(msg, args) {
+  run: async function(msg, args) {
     if(msg.channel.game && msg.author.id == msg.channel.game.leader.id) {
-        msg.channel.game.forceStop()
+        await msg.channel.game.forceStop()
     }  else if (msg.channel.game && msg.author.id != msg.channel.game.leader.id) {
       msg.channel.sendMsgEmbed('Only the game leader may end the game.', 'Error!', 13632027)
     } else {

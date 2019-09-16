@@ -11,7 +11,7 @@ module.exports = {
     args: false,
     run: function(msg, args) {
         msg.channel.sendMsgEmbed(`\
-        [**Invite** Gamebot to your server](https://discordapp.com/oauth2/authorize?client_id=620307267241377793&scope=bot&permissions=1547041872)\n\
+        [**Invite** Gamebot to your server](https://discordapp.com/oauth2/authorize?client_id=${msg.client.user.id}&scope=bot&permissions=1547041872)\n\
         [**Join** the support server](${options.serverInvite})\n\
         [**Star** Gamebot on Github](https://github.com/zeroclutch/gamebot)\n\
         **Support** Gamebot on Patreon - *Coming Soon*\n\
