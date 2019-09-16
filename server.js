@@ -48,7 +48,9 @@ dbClient.connect(err => {
 
 
 // configure DBL 
-const dbl = new DBL(process.env.DBL_TOKEN, client)
+var dbl
+if(process.env.DBL_TOKEN)
+  dbl = new DBL(process.env.DBL_TOKEN, client)
 client.dbl = dbl
 
 // initialization
