@@ -44,8 +44,7 @@ Discord.User.prototype.createDBInfo = function() {
     const defaultInfo = {
       userID: this.id,
       balance: 0,
-      dailyClaimed: false,
-      lastVote: -1000000000000,
+      lastClaim: -1000000000000,
       voteStreak: 0,
       amountDonated: 0.001,
       unlockedGames: [],

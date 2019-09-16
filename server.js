@@ -48,11 +48,9 @@ dbClient.connect(err => {
 
 
 // configure DBL 
-const dbl = new DBL(process.env.DBL_TOKEN, {
-  webhookPort: 6000,
-  webhookAuth: process.env.DBL_WEBHOOK_AUTH
-}, client)
-
+const dbl = new DBL(process.env.DBL_TOKEN, client)
+client.dbl = dbl
+/*
 if(dbl) {
   dbl.webhook.on('ready', hook => {
     console.log(`Webhook running at http://${hook.hostname}:${hook.port}${hook.path}`);

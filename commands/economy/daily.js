@@ -23,7 +23,94 @@ module.exports = {
     dmCommand: true,
     args: false,
     run: async function(msg, args) {
+        var hasVoted = false
+        if(!msg.client.dbl) throw new Error('Error: Database not found.')
+        await msg.client.dbl.hasVoted(msg.author.id).then(result => hasVoted = result)
         const collection = msg.client.database.collection('users')
+
+        msg.author.fetchDBInfo().then(async info => {
+            const voteStreak = streak => `**${streak} day streak!**\n${'🔥'.repeat(Math.min(streak, 7))}${'⬜'.repeat(Math.max(7 - streak, 0))} | **Next Reward: ${DAILY_REWARDS[Math.min(streak, 7)]}${options.creditIcon}**`
+            console.log(hasVoted)
+
+            if(!hasVoted) {
+                info.voteStreak = 0
+                await collection.updateOne(
+                    { userID: msg.author.id },
+                    { $set: { voteStreak: 0 } }
+                )
+
+                msg.channel.send({
+                    embed: {
+                        title: 'Claim your daily rewards!',
+                        description: `[Vote for Gamebot on DiscordBots.org here](https://discordbots.org/bot/620307267241377793/vote) and receive credits each day!`,
+                        fields: [{
+                            name: 'Current vote streak',
+                            value: voteStreak(info.voteStreak)
+                        }],
+                        color: options.colors.economy,
+                        footer: {
+                            text: 'Extend your vote streak and get bonus rewards each day you vote!'
+                        }
+                    }
+                })
+            } else if (Date.now() - info.lastClaim >= DAY_LENGTH) {
+                // user may claim credits, daily not claimed and voted in last 24 hours
+                // credit rewards, and set dailyClaimed to true
+                await collection.updateOne(
+                    { userID: msg.author.id },
+                    {
+                        $set: { 
+                            lastClaim: Date.now()
+                        },
+                        $inc: {
+                            balance: DAILY_REWARDS[Math.min(info.voteStreak, 7)], 
+                            voteStreak: 1
+                        }
+                    }
+                )
+                // display vote streak
+                msg.channel.send({
+                    embed: {
+                        title: `Daily reward claimed! - ${DAILY_REWARDS[Math.min(info.voteStreak, 7)]}${options.creditIcon}`,
+                        description: `Thank you for voting on Gamebot! You can vote again in about 24 hours.`,
+                        fields: [{
+                            name: 'Current vote streak',
+                            value: voteStreak(info.voteStreak + 1)
+                        }],
+                        color: options.colors.info,
+                        footer: {
+                            text: `Extend your vote streak and get bonus rewards each day you vote!`
+                        }
+                    }
+                })
+            } else if (Date.now() - info.lastClaim < DAY_LENGTH) {
+                // user can't claim rewards
+                const msWait = info.lastClaim + DAY_LENGTH - Date.now()
+                const hoursWait = Math.floor(msWait / HOUR_LENGTH)
+                const minutesWait = Math.round((msWait / HOUR_LENGTH - hoursWait) * 60)
+
+                msg.channel.send({
+                    embed: {
+                        title: `You've already claimed your rewards!`,
+                        description: `You have to wait ${hoursWait} hours and ${minutesWait} minutes before voting again.`,
+                        fields: [{
+                            name: 'Current vote streak',
+                            value: voteStreak(info.voteStreak)
+                        }],
+                        color: options.colors.error,
+                        footer: {
+                            text: `Extend your vote streak and get bonus rewards each day you vote!`
+                        }
+                    }
+                })
+            } else {
+                throw new TypeError('info.lastClaim is an invalid value. Value must be a positive integer.')
+            }
+        })
+
+        return
+        
+        //const collection = msg.client.database.collection('users')
         msg.author.fetchDBInfo().then(async info => {
             const voteStreak = streak => `**${streak} day streak!**\n${'🔥'.repeat(Math.min(streak, 7))}${'⬜'.repeat(Math.max(7 - streak, 0))} | **Next Reward: ${DAILY_REWARDS[Math.min(streak, 7)]}${options.creditIcon}**`
 
