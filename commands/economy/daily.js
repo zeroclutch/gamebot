@@ -41,7 +41,7 @@ module.exports = {
                 msg.channel.send({
                     embed: {
                         title: 'Claim your daily rewards!',
-                        description: `[Vote for Gamebot on DiscordBots.org here](https://discordbots.org/bot/620307267241377793/vote) and receive credits each day!`,
+                        description: `[Vote for Gamebot on DiscordBots.org here](https://discordbots.org/bot/620307267241377793/vote) and receive credits each day!\n\n*If you already voted, wait up to 10 minutes for your credits to be rewarded.*`,
                         fields: [{
                             name: 'Current vote streak',
                             value: voteStreak(info.voteStreak)
@@ -52,8 +52,8 @@ module.exports = {
                         }
                     }
                 })
-            } else if (Date.now() - info.lastClaim >= DAY_LENGTH) {
-                // user may claim credits, daily not claimed and voted in last 24 hours
+            } else if (Date.now() - info.lastClaim >= RESET_LENGTH) {
+                // user may claim credits, last claim was over 12 hours ago
                 // credit rewards, and set dailyClaimed to true
                 await collection.updateOne(
                     { userID: msg.author.id },
@@ -71,7 +71,7 @@ module.exports = {
                 msg.channel.send({
                     embed: {
                         title: `Daily reward claimed! - ${DAILY_REWARDS[Math.min(info.voteStreak, 7)]}${options.creditIcon}`,
-                        description: `Thank you for voting on Gamebot! You can vote again in about 24 hours.`,
+                        description: `Thank you for voting on Gamebot! You can vote again in about 12 hours.`,
                         fields: [{
                             name: 'Current vote streak',
                             value: voteStreak(info.voteStreak + 1)
@@ -82,9 +82,9 @@ module.exports = {
                         }
                     }
                 })
-            } else if (Date.now() - info.lastClaim < DAY_LENGTH) {
+            } else if (Date.now() - info.lastClaim < RESET_LENGTH) {
                 // user can't claim rewards
-                const msWait = info.lastClaim + DAY_LENGTH - Date.now()
+                const msWait = info.lastClaim + RESET_LENGTH - Date.now()
                 const hoursWait = Math.floor(msWait / HOUR_LENGTH)
                 const minutesWait = Math.round((msWait / HOUR_LENGTH - hoursWait) * 60)
 
