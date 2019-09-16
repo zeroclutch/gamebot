@@ -23,7 +23,7 @@ for(const file of folder) {
 module.exports = {
     name: 'gamelist',
     usage: 'gamelist',
-    aliases: [],
+    aliases: ['list', 'gl'],
     description: 'Get the list of currently available games.',
     category: 'fun',
     permissions: [],

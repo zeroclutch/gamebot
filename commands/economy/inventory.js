@@ -4,7 +4,7 @@ const options = require('./../../config/options')
 module.exports = {
     name: 'inventory',
     usage: 'inventory <item type>',
-    aliases: [],
+    aliases: ['inv'],
     description: 'Display the items that you have purchased.',
     category: 'economy',
     permissions: [],

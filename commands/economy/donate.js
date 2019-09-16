@@ -30,7 +30,8 @@ module.exports = {
             channel.send({
                 embed: {
                     title: 'Support Gamebot\'s development by donating!',
-                    description: `[Click here to donate.](${donationLink.href})`,
+                    // description: `[Click here to donate.](${donationLink.href})`,
+                    description: 'Donation link coming soon.',
                     color: options.colors.economy,
                     fields: [
                         {
