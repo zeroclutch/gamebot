@@ -98,6 +98,10 @@ class CAHDeck {
 
 class BlackCard {
     constructor(text) {
+        if(!text) {
+            text = `Why can't I sleep at night?`
+            console.error('Error: card loaded with no text')
+        }
         this.cardText = text
         // get possible card responses based on blanks, minimum 1
         this.cardResponses =  Math.max(text.split(/\_/g).length - 1, 1)
@@ -176,7 +180,7 @@ module.exports = class CardsAgainstHumanity extends Game {
                 this.settings = JSON.parse(settings)
             } catch (err) {
                 console.error(err)
-                this.msg.channel.sendMsgEmbed('Invalid settings. Settings must be valid JSON. Now starting the game with default settings.', 'Error!', 13632027)
+                this.msg.channel.sendMsgEmbed('Invalid settings. Settings must be valid JSON. Now starting the game with default settings.', 'Error!', options.colors.error)
             }
         }
         this.settings.sets = ['Base', 'CAHe1', 'CAHe2', 'CAHe3', 'CAHe4', 'CAHe5', 'CAHe6']
@@ -315,7 +319,7 @@ module.exports = class CardsAgainstHumanity extends Game {
         }
 
         // info command
-        if(msg.content.startsWith(`${options.prefix}info`) && msg.author.id == options.ownerID && msg.channel.id == this.msg.channel.id) {
+        if(msg.content.startsWith(`${options.prefix}gameinfo`) && msg.author.id == options.ownerID && msg.channel.id == this.msg.channel.id) {
             msg.channel.sendMsgEmbed(`
                 stage: \`${this.stage}\`\n
                 players.size: \`${this.players.size}\`\n
@@ -364,11 +368,19 @@ module.exports = class CardsAgainstHumanity extends Game {
 
     addPlayer(user) {
         if(this.players.size < this.playerCount.max) {
-            user.createDM().then(dmChannel => {
+            user.createDM().then(async dmChannel => {
+                await dmChannel.sendMsgEmbed(`You have joined a Cards Against Humanity game in <#${this.msg.channel.id}>.`)
                 this.players.set(user.id, { score: 0, cards: [], lastURL: '', user, dmChannel })
+            }).catch(err => {
+                if(user.id == this.gameMaster.id) {
+                    this.msg.channel.sendMsgEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error)
+                    this.forceStop()
+                } else {
+                    this.msg.channel.sendMsgEmbed(`${user} must change their privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: Player could not be added.`, options.colors.error)
+                }
             })
         } else {
-            this.msg.channel.send(`${user} could not be added.`, 'Error: Too many players.', 13632027)
+            this.msg.channel.send(`${user} could not be added.`, 'Error: Too many players.', options.colors.error)
         }
     }
 

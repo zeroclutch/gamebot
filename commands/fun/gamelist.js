@@ -14,7 +14,7 @@ for(const file of folder) {
   if(file == 'Game.js') continue
   let game = require(`../../games/${file}`);
   games.push({
-      name: `${index}. ${game.gameName} [${game.id}]`,
+      name: `${index}. ${game.gameName} | ID: \`${game.id}\``,
       value: game.about
   })
   index++

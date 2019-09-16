@@ -29,14 +29,18 @@ module.exports = {
         const collection = msg.client.database.collection('users')
 
         msg.author.fetchDBInfo().then(async info => {
-            const voteStreak = streak => `**${streak} day streak!**\n${'🔥'.repeat(Math.min(streak, 7))}${'⬜'.repeat(Math.max(7 - streak, 0))} | **Next Reward: ${DAILY_REWARDS[Math.min(streak, 7)]}${options.creditIcon}**`
+            const voteStreak = streak => `**${streak} day streak!**\n${options.creditIcon.repeat(Math.min(streak, 7))}${'⬜'.repeat(Math.max(7 - streak, 0))} | **Next Reward: ${DAILY_REWARDS[Math.min(streak, 7)]}${options.creditIcon}**`
 
             if(!hasVoted) {
                 info.voteStreak = 0
-                await collection.updateOne(
-                    { userID: msg.author.id },
-                    { $set: { voteStreak: 0 } }
-                )
+
+                // reset user's streak if it has been over 48 hours since last claim
+                if(Date.now() - info.lastClaim > DAY_LENGTH * 2) {
+                    await collection.updateOne(
+                        { userID: msg.author.id },
+                        { $set: { voteStreak: 0 } }
+                    )
+                }
 
                 msg.channel.send({
                     embed: {
