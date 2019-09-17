@@ -800,7 +800,7 @@ module.exports = class CardsAgainstHumanity extends Game {
         // only select single-blanks
         do {
             this.blackCard = new BlackCard(this.cardDeck.draw('black')[0])
-        } while(this.blackCard.responses > 1 && this.blackCard.text.length > 0)
+        } while(this.blackCard.responses > 1 && this.blackCard.text.length == 0)
         
         // render and send card image
         this.renderCard(this.blackCard.clean)
