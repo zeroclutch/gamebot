@@ -234,8 +234,13 @@ app.get('*', (request, response) => {
 
 
 // Handle all POST requests
-app.post('/voted', (request, response) => {
-  console.log(response)
+app.use(express.json())
+
+app.post('/voted', (req, res) => {
+  console.log(request.headers.authorization)
+  console.log(request.body)
+  res.status(200);
+  res.send();
 })
 
 // Listen on port 5000
@@ -244,8 +249,6 @@ app.listen(process.env.PORT || 5000, (err) => {
   console.log('Server is running on port ' + (process.env.PORT || 5000))
 })
 
-// Handle PayPal requests
-app.use(express.json())
 
 app.post('/donations', (req, res) => {
   console.log(req.body)
