@@ -238,7 +238,8 @@ app.use(express.json())
 
 app.post('/voted', async (req, res) => {
   // check for authentication
-  if(!process.env.DBL_WEBHOOK_AUTH || request.headers.authorization != process.env.DBL_WEBHOOK_AUTH) {
+  console.log(req.headers)
+  if(!process.env.DBL_WEBHOOK_AUTH || req.headers.authorization != process.env.DBL_WEBHOOK_AUTH) {
     res.status(401)
     res.send()
     return
