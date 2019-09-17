@@ -176,6 +176,7 @@ module.exports = class CardsAgainstHumanity extends Game {
         // get settings
         settings = {}
         this.settings = {}
+        /*
         if(settings) {
             try {
                 this.settings = JSON.parse(settings)
@@ -183,7 +184,7 @@ module.exports = class CardsAgainstHumanity extends Game {
                 console.error(err)
                 this.msg.channel.sendMsgEmbed('Invalid settings. Settings must be valid JSON. Now starting the game with default settings.', 'Error!', options.colors.error)
             }
-        }
+        }*/
         this.settings.sets = ['Base', 'CAHe1', 'CAHe2', 'CAHe3', 'CAHe4', 'CAHe5', 'CAHe6']
         if(!this.settings.timeLimit)   this.settings.timeLimit   = 60000
         if(!this.settings.handLimit)   this.settings.handLimit   = 10
