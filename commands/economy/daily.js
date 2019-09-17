@@ -23,12 +23,10 @@ module.exports = {
     dmCommand: true,
     args: false,
     run: async function(msg, args) {
-        //if(!msg.client.dbl) throw new Error('Error: Database not found.')
-        //await msg.client.dbl.hasVoted(msg.author.id).then(result => hasVoted = result)
         const collection = msg.client.database.collection('users')
-
+        const characters = ['<:gamebot_g:623660149470527510>', '<:gamebot_a:623660148992245761>', '<:gamebot_m:623660148682129421>', '<:gamebot_e:623660148950302721>', '<:gamebot_b:623660148690255873>', '<:gamebot_o:623660148891582505>', '<:gamebot_t:623660148858290187>']
         msg.author.fetchDBInfo().then(async info => {
-            const voteStreak = streak => `**${streak} day streak!**\n${'🔥'.repeat(Math.min(streak, 7))}${'⬜'.repeat(Math.max(7 - streak, 0))} | **Next Reward: ${DAILY_REWARDS[Math.min(streak, 7)]}${options.creditIcon}**`
+            const voteStreak = streak => `**${streak} day streak!**\n${characters.slice(0, streak)}${'⬜'.repeat(Math.max(7 - streak, 0))} | **Next Reward: ${DAILY_REWARDS[Math.min(streak, 7)]}${options.creditIcon}**`
 
             // check if user can claim credits
             // daily hasn't been claimed and check if lastVoted was in last 12 hours

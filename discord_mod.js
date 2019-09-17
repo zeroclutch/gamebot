@@ -34,6 +34,14 @@ Discord.DMChannel.prototype.sendMsgEmbed = Discord.TextChannel.prototype.sendMsg
   })
 }
 
+/**
+ * Creates a new user object in the database.
+ * @returns {Promise<Object>} The data the user was initialized with.
+ * @example
+ * user.createDBInfo()
+ * .then(info => console.log(`User was created with ${info.balance} credits`))
+ * .catch(console.error)
+ */
 Discord.User.prototype.createDBInfo = function() {
   return new Promise((resolve, reject) => {
     if(!this.client.database || !this.client.database.collection('users')) {

@@ -176,7 +176,7 @@ client.on('message', async function(msg) {
   
   if(cmd) {
     // test for permissions
-    if(cmd.permissions && msg.author.id !== process.env.OWNER_ID && (cmd.permissions.includes('GOD') || !msg.member.hasPermission(cmd.permissions))) {
+    if(cmd.permissions && msg.author.id !== process.env.OWNER_ID && (cmd.permissions.includes('GOD') || !msg.member ||!msg.member.hasPermission(cmd.permissions))) {
       msg.channel.sendMsgEmbed('Sorry, you don\'t have the necessary permissions for this command.')
       return
     }
@@ -238,7 +238,6 @@ app.use(express.json())
 
 app.post('/voted', async (req, res) => {
   // check for authentication
-  console.log(req.headers)
   if(!process.env.DBL_WEBHOOK_AUTH || req.headers.authorization != process.env.DBL_WEBHOOK_AUTH) {
     res.status(401)
     res.send()
@@ -247,7 +246,7 @@ app.post('/voted', async (req, res) => {
   const json = req.body
   const collection = client.database.collection('users')
   const user = client.users.get(json.user)
-  user.fetchDBInfo().then(info => {
+  await user.fetchDBInfo().then(info => {
     collection.updateOne(
       { userID: json.user },
       {
@@ -265,13 +264,13 @@ app.post('/voted', async (req, res) => {
   res.send()
 })
 
+app.post('/donations', (req, res) => {
+  console.log(req.body)
+})
+
 // Listen on port 5000
 app.listen(process.env.PORT || 5000, (err) => {
   if (err) throw err
   console.log('Server is running on port ' + (process.env.PORT || 5000))
 })
 
-
-app.post('/donations', (req, res) => {
-  console.log(req.body)
-})
