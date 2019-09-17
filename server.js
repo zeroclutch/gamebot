@@ -237,8 +237,8 @@ app.get('*', (request, response) => {
 app.use(express.json())
 
 app.post('/voted', (req, res) => {
-  console.log(request.headers.authorization)
-  console.log(request.body)
+  console.log(req.headers.authorization)
+  console.log(req.body)
   res.status(200);
   res.send();
 })
