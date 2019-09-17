@@ -23,7 +23,7 @@ module.exports = {
       return
     }
     if(!msg.client.games.get(selection)) {
-      msg.channel.sendMsgEmbed(`Game not found. Remember, you have to type the **game code**, not the **game name**. You can see the game codes by typing \`${options.prefix}gamelist\``, 'Error!', 13632027)
+      msg.channel.sendMsgEmbed(`Game not found. Remember, you have to type the **game id**, not the **game name**. You can see the game ids by typing \`${options.prefix}gamelist\``, 'Error!', 13632027)
       return
     }
 
