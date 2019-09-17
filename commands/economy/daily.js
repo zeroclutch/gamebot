@@ -23,8 +23,8 @@ module.exports = {
     dmCommand: true,
     args: false,
     run: async function(msg, args) {
-        if(!msg.client.dbl) throw new Error('Error: Database not found.')
-        await msg.client.dbl.hasVoted(msg.author.id).then(result => hasVoted = result)
+        //if(!msg.client.dbl) throw new Error('Error: Database not found.')
+        //await msg.client.dbl.hasVoted(msg.author.id).then(result => hasVoted = result)
         const collection = msg.client.database.collection('users')
 
         msg.author.fetchDBInfo().then(async info => {
@@ -50,7 +50,7 @@ module.exports = {
                 msg.channel.send({
                     embed: {
                         title: 'Claim your daily rewards!',
-                        description: `[Vote for Gamebot on DiscordBots.org here](https://discordbots.org/bot/620307267241377793/vote) and receive credits each day!`,
+                        description: `[Vote for Gamebot on DiscordBots.org here](https://discordbots.org/bot/620307267241377793/vote) and receive credits each day! After voting, type \`${options.prefix}daily\` to claim your rewards.`,
                         fields: [{
                             name: 'Current vote streak',
                             value: voteStreak(info.voteStreak)
@@ -69,7 +69,7 @@ module.exports = {
                     {
                         $set: { 
                             dailyClaimed: true
-                         },
+                        },
                         $inc: {
                             balance: DAILY_REWARDS[Math.min(info.voteStreak, 7)], 
                             voteStreak: 1
