@@ -224,17 +224,23 @@ client.on('consoleError', async message => {
 // Handle all GET requests
 app.use(express.static(__dirname + '/public'))
 
-app.get('/thanks', function (request, response) {
+app.get('/thanks', (request, response) => {
   response.sendFile(__dirname + '/public/thanks.html');
 })
 
-app.get('*', function (request, response) {
+app.get('*', (request, response) => {
     response.sendFile(__dirname + '/public/index.html');
 })
 
+
+// Handle all POST requests
+app.post('/voted', (request, response) => {
+  console.log(response)
+})
+
 // Listen on port 5000
-app.listen(process.env.PORT || 5000, function (error) {
-  if (error) throw error
+app.listen(process.env.PORT || 5000, (err) => {
+  if (err) throw err
   console.log('Server is running on port ' + (process.env.PORT || 5000))
 })
 
