@@ -99,7 +99,6 @@ class CAHDeck {
 class BlackCard {
     constructor(text) {
         if(!text) {
-            text = `Why can't I sleep at night?`
             console.error('Error: card loaded with no text')
         }
         this.cardText = text
