@@ -98,9 +98,6 @@ class CAHDeck {
 
 class BlackCard {
     constructor(text) {
-        if(!text) {
-            console.error('Error: card loaded with no text')
-        }
         this.cardText = text
         // get possible card responses based on blanks, minimum 1
         this.cardResponses =  Math.max(text.split(/\_/g).length - 1, 1)
@@ -800,7 +797,10 @@ module.exports = class CardsAgainstHumanity extends Game {
         // only select single-blanks
         do {
             this.blackCard = new BlackCard(this.cardDeck.draw('black')[0])
-        } while(this.blackCard.responses > 1 || this.blackCard.text.length == 0)
+        } while(this.blackCard.responses > 1 || !this.blackCard.text || this.blackCard.text.length == 0)
+        if(!this.blackCard.text) {
+            console.error('Error: card loaded with no text')
+        }
         
         // render and send card image
         this.renderCard(this.blackCard.clean)

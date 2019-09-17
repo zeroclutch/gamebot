@@ -13,7 +13,7 @@ module.exports = {
     run: async function(msg, args) {
         const collection = msg.client.database.collection('items')
         const command = args[0].toLowerCase()
-        const itemID = args[1].toLowerCase()
+        const itemID = (args[1] || '').toLowerCase()
         var item = await collection.find({ itemID }).toArray()
         item = item[0]
         if(!item) {

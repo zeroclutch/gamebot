@@ -144,8 +144,8 @@ client.help = function(msg, command) {
 // handle commands
 client.on('message', async function(msg) {
   var prefix = msg.prefix = options.prefix
-  if (msg.content.startsWith(`<@!${client.user.id}>`)) msg.content = msg.content.replace(`<@!${client.user.id}>`, prefix).replace(`<@!${client.user.id}> `, prefix)
-  if (msg.content.startsWith(`<@${client.user.id}>`)) msg.content = msg.content.replace(`<@${client.user.id}>`, prefix).replace(`<@!${client.user.id}> `, prefix)
+  if (msg.content.startsWith(`<@!${client.user.id}>`)) msg.content = msg.content.replace(`<@!${client.user.id}> `, prefix).replace(`<@!${client.user.id}>`, prefix)
+  if (msg.content.startsWith(`<@${client.user.id}>`)) msg.content = msg.content.replace(`<@${client.user.id}> `, prefix).replace(`<@${client.user.id}>`, prefix)
   if (!msg.content.startsWith(prefix) || msg.author.bot) return
 
   const message = msg.content.substring(prefix.length, msg.content.length).split(" ")
