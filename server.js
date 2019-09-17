@@ -236,11 +236,32 @@ app.get('*', (request, response) => {
 // Handle all POST requests
 app.use(express.json())
 
-app.post('/voted', (req, res) => {
-  console.log(req.headers.authorization)
-  console.log(req.body)
-  res.status(200);
-  res.send();
+app.post('/voted', async (req, res) => {
+  // check for authentication
+  if(!process.env.DBL_WEBHOOK_AUTH || request.headers.authorization != process.env.DBL_WEBHOOK_AUTH) {
+    res.status(401)
+    res.send()
+    return
+  }
+  const json = req.body
+  const collection = client.database.collection('users')
+  const user = client.users.get(json.user)
+  user.fetchDBInfo().then(info => {
+    collection.updateOne(
+      { userID: json.user },
+      {
+        $set: {
+          dailyClaimed: false,
+          lastClaim: Date.now()
+        }
+      }
+    )
+    res.status(200)
+  }).catch(err => {
+    console.error(err)
+    res.status(500)
+  })
+  res.send()
 })
 
 // Listen on port 5000
