@@ -44,7 +44,7 @@ module.exports = {
                 msg.channel.send({
                     embed: {
                         title: 'Claim your daily rewards!',
-                        description: `[Vote for Gamebot on DiscordBots.org here](https://discordbots.org/bot/620307267241377793/vote) and receive credits each day!\n\n*If you already voted, wait up to 10 minutes for your credits to be rewarded.*`,
+                        description: `[Vote for Gamebot on DiscordBots.org here](https://discordbots.org/bot/620307267241377793/vote) and receive credits each day! Type \`${options.prefix}daily\` to receive your rewards after voting.\n\n*If you already voted, wait up to 10 minutes for your credits to be rewarded.*`,
                         fields: [{
                             name: 'Current vote streak',
                             value: voteStreak(info.voteStreak)

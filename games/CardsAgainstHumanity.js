@@ -173,7 +173,8 @@ module.exports = class CardsAgainstHumanity extends Game {
         this.playersToAdd = []
         this.ending = false
 
-        // get settings 
+        // get settings
+        settings = {}
         this.settings = {}
         if(settings) {
             try {
@@ -785,7 +786,7 @@ module.exports = class CardsAgainstHumanity extends Game {
         }
 
         await this.reset()
-        await this.updateCzars()
+        this.updateCzars()
         this.stage = 'sleeping'
         await this.sleep(5000)
         this.play()
@@ -796,18 +797,13 @@ module.exports = class CardsAgainstHumanity extends Game {
         this.stage = 'playing'
 
         // choose a black card
-        /*
-        this.blackCardOriginal = this.cardDeck.draw('black', 1)[0]
-        this.currentBlackCard = this.cleanBlackCardText(this.blackCardOriginal)
-        this.currentBlackCardFormatted = this.currentBlackCard*/
-
         // only select single-blanks
         do {
             this.blackCard = new BlackCard(this.cardDeck.draw('black')[0])
-        } while(this.blackCard.responses > 1)
+        } while(this.blackCard.responses > 1 && this.blackCard.text.length > 0)
         
         // render and send card image
-        await this.renderCard(this.blackCard.clean)
+        this.renderCard(this.blackCard.clean)
 
         this.pickNextCzar()
 
