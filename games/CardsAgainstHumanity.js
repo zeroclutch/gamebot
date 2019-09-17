@@ -217,7 +217,7 @@ module.exports = class CardsAgainstHumanity extends Game {
                 return
             }
             this.addPlayer(m.author)
-            m.delete()
+            m.delete().catch(console.error)
             m.channel.send(`${m.author} joined!`)
         });
 
