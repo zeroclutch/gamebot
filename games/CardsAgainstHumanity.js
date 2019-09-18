@@ -217,7 +217,8 @@ module.exports = class CardsAgainstHumanity extends Game {
                 return
             }
             this.addPlayer(m.author)
-            m.delete().catch(console.error)
+            // if deletion does not occur, a DiscordAPIError: Missing Permissions is thrown
+            m.delete().catch(err => {})
             m.channel.send(`${m.author} joined!`)
         });
 
