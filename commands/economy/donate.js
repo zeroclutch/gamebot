@@ -36,7 +36,7 @@ module.exports = {
                     fields: [
                         {
                             name: 'Rewards',
-                            value: `Each dollar you donate will give you 5000${options.creditIcon}`
+                            value: `Each dollar you donate will give you 1000${options.creditIcon}`
                         },
                         {
                             name: 'Stretch Rewards',

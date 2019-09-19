@@ -12,6 +12,7 @@ module.exports = {
   colors: {
     info: 4513714,
     error: 13632027,
-    economy: 3510190
+    economy: 3510190,
+    warning: 16301340
   }
 }
