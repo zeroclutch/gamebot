@@ -196,6 +196,16 @@ module.exports = class CardsAgainstHumanity extends Game {
         // add gamemaster
         this.addPlayer(this.gameMaster)
 
+        // check if downtime is going to start
+        if(this.msg.client.timeToDowntime() > 0 && this.msg.client.timeToDowntime() <= 10 * 60 * 1000) {
+            const downtime = Math.round(this.msg.client.timeToDowntime() / 60000)
+            this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Games cannot be started right now. For more information, [see our support server.](${options.serverInvite})`, 'Error!', options.colors.error)
+            this.forceStop()
+            return
+        } else if(this.msg.client.timeToDowntime() > 0) {
+            this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${Math.round(this.msg.client.timeToDowntime() / 60000)} minutes. Any active games will be automatically ended. For more information, [see our support server.](${options.serverInvite})`, 'Warning!', options.colors.warning)
+        }
+
         // create event listeners for commands
         this.msg.client.on('message', this.messageListener)
 

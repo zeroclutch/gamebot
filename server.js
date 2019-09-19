@@ -14,6 +14,9 @@ const dbClient = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopolog
 // Discord Bot List dependencies
 const DBL = require('dblapi.js');
 
+// bandaid fix
+client.setMaxListeners(40)
+
 // configure Discord logging
 const oldConsole = {
   error: console.error,
@@ -28,6 +31,11 @@ console.log = (message) => {
 console.error = (message) => {
   client.emit('consoleError', message)
   oldConsole.error(message)
+}
+
+// configure downtime notifications
+client.timeToDowntime = () => {
+  return (client.downtimeStart || 0) - Date.now()
 }
 
 // configure database
@@ -245,8 +253,12 @@ app.post('/voted', async (req, res) => {
   }
   const json = req.body
   const collection = client.database.collection('users')
-  const user = client.users.get(json.user)
-  await user.fetchDBInfo().then(info => {
+  var user = client.users.get(json.user)
+  if(!user) {
+    await client.fetchUser(json.user).then(u => user = u)
+    .catch(console.error)
+  }
+  await user.fetchDBInfo('').then(info => {
     collection.updateOne(
       { userID: json.user },
       {
