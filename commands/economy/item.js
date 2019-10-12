@@ -91,7 +91,6 @@ module.exports = {
                     msg.channel.sendMsgEmbed('Item purchase cancelled.')
                 }
             }).catch(console.error)
-            // 
         }
     }
   }

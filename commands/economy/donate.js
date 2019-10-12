@@ -17,7 +17,7 @@ module.exports = {
         const url = process.env.BASE_URL || 'https://gamebot-discord.herokuapp.com'
 
         params.append('cmd', '_donations')
-        params.append('business', 'user@example.com')
+        params.append('business', '7P472QFLHG4AL')
         params.append('item_name', 'Gamebot')
         params.append('currency_code', 'USD')
         params.append('source', 'url')
@@ -30,8 +30,8 @@ module.exports = {
             channel.send({
                 embed: {
                     title: 'Support Gamebot\'s development by donating!',
-                    // description: `[Click here to donate.](${donationLink.href})`,
-                    description: 'Donation link coming soon.',
+                    description: `[Click here to donate.](${donationLink.href})`,
+                    //description: 'Donation link coming soon.',
                     color: options.colors.economy,
                     fields: [
                         {
