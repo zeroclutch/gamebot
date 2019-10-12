@@ -204,7 +204,7 @@ client.on('message', async function(msg) {
           cmd.run(msg, command.args)
         } catch (err) {
           reject(err)
-        }
+        } 
         resolve(cmd)
       })
       .catch((err) => {
@@ -249,7 +249,7 @@ app.post('/voted', async (req, res) => {
   if(!process.env.DBL_WEBHOOK_AUTH || req.headers.authorization != process.env.DBL_WEBHOOK_AUTH) {
     res.status(401)
     res.send()
-    return
+    throw new Error('Invalid credentials when attempting to vote using a webhook.')
   }
   const json = req.body
   const collection = client.database.collection('users')
@@ -258,7 +258,7 @@ app.post('/voted', async (req, res) => {
     await client.fetchUser(json.user).then(u => user = u)
     .catch(console.error)
   }
-  await user.fetchDBInfo('').then(info => {
+  await user.fetchDBInfo().then(info => {
     collection.updateOne(
       { userID: json.user },
       {
