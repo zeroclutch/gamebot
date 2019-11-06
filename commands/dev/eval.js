@@ -20,11 +20,11 @@ module.exports = {
   run: async function(msg, args) {
     var response = '';
     try {
-      response = await eval('(function(){'+args.join(' ')+'})();')
+      response = await eval('(()=>{'+args.join(' ')+'})()')
       msg.channel.send("```css\neval completed```\nResponse Time: `" + (Date.now()-msg.createdTimestamp) + "ms`\nresponse:```json\n" + clean(response) + "```\nType: `" + typeof(response) + "`");
     } catch (err) {
       console.error(err)
-      msg.channel.send("```diff\n- eval failed -```\nResponse Time: `" + (Date.now()-msg.createdTimestamp) + "ms`\nerror:```json\n" + clean(err) + "```");
+      msg.channel.send("```diff\n- eval failed -```\nResponse Time: `" + (Date.now()-msg.createdTimestamp) + "ms`\nerror:```json\n" + err + "```");
     }
   }
 }
