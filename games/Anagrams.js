@@ -32,7 +32,7 @@ module.exports = class Anagrams extends Game {
                 friendlyName: 'Custom word',
                 default: 'none',
                 type: 'free',
-                filter: m => m.content.length == 7 && m.content.replace(/[A-Z]|[a-z]/g, '') == m.content || m.content.toLowerCase() == 'none',
+                filter: m => m.content.length == 7 && m.content.replace(/[A-Z]|[a-z]/g, '') == 0 || m.content.toLowerCase() == 'none',
                 note: 'The new value must be 7 characters long and contain only letters. Type "none" to disable the custom word.',
             },
         ]
@@ -119,7 +119,7 @@ module.exports = class Anagrams extends Game {
             player.dmChannel.send({
                 embed: {
                     title: 'Anagrams',
-                    description: `To earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible.\n\n**The letters are: \`Loading...\`**`,
+                    description: `To earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible. You don't have to use all the letters, and longer words are worth more points.\n\n**The letters are: \`Loading...\`**`,
                     color: options.colors.info
                 }
             }).then(async message => {
@@ -127,7 +127,7 @@ module.exports = class Anagrams extends Game {
                 message.edit({
                     embed: {
                         title: 'Anagrams',
-                        description: `To earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible.\n\n**The letters are: \`${this.word}\`**`,
+                        description: `To earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible. You don't have to use all the letters, and longer words are worth more points.\n\n**The letters are: \`${this.word}\`**`,
                         color: options.colors.info
                     }
                 })
@@ -168,7 +168,7 @@ module.exports = class Anagrams extends Game {
 
                     fields.push({
                         name: `${player.user.tag} - ${player.score} POINTS`,
-                        value: player.words.join(', ') || '0 words.'
+                        value: player.words ? player.words.join(', ') : 'No words submitted.'
                     })
                 })
                 var title
@@ -177,7 +177,7 @@ module.exports = class Anagrams extends Game {
                 } else {
                     title = 'The winners are '
                     winner.forEach(winningPlayer => {
-                        title += winner.user.tag + ', '
+                        title += winningPlayer.user.tag + ', '
                     })
                 }
 
@@ -187,6 +187,8 @@ module.exports = class Anagrams extends Game {
                         title,
                         fields
                     }
+                }).then(() => {
+                    this.end()
                 })
             })
         } else if (this.options['Game Mode'] == 'Team') {
