@@ -148,7 +148,7 @@ module.exports = class CardsAgainstHumanity extends Game {
 
 
     constructor(msg, settings) {
-        super()
+        super(msg, settings)
         this.players = new Discord.Collection()
         this.msg = msg
         this.czars

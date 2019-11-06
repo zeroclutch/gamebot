@@ -110,7 +110,7 @@ module.exports = {
                         }
                     }
                 })
-            } else {
+            } else {    
                 // this should never happen
                 msg.channel.sendMsgEmbed(`There seems to be an issue with the ${options.prefix}daily command. Please submit a bug report in the [support server](${options.serverInvite}).`, 'Error!')
             }
