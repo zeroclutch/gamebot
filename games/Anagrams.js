@@ -29,7 +29,7 @@ module.exports = class Anagrams extends Game {
                 note: 'In free for all, each player finds anagrams to get their own score. In team, players work together in random teams to get a team score.'
             },
             {
-                friendlyName: 'Custom word',
+                friendlyName: 'Custom Word',
                 default: 'none',
                 type: 'free',
                 filter: m => m.content.length == 7 && m.content.replace(/[A-Z]|[a-z]/g, '') == 0 || m.content.toLowerCase() == 'none',
@@ -69,10 +69,7 @@ module.exports = class Anagrams extends Game {
     chooseWord(length) {
         const validWords = words.filter(w => w.length == length)
         const index = Math.floor(Math.random()*validWords.length)
-        console.log(index)
         this.word = this.scramble(validWords[index])
-        console.log(validWords[index])
-        console.log(this.word)
         return this.word
     }
 
@@ -113,7 +110,11 @@ module.exports = class Anagrams extends Game {
      * Starts a new Anagrams game
      */
     async playOneForAll(callback) {
-        this.chooseWord(7)
+        if(this.options['Custom Word'] == 'none') {
+            this.chooseWord(7)
+        } else {
+            this.word = this.options['Custom Word'].toUpperCase()
+        }
         this.channel.sendMsgEmbed('The game will start in 5 seconds. Check your direct messages to see the letters you have to unscramble!')
         this.players.forEach(player => {
             player.dmChannel.send({
@@ -134,7 +135,8 @@ module.exports = class Anagrams extends Game {
             }).then(() => {
                 // create a collector on each DM channel
                 const filter = m => this.validateWord(m.content, this.word)
-                const collector = player.dmChannel.createMessageCollector(filter, {time: 60000})
+                const ROUND_LENGTH = 60000
+                const collector = player.dmChannel.createMessageCollector(filter, {time: ROUND_LENGTH})
                 collector.on('end', (collected) => {
                     player.words = []
                     player.dmChannel.send(`Time is up! Return to <#${this.channel.id}> for the results!`)
@@ -147,8 +149,11 @@ module.exports = class Anagrams extends Game {
                             player.score += this.getWordScore(message.content)
                         }
                     })
-                    callback()
                 })
+                setTimeout(() => {
+                    if(this.ending) return
+                    callback()
+                }, ROUND_LENGTH)
             })
         })
     }
@@ -197,13 +202,14 @@ module.exports = class Anagrams extends Game {
     }
 }
 
+
 // static fields
-module.exports.id = 'ana'
-module.exports.gameName = 'Anagrams'
+module.exports.id = 'ana' // a 3-4 letter identifier for the game that people will use to start a game
+module.exports.gameName = 'Anagrams' // friendly name for display purposes
 module.exports.playerCount = {
-    min: 1,
-    max: 12
+    min: 1, // minimum required player count
+    max: 20 // maximum required player count
 }
-module.exports.genre = 'Word'
-module.exports.about = ''
-module.exports.rules = ''
+module.exports.genre = 'Word' // options are Card, Party, Board, Arcade, Tabletop, etc.
+module.exports.about = 'Unscramble words faster than your friends!' // a one-sentence summary of the game
+module.exports.rules = 'Players are sent a DM with the word that they have to unscramble. Type as many 3+ letter words as possible before time runs out. At the end, the scores are tallied up and the winner is announced.' // explanation about how to play
