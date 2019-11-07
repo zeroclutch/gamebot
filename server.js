@@ -194,7 +194,7 @@ client.on('message', async function(msg) {
       await msg.channel.startTypingAsync(msg.channel)
     }
     //try running command
-    if(msg.channel.type == 'dm' && cmd.dmChannel) {
+    if(msg.channel.type == 'dm' && !cmd.dmCommand) {
       msg.channel.send('This command is not available in a DM channel. Please try this again in a server.')
     } else if(cmd.args && command.args.join('') === '') {
         msg.channel.sendMsgEmbed(`Incorrect usage of this command. Usage: \`${msg.prefix}${cmd.usage}\`.`)
