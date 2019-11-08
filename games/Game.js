@@ -87,7 +87,7 @@ module.exports = class Game {
         this.addPlayer(this.gameMaster.id)
 
         const filter = m => (m.content.startsWith(`${options.prefix}join`) && !this.players.has(m.author.id)) || (m.author.id == this.gameMaster.id && m.content.startsWith(`${options.prefix}start`))
-        const collector = this.msg.channel.createMessageCollector(filter, { max: this.playerCount.max, time: 60000 })
+        const collector = this.channel.createMessageCollector(filter, { max: this.playerCount.max, time: 60000 })
         this.collectors.push(collector)
         collector.on('collect', m => {
             if(this.ending) return
@@ -362,11 +362,9 @@ module.exports = class Game {
 
     /**
      * Add a player to the game.
-     * @param {Discord.Member} member The member to add.
-     * @param {string|Object} member The member or id of the member to add.
+     * @param {Discord.Member|string} member The member or id of the member to add.
      */
     addPlayer(member) {
-        if(this.stage != 'join' && this.stage != 'init') return
         if(typeof member == 'string') member = this.msg.guild.members.get(member)
         
         if(this.players.size >= this.playerCount.max) {
@@ -378,10 +376,23 @@ module.exports = class Game {
             this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027)
             return
         }
-
-        if(member.id != this.gameMaster.id) this.msg.channel.sendMsgEmbed(`${member.user} was added to the game!`)
+            
         member.user.createDM().then(dmChannel => {
-            this.players.set(member.id, { score: 0, info: {}, user: member.user, dmChannel })
+            return new Promise(resolve => {
+                this.players.set(member.id, { score: 0, info: {}, user: member.user, dmChannel })
+                resolve(dmChannel)
+            })
+        }).then(dmChannel => {
+            dmChannel.sendMsgEmbed(`You have joined a ${this.gameName} game in <#${this.msg.channel.id}>.`)
+            this.msg.channel.sendMsgEmbed(`${member.user} was added to the game!`)
+        }).catch(err => {
+            console.error(err)
+            if(user.id == this.gameMaster.id) {
+                this.msg.channel.sendMsgEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error)
+                this.forceStop()
+            } else {
+                this.msg.channel.sendMsgEmbed(`${user} must change their privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: Player could not be added.`, options.colors.error)
+            }
         })
     }
 
