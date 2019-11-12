@@ -18,6 +18,7 @@ module.exports = class Anagrams extends Game {
     constructor(msg, settings) {
         settings = settings || {}
         settings.gameName = 'Anagrams'
+        settings.isDmNeeded = false
         super(msg, settings)
         
         this.gameOptions = [
@@ -115,53 +116,64 @@ module.exports = class Anagrams extends Game {
         } else {
             this.word = this.options['Custom Word'].toUpperCase()
         }
-        this.channel.sendMsgEmbed('The game will start in 5 seconds. Check your direct messages to see the letters you have to unscramble!')
-        this.players.forEach(player => {
-            player.dmChannel.send({
+        this.channel.send({
+            embed: {
+                title: 'Anagrams',
+                description: `The game will start in 5 seconds.\n\nTo earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible. You don't have to use all the letters, and longer words are worth more points.\n\n**The letters are: \`Loading...\`**`,
+                color: options.colors.info
+            }
+        }).then(async message => {
+            await this.sleep(5000)
+            message.edit({
                 embed: {
                     title: 'Anagrams',
-                    description: `To earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible. You don't have to use all the letters, and longer words are worth more points.\n\n**The letters are: \`Loading...\`**`,
+                    description: `To earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible. You don't have to use all the letters, and longer words are worth more points.\n\n**The letters are: \`${this.word}\`**`,
                     color: options.colors.info
                 }
-            }).then(async message => {
-                await this.sleep(5000)
-                message.edit({
-                    embed: {
-                        title: 'Anagrams',
-                        description: `To earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible. You don't have to use all the letters, and longer words are worth more points.\n\n**The letters are: \`${this.word}\`**`,
-                        color: options.colors.info
-                    }
-                })
-            }).then(() => {
-                // create a collector on each DM channel
-                const filter = m => this.validateWord(m.content, this.word)
-                const ROUND_LENGTH = 60000
-                const collector = player.dmChannel.createMessageCollector(filter, {time: ROUND_LENGTH})
-                collector.on('end', (collected) => {
-                    player.words = []
-                    player.dmChannel.send(`Time is up! Return to <#${this.channel.id}> for the results!`)
-                    // validate each message sent for 60 seconds
-                    collected.forEach(message => {
-                        let word = message.content.toUpperCase()
-                        // check if player already has submitted this word
-                        if(!player.words.includes(word)) {
-                            player.words.push(word)
-                            player.score += this.getWordScore(message.content)
-                        }
-                    })
-                })
-                setTimeout(() => {
-                    if(this.ending) return
-                    callback()
-                }, ROUND_LENGTH)
             })
+        }).then(() => {
+            // create a collector on the main channel
+            const filter = m => !m.author.bot
+            const ROUND_LENGTH = 60000
+            const collector = this.channel.createMessageCollector(filter, {time: ROUND_LENGTH})
+            const isPangram = word => word.length == this.word.length
+            var words = []
+            var messagesSent = 0
+
+            collector.on('collect', message => {
+                if(this.ending) return
+                messagesSent++
+                if(messagesSent >= 3) {
+                    this.channel.sendMsgEmbed(`\`${this.word}\``, `The letters are:`)
+                    messagesSent = 0
+                }
+
+                if(!this.validateWord(message.content, this.word)) return
+                let word = message.content.toUpperCase()
+                // check if player already has submitted this word
+                if(words.includes(word)) return
+                
+                const player = this.players.get(message.author.id)
+                let score = this.getWordScore(message.content)
+                player.words = player.words || []
+         
+
+                words.push(word)
+                player.words.push(word)
+                player.score += score
+                this.channel.sendMsgEmbed(`<@${message.author.id}> got **${word}** for **${score}** points.`, isPangram(word) ? 'PANGRAM!' : '', isPangram(word) ? options.colors.economy : options.colors.info)
+            })
+
+            setTimeout(() => {
+                if(this.ending) return
+                callback()
+            }, ROUND_LENGTH)
         })
     }
 
     play() {
         if(this.options['Game Mode'] == 'Free for all') {
             this.playOneForAll(() => {
-                console.log('Player 1 got: ' + this.players.first().score)
                 var fields = []
                 var winner = [{ score: -1 }]
                 this.players.forEach(player => {
@@ -173,7 +185,7 @@ module.exports = class Anagrams extends Game {
 
                     fields.push({
                         name: `${player.user.tag} - ${player.score} POINTS`,
-                        value: player.words ? player.words.join(', ') : 'No words submitted.'
+                        value: player.words && player.words.length > 0 ? player.words.join(', ') : 'No words submitted.'
                     })
                 })
                 var title

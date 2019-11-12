@@ -23,6 +23,7 @@ module.exports = class Game {
         this.stage = 'init'
 
         /** SETTINGS **/
+        this.settings = settings
         this.gameName = settings ? settings.gameName : 'Game'
         /**
          * {
@@ -383,7 +384,9 @@ module.exports = class Game {
                 resolve(dmChannel)
             })
         }).then(dmChannel => {
-            dmChannel.sendMsgEmbed(`You have joined a ${this.gameName} game in <#${this.msg.channel.id}>.`)
+            if(this.settings.isDmNeeded){
+                dmChannel.sendMsgEmbed(`You have joined a ${this.gameName} game in <#${this.msg.channel.id}>.`)
+            }
             this.msg.channel.sendMsgEmbed(`${member.user} was added to the game!`)
         }).catch(err => {
             console.error(err)
