@@ -156,7 +156,7 @@ module.exports = class CardsAgainstHumanity extends Game {
         this.czar
         this.gameMaster = msg.author
         this.playerCount = {
-            min: 3,
+            min: 1,
             max: 12
         }
         this.submittedCards = []

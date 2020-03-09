@@ -96,7 +96,7 @@ module.exports = class Game {
                 collector.stop()
                 return
             }
-            this.addPlayer(m.author)
+            this.addPlayer(m.author.id)
             m.delete()
             m.channel.send(`${m.author} joined!`)
         })

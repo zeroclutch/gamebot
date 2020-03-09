@@ -24,17 +24,17 @@ module.exports = class Anagrams extends Game {
         this.gameOptions = [
             {
                 friendlyName: 'Game Mode',
-                choices: ['Free for all', 'Team'],
+                choices: ['Free for all'],
                 default: 'Free for all',
                 type: 'radio',
-                note: 'In free for all, each player finds anagrams to get their own score. In team, players work together in random teams to get a team score.'
+                note: 'In free for all, each player finds anagrams to get their own score. More modes coming soon. Enter "1" to go back.'
             },
             {
                 friendlyName: 'Custom Word',
                 default: 'none',
                 type: 'free',
                 filter: m => m.content.length == 7 && m.content.replace(/[A-Z]|[a-z]/g, '') == 0 || m.content.toLowerCase() == 'none',
-                note: 'The new value must be 7 characters long and contain only letters. Type "none" to disable the custom word.',
+                note: 'The new value must be 7 characters long and contain only letters. Enter "none" to disable the custom word.',
             },
         ]
     }
@@ -89,6 +89,10 @@ module.exports = class Anagrams extends Game {
             return false
         }
 
+        if(word.length < 3) {
+            return false
+        }
+
         // check if word can be created
         for(var i = 0; i < word.length; i++) {
             var index = originalWord.indexOf(word[i])
@@ -103,8 +107,8 @@ module.exports = class Anagrams extends Game {
      * @param {string} word 
      */
     getWordScore(word) {
-        const SCORES = [0, 0, 0, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
-        return SCORES[word.length] || 1000
+        const SCORES = [0, 0, 0, 50, 100, 200, 400, 600, 700, 800, 900, 1000, 1100, 1200]
+        return !isNaN(SCORES[word.length]) ? SCORES[word.length] : 1200
     }
  
     /**
@@ -138,15 +142,9 @@ module.exports = class Anagrams extends Game {
             const collector = this.channel.createMessageCollector(filter, {time: ROUND_LENGTH})
             const isPangram = word => word.length == this.word.length
             var words = []
-            var messagesSent = 0
 
             collector.on('collect', message => {
                 if(this.ending) return
-                messagesSent++
-                if(messagesSent >= 3) {
-                    this.channel.sendMsgEmbed(`\`${this.word}\``, `The letters are:`)
-                    messagesSent = 0
-                }
 
                 if(!this.validateWord(message.content, this.word)) return
                 let word = message.content.toUpperCase()
@@ -161,7 +159,7 @@ module.exports = class Anagrams extends Game {
                 words.push(word)
                 player.words.push(word)
                 player.score += score
-                this.channel.sendMsgEmbed(`<@${message.author.id}> got **${word}** for **${score}** points.`, isPangram(word) ? 'PANGRAM!' : '', isPangram(word) ? options.colors.economy : options.colors.info)
+                this.channel.sendMsgEmbed(`<@${message.author.id}> got **${word}** for **${score}** points.\n\nThe letters are: \`${this.word}\``, isPangram(word) ? 'PANGRAM!' : '', isPangram(word) ? options.colors.economy : options.colors.info)
             })
 
             setTimeout(() => {
