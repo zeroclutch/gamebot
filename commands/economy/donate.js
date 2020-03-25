@@ -22,8 +22,8 @@ module.exports = {
         params.append('currency_code', 'USD')
         params.append('source', 'url')
         params.append('bn', 'PayPal_Donation_Gamebot_US')
-        params.append('return', url + '/thanks')
-        params.append('notify_url', url + '/donations')
+        params.append('return', url + 'thanks')
+        params.append('notify_url', url + 'donations')
         params.append('custom', msg.author.id)
 
         msg.author.createDM().then(channel => {
