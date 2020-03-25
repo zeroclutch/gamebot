@@ -6,6 +6,8 @@ manager.on('shardCreate', shard => console.log(`hi`))
 manager.spawn(2).catch(err => console.error(err))
 
 const request = require('request')
+const bodyParser = require('body-parser')
+var querystring = require('querystring');
 const express = require('express')
 const app = express()
 
@@ -22,7 +24,14 @@ app.get('*', (request, response) => {
 
 
 // Handle all POST requests
-app.use(express.json())
+
+// Parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// Parse application/json
+app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }))
 
 app.post('/voted', async (req, res) => {
   // check for authentication
@@ -55,6 +64,7 @@ app.post('/voted', async (req, res) => {
   })
   res.send()
 })
+
 
 app.post('/donations', (req, res) => {
   console.log('Received POST /');
