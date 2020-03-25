@@ -110,11 +110,11 @@ app.post('/donations', (req, res) => {
 				var txn_id = req.body['txn_id'];
 				var receiver_email = req.body['receiver_email'];
         var payer_email = req.body['payer_email'];
-        var custom = req.body['payer_email'];
+        var custom = req.body['custom'];
 
 				//Lets check a variable
         console.log("Checking body");
-				console.log(req.body);
+				console.log(custom);
 				console.log('\n\n');
 
 				// IPN message values depend upon the type of notification sent.
@@ -125,7 +125,13 @@ app.post('/donations', (req, res) => {
 						var value = req.body[key];
 						console.log(key + "=" + value);
 					}
-				}
+        }
+        
+        client.database.collection('users').findOneAndUpdate({
+          id: custom
+        }, {
+          $inc: { amountDonated: payment_amount, balance: 1000 },
+        })
 
 			} else if (body.substring(0, 7) === 'INVALID') {
 				// IPN invalid, log for manual investigation
