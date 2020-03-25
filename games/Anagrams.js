@@ -18,16 +18,16 @@ module.exports = class Anagrams extends Game {
     constructor(msg, settings) {
         settings = settings || {}
         settings.gameName = 'Anagrams'
-        settings.isDmNeeded = false
+        settings.isDmNeeded = true
         super(msg, settings)
         
         this.gameOptions = [
             {
                 friendlyName: 'Game Mode',
-                choices: ['Free for all'],
-                default: 'Free for all',
+                choices: ['Frenzy', 'DMs'],
+                default: 'DMs',
                 type: 'radio',
-                note: 'In free for all, each player finds anagrams to get their own score. More modes coming soon. Enter "1" to go back.'
+                note: 'In frenzy, the game is played in this channel, and two players cannot submit the same word. In DMs, players compete by entering words in their direct messages.'
             },
             {
                 friendlyName: 'Custom Word',
@@ -37,6 +37,14 @@ module.exports = class Anagrams extends Game {
                 note: 'The new value must be 7 characters long and contain only letters. Enter "none" to disable the custom word.',
             },
         ]
+    }
+
+    /**
+     * Initialize the game with its specific settings.
+     */
+    gameInit() {
+        // No additional configuration needed.
+        return
     }
 
     async sleep(ms) {
@@ -114,7 +122,7 @@ module.exports = class Anagrams extends Game {
     /**
      * Starts a new Anagrams game
      */
-    async playOneForAll(callback) {
+    async playFrenzy(callback) {
         if(this.options['Custom Word'] == 'none') {
             this.chooseWord(7)
         } else {
@@ -169,47 +177,110 @@ module.exports = class Anagrams extends Game {
         })
     }
 
-    play() {
-        if(this.options['Game Mode'] == 'Free for all') {
-            this.playOneForAll(() => {
-                var fields = []
-                var winner = [{ score: -1 }]
-                this.players.forEach(player => {
-                    if(player.score > winner[0].score) {
-                        winner = [player]
-                    } else if (player.score == winner[0].score) {
-                        winner.push(player)
-                    }
-
-                    fields.push({
-                        name: `${player.user.tag} - ${player.score} POINTS`,
-                        value: player.words && player.words.length > 0 ? player.words.join(', ') : 'No words submitted.'
-                    })
-                })
-                var title
-                if(winner.length == 1) {
-                    title = `The winner is ${winner[0].user.tag}!`
-                } else {
-                    title = 'The winners are '
-                    winner.forEach(winningPlayer => {
-                        title += winningPlayer.user.tag + ', '
-                    })
+    /**
+     * Starts a new Anagrams game in DMs
+     */
+    async playDMs(callback) {
+        if(this.options['Custom Word'] == 'none') {
+            this.chooseWord(7)
+        } else {
+            this.word = this.options['Custom Word'].toUpperCase()
+        }
+        this.channel.send({
+            embed: {
+                title: 'Anagrams',
+                description: `The game will start in 5 seconds.\n\nTo earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible. You don't have to use all the letters, and longer words are worth more points.\n\n**The letters are: \`Loading...\`**`,
+                color: options.colors.info
+            }
+        }).then(async message => {
+            await this.sleep(5000)
+            message.edit({
+                embed: {
+                    title: 'Anagrams',
+                    description: `To earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible. You don't have to use all the letters, and longer words are worth more points.\n\n**The letters are: \`${this.word}\`**`,
+                    color: options.colors.info
                 }
-
-                this.channel.send({
-                    embed: {
-                        color: options.colors.info,
-                        title,
-                        fields
-                    }
-                }).then(() => {
-                    this.end()
-                })
             })
-        } else if (this.options['Game Mode'] == 'Team') {
+        }).then(() => {
+            // create a collector on the main channel
+            const filter = m => !m.author.bot
+            const ROUND_LENGTH = 60000
+            const collector = this.channel.createMessageCollector(filter, {time: ROUND_LENGTH})
+            const isPangram = word => word.length == this.word.length
+            var words = []
 
+            collector.on('collect', message => {
+                if(this.ending) return
+
+                if(!this.validateWord(message.content, this.word)) return
+                let word = message.content.toUpperCase()
+                // check if player already has submitted this word
+                if(words.includes(word)) return
+                
+                const player = this.players.get(message.author.id)
+                let score = this.getWordScore(message.content)
+                player.words = player.words || []
+         
+
+                words.push(word)
+                player.words.push(word)
+                player.score += score
+                this.channel.sendMsgEmbed(`<@${message.author.id}> got **${word}** for **${score}** points.\n\nThe letters are: \`${this.word}\``, isPangram(word) ? 'PANGRAM!' : '', isPangram(word) ? options.colors.economy : options.colors.info)
+            })
+
+            setTimeout(() => {
+                if(this.ending) return
+                callback()
+            }, ROUND_LENGTH)
+        })
+    }
+
+
+    play() {
+        if(this.options['Game Mode'] == 'Frenzy') {
+            this.playFrenzy(this.finish)
+        } else if (this.options['Game Mode'] == 'DMs') {
+            this.playDMs(this.finish)
         }
     }
+
+    finish() {
+        var fields = []
+        var winner = [{ score: -1 }]
+        this.players.forEach(player => {
+            if(player.score > winner[0].score) {
+                winner = [player]
+            } else if (player.score == winner[0].score) {
+                winner.push(player)
+            }
+
+            fields.push({
+                name: `${player.user.tag} - ${player.score} POINTS`,
+                value: player.words && player.words.length > 0 ? player.words.join(', ') : 'No words submitted.'
+            })
+        })
+        var title
+        if(winner.length == 1) {
+            title = `The winner is ${winner[0].user.tag}!`
+        } else {
+            title = 'The winners are '
+            winner.forEach(winningPlayer => {
+                title += winningPlayer.user.tag + ', '
+            })
+        }
+
+        this.channel.send({
+            embed: {
+                color: options.colors.info,
+                title,
+                fields
+            }
+        }).then(() => {
+            this.end()
+        })
+    }
+    
+
 }
 
 

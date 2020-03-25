@@ -170,19 +170,28 @@ module.exports = class CardsAgainstHumanity extends Game {
         this.ending = false
 
         // get settings
-        settings = {}
-        this.settings = {}
-        /*
-        if(settings) {
-            try {
-                this.settings = JSON.parse(settings)
-            } catch (err) {
-                console.error(err)
-                this.msg.channel.sendMsgEmbed('Invalid settings. Settings must be valid JSON. Now starting the game with default settings.', 'Error!', options.colors.error)
-            }
-        }*/
+        this.settings = settings || {}
         this.settings.sets = ['Base', 'CAHe1', 'CAHe2', 'CAHe3', 'CAHe4', 'CAHe5', 'CAHe6']
-        if(!this.settings.timeLimit)   this.settings.timeLimit   = 60000
+        this.gameName = 'Cards Against Humanity'
+        this.settings.isDmNeeded = true
+        this.gameOptions = [
+            {
+                friendlyName: 'Sets',
+                choices: this.renderSetList(),
+                default: ['**Base Set** *(460 cards)*'],
+                type: 'checkboxes',
+                note: `You can purchase more packs in the shop, using the command \`${options.prefix}shop cah\``
+            },
+            {
+                friendlyName: 'Timer',
+                type: 'free',
+                default: 60,
+                filter: m => !isNaN(parseInt(m.content)) && (parseInt(m.content) <= 300) && (parseInt(m.content) >= 30),
+                note: 'Enter a value in seconds for the countdown timer, between 30 and 300 seconds.'
+            }
+        ]
+        
+        
         if(!this.settings.handLimit)   this.settings.handLimit   = 10
         if(!this.settings.pointsToWin) this.settings.pointsToWin = 5
 
@@ -191,66 +200,20 @@ module.exports = class CardsAgainstHumanity extends Game {
 
     get leader () { return this.gameMaster }
 
-    init() {
+    /**
+     * Initialize the game. Called before the play() method at the start of each game. 
+     */
+    async gameInit() {
         this.stage = 'init'
-        // add gamemaster
-        this.addPlayer(this.gameMaster)
+        // create list of possible card czars
+        this.updateCzars()
 
-        // check if downtime is going to start
-        if(this.msg.client.timeToDowntime() > 0 && this.msg.client.timeToDowntime() <= 10 * 60 * 1000) {
-            const downtime = Math.round(this.msg.client.timeToDowntime() / 60000)
-            this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Games cannot be started right now. For more information, [see our support server.](${options.serverInvite})`, 'Error!', options.colors.error)
-            this.forceStop()
-            return
-        } else if(this.msg.client.timeToDowntime() > 0) {
-            this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${Math.round(this.msg.client.timeToDowntime() / 60000)} minutes. Any active games will be automatically ended. For more information, [see our support server.](${options.serverInvite})`, 'Warning!', options.colors.warning)
-        }
-
-        // create event listeners for commands
-        this.msg.client.on('message', this.messageListener)
-
-            // allow players to join
-            this.msg.channel.send({
-                embed: {
-                    title: `${this.msg.author.tag} is starting a Cards Against Humanity game!`,
-                    description: `Type **${options.prefix}join** to join in the next **60 seconds**.`,
-                    color: 4886754
-                }
-            })
-        const filter = m => (m.content.startsWith(`${options.prefix}join`) && !this.players.has(m.author.id)) || (m.author.id == this.gameMaster.id && m.content.startsWith(`${options.prefix}start`))
-        const collector = this.msg.channel.createMessageCollector(filter, { max: this.playerCount.max, time: 60000 })
-        this.collectors.push(collector)
-        collector.on('collect', m => {
-            if(this.ending) return
-            if(m.content.startsWith(`${options.prefix}start`)) {
-                collector.stop()
-                return
-            }
-            this.addPlayer(m.author)
-            // if deletion does not occur, a DiscordAPIError: Missing Permissions is thrown
-            m.delete().catch(err => {})
-            m.channel.send(`${m.author} joined!`)
-        });
-
-        collector.on('end', collected => {
-            if(this.ending) return
-            // check if there are enough players
-            if(this.players.size >= this.playerCount.min) {
-                var players = []
-                this.players.forEach(player => { players.push(player.user) })
-                this.msg.channel.sendMsgEmbed(`${players.join(", ")} joined the game!`, 'Time\'s up!')
-            } else {
-                this.msg.channel.sendMsgEmbed(`Not enough players joined the game!`, 'Time\'s up!')
-                this.forceStop()
-                return
-            }
-
-            // create list of possible card czars
-            this.updateCzars()
-            // move to choosing sets
-            this.chooseSets()
-        });
-
+        // update settings
+        this.settings.timeLimit   = parseInt(this.options['Timer']) * 1000
+        
+        // create and shuffle the deck
+        this.cardDeck = new CAHDeck(this.settings.sets)
+        this.cardDeck.shuffle()
     }
 
     async onMessage (msg) {
@@ -350,7 +313,6 @@ module.exports = class CardsAgainstHumanity extends Game {
         }
     }
 
-
     sleep(ms) {
         this.stage = 'sleep'
         return new Promise(resolve => setTimeout(resolve, ms));
@@ -375,115 +337,16 @@ module.exports = class CardsAgainstHumanity extends Game {
         return this.czar
     }
 
-    addPlayer(user) {
-        if(this.players.size < this.playerCount.max) {
-            user.createDM().then(async dmChannel => {
-                await dmChannel.sendMsgEmbed(`You have joined a Cards Against Humanity game in <#${this.msg.channel.id}>.`)
-                this.players.set(user.id, { score: 0, cards: [], lastURL: '', user, dmChannel })
-            }).catch(err => {
-                if(user.id == this.gameMaster.id) {
-                    this.msg.channel.sendMsgEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error)
-                    this.forceStop()
-                } else {
-                    this.msg.channel.sendMsgEmbed(`${user} must change their privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: Player could not be added.`, options.colors.error)
-                }
-            })
-        } else {
-            this.msg.channel.send(`${user} could not be added.`, 'Error: Too many players.', options.colors.error)
-        }
-    }
-
-    async chooseSets () {
-        if(this.ending) return
-        this.stage = 'choose'
-
-        // send or edit setlist
-        if(!this.lastMessageID) {
-            this.msg.channel.send({
-                embed: await this.renderSetList()
-            }).then(m => this.lastMessageID = m.id)
-        } else {
-            this.msg.channel.fetchMessage(this.lastMessageID)
-            .then(async msg => {
-                msg.edit({
-                    embed: await this.renderSetList()
-                }).then(m => this.lastMessageID = m.id)
-            })
-        }
-
-        const filter = m => (!isNaN(m.content) &&  m.author.id == this.gameMaster.id) || m.content == `${options.prefix}start`
-        // repeat this until gamestart is true
-        this.msg.channel.awaitMessages(filter, { max: 1, time: 120000 })
-        .then(collected => {
-            if(this.ending) return
-            collected.forEach(message => {
-                // once player says to start, play the game.
-                if(message.content == `${options.prefix}start`) {
-                    // create and shuffle the deck
-                    this.cardDeck = new CAHDeck(this.settings.sets)
-                    this.cardDeck.shuffle()
-
-                    this.playNextRound()
-                } else {
-                    var setIndex = 0
-                    // add appropriate sets
-                    whiteCards.forEach((cards, metadata) => {
-                        if(!metadata.official) return
-                        if(!this.availableSets.includes(metadata.abbr)) return
-                        setIndex += 1
-                        if(`${setIndex}` == message.content) {
-                            //check if settings has it
-                            if(this.settings.sets.includes(metadata.abbr)) {
-                                // remove set if already selected
-                                this.settings.sets.splice(this.settings.sets.indexOf(metadata.abbr), 1)
-                                this.msg.channel.send({
-                                    embed: {
-                                        description: `${metadata.name} removed!`,
-                                        color: 4886754
-                                    }
-                                }).then(m => m.delete(2000))
-                            } else {
-                                // add set
-                                this.settings.sets.push(metadata.abbr)
-                                this.msg.channel.send({
-                                    embed: {
-                                        description: `${metadata.name} added!`,
-                                        color: 4886754
-                                    }
-                                }).then(m => m.delete(2000))
-                            }
-                        }
-                    })
-                    message.delete()
-                    this.chooseSets()
-                }
-            })
-            if(collected.size == 0) {
-                this.msg.channel.sendMsgEmbed('You took too long selecting sets. Now starting the game.')
-
-                // create and shuffle the deck
-                this.cardDeck = new CAHDeck(this.settings.sets)
-                this.cardDeck.shuffle()
-
-                this.playNextRound()
-            }
-        })
-        .catch(err => {
-            console.error(err)
-        })
-    }
-
-    async renderSetList () {
+    renderSetList () {
          // Build the list of sets
-         var setList = ''
-         var setIndex = 0
+         var setList = []
          var whiteCount = 0
 
         // check available setLists
         this.availableSets = this.settings.sets.slice(0)
         // add defaults
         this.availableSets = this.settings.sets.concat(['BaseUK'])
-        await this.gameMaster.fetchDBInfo().then(info => {
+        this.gameMaster.fetchDBInfo().then(info => {
             // get unlocked items
             info.unlockedItems.forEach(item => {
                 if(CARD_PACKS[item]) {
@@ -498,18 +361,10 @@ module.exports = class CardsAgainstHumanity extends Game {
          whiteCards.forEach((cards, metadata) => {
              if(!metadata.official) return
              if(!this.availableSets.includes(metadata.abbr)) return
-             setIndex += 1
-             setList += `${this.settings.sets.includes(metadata.abbr) ? '**✓**' : '☐'} ${setIndex}: **${metadata.name}** *(${cards.length} cards)*\n`
+             setList.push(`**${metadata.name}** *(${cards.length} cards)*`)
              if(this.settings.sets.includes(metadata.abbr)) whiteCount += cards.length
         })
-        return {
-            title: `Choose which sets to add, ${this.gameMaster.username}#${this.gameMaster.discriminator}`,
-            description: `${setList}\n\nType the number of the pack to add or remove it, ${this.gameMaster}.\nType **${options.prefix}start** when ready.`,
-            color: 4886754,
-            footer: {
-                text: `${whiteCount} white cards currently added.`
-            }
-        }
+        return setList
     }
 
     renderCardText (string) {
@@ -678,12 +533,12 @@ module.exports = class CardsAgainstHumanity extends Game {
                     }
                 }
             })
-            this.playNextRound()
+            this.play()
             return
         }
         // let the Card Czar choose one
         const filter = m => (!isNaN(m.content) &&  m.author.id == this.czar.user.id && parseInt(m.content) <= this.submittedCards.length && parseInt(m.content) > 0)
-        this.msg.channel.awaitMessages(filter, { max: 1, time: 60000 })
+        this.msg.channel.awaitMessages(filter, { max: 1, time: this.settings.timeLimit })
         .then(async collected => {
             if(this.ending) return
             collected.forEach(async m => {
@@ -719,7 +574,7 @@ module.exports = class CardsAgainstHumanity extends Game {
                 if(winningPlayer.score >= this.settings.pointsToWin) {
                     this.end(winningPlayer)
                 } else {
-                    await this.playNextRound()
+                    await this.play()
                 }
             })
 
@@ -744,7 +599,7 @@ module.exports = class CardsAgainstHumanity extends Game {
                         }
                     }
                 })
-                await this.playNextRound()
+                await this.play()
             }
         })
         .catch(async err => {
@@ -753,7 +608,7 @@ module.exports = class CardsAgainstHumanity extends Game {
         })
     }
 
-    async playNextRound() {
+    async play() {
         if(this.stage == 'sleeping' || this.ending) return
         await this.msg.channel.send('The next round will begin in 5 seconds.')
 
@@ -797,10 +652,10 @@ module.exports = class CardsAgainstHumanity extends Game {
         this.updateCzars()
         this.stage = 'sleeping'
         await this.sleep(5000)
-        this.play()
+        this.playGame()
     }
 
-    async play() {
+    async playGame() {
         if(this.ending) return
         this.stage = 'playing'
 
@@ -824,8 +679,6 @@ module.exports = class CardsAgainstHumanity extends Game {
                 color: 4886754
             }
         })
-        // testing purposes only
-        // this.msg.channel.send('Game started!\n' + this.settings.sets.join(', '))
 
         // draw cards 
         for(var item of this.players) {
