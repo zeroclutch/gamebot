@@ -5,6 +5,7 @@ const manager = new Discord.ShardingManager('./bot.js', { token: options.token }
 manager.on('shardCreate', shard => console.log(`hi`))
 manager.spawn(2).catch(err => console.error(err))
 
+
 const request = require('request')
 const bodyParser = require('body-parser')
 var querystring = require('querystring');
@@ -102,7 +103,6 @@ app.post('/donations', (req, res) => {
 
 	request(options, function callback(error, response, body) {
 		if (!error && response.statusCode === 200) {
-      console.log(body)
 			// inspect IPN validation result and act accordingly
 			if (body.substring(0, 8) === 'VERIFIED') {
 				// The IPN is verified, process it
@@ -110,39 +110,28 @@ app.post('/donations', (req, res) => {
 				console.log('\n\n');
 
 				// assign posted variables to local variables
-				var item_name = req.body['item_name'];
-				var item_number = req.body['item_number'];
-				var payment_status = req.body['payment_status'];
-				var payment_amount = req.body['mc_gross'];
-				var payment_currency = req.body['mc_currency'];
-				var txn_id = req.body['txn_id'];
-				var receiver_email = req.body['receiver_email'];
-        var payer_email = req.body['payer_email'];
-        var custom = req.body['custom'];
+        const PAYMENT_AMOUNT = req.body['mc_gross'];
+        const userID = req.body['custom']
 
-				//Lets check a variable
-        console.log("Checking body");
-				console.log(custom);
-				console.log('\n\n');
+        const creditsEarned = Math.floor(PAYMENT_AMOUNT * 1000)
 
 				// IPN message values depend upon the type of notification sent.
-				// To loop through the &_POST array and print the NV pairs to the screen:
-				console.log('Printing all key-value pairs...')
-				for (var key in req.body) {
-          var value = req.body[key];
-          console.log(key + "=" + value);
-        }
-        
-        client.database.collection('users').findOneAndUpdate({
-          id: custom
-        }, {
-          $inc: { amountDonated: payment_amount, balance: 1000 },
-        })
+        manager.shards.first().eval(`\
+        this.database.collection('users').findOneAndUpdate( {\
+          userID: '${userID}'\
+        }, {\
+          $inc: { balance: ${creditsEarned} }\
+        })`)
 
+        manager.shards.first().eval(`this.users.get('${userID}').createDM().then(channel => channel.sendMsgEmbed('Thank you for your contribution to Gamebot! You spent \$${PAYMENT_AMOUNT} USD and received ${creditsEarned} credits.', 'Success!', 3510190)).catch(err => console.error(err))`)
+        
 			} else if (body.substring(0, 7) === 'INVALID') {
 				// IPN invalid, log for manual investigation
-				console.log('Invalid IPN!');
-        console.log('\n\n');
+        console.error('A payment did not go through at ' + Date.now() + '.')
+        console.error(req.body)
+        if(req.body.custom) {
+          manager.shards.first().eval(`this.users.get('${req.body.custom}').createDM().then(channel => channel.sendMsgEmbed('There was an error processing your purchase. Please message @zero#1234 or join the Gamebot support server to have this issue resolved.', 'Error!')).catch(err => console.error(err))`)
+        }
 			}
 		}
 	});

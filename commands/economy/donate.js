@@ -30,19 +30,13 @@ module.exports = {
             channel.send({
                 embed: {
                     title: 'Support Gamebot\'s development by donating!',
-                    description: `[Click here to donate.](${donationLink.href})`,
+                    description: `[Click here to donate!](${donationLink.href})`,
                     //description: 'Donation link coming soon.',
                     color: options.colors.economy,
                     fields: [
                         {
                             name: 'Rewards',
-                            value: `Each dollar you donate will give you 1000${options.creditIcon}`
-                        },
-                        {
-                            name: 'Stretch Rewards',
-                            value: `If you donate a certain amount, you can get special rewards!
-                            **$5:** Access to exclusive in-game backer content.
-                            **$10+:** Access to beta testing and a special role in the Gamebot Support Discord.`
+                            value: `Each dollar you donate will give you 1000${options.creditIcon}.`
                         }
                     ], 
                     footer: { text: 'All values are in US Dollars.' }
