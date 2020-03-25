@@ -79,10 +79,8 @@ app.post('/donations', (req, res) => {
 	// read the IPN message sent from PayPal and prepend 'cmd=_notify-validate'
 	var postreq = 'cmd=_notify-validate';
 	for (var key in req.body) {
-		if (req.body.hasOwnProperty(key)) {
-			var value = querystring.escape(req.body[key]);
-			postreq = postreq + "&" + key + "=" + value;
-		}
+    var value = querystring.escape(req.body[key])
+    postreq = postreq + "&" + key + "=" + value
 	}
 
 	// Step 2: POST IPN data back to PayPal to validate
@@ -131,10 +129,8 @@ app.post('/donations', (req, res) => {
 				// To loop through the &_POST array and print the NV pairs to the screen:
 				console.log('Printing all key-value pairs...')
 				for (var key in req.body) {
-					if (req.body.hasOwnProperty(key)) {
-						var value = req.body[key];
-						console.log(key + "=" + value);
-					}
+          var value = req.body[key];
+          console.log(key + "=" + value);
         }
         
         client.database.collection('users').findOneAndUpdate({
