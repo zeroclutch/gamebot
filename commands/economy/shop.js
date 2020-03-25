@@ -38,7 +38,7 @@ module.exports = {
                 embed.addField(`Category: ${game || itemType} - ${count} item${count == 1 ? '' : 's'}`, `Type \`${options.prefix}shop ${itemType}\` to view all items.`)
             })
             embed.setFooter(`To see the available items in a category, type ${options.prefix}shop <category name>.`)
-            await msg.channel.send({ embed })
+            await msg.channel.send({ embed }).catch(console.error)
         } else {
             const game = args[0].toLowerCase()
             if(msg.client.games.get(game)) {
