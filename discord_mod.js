@@ -67,7 +67,7 @@ Discord.User.prototype.createDBInfo = function() {
       } else {
         resolve(user)
       }
-    })
+    }).catch(error => console.error)
   })
 }
 

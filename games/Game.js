@@ -37,6 +37,7 @@ module.exports = class Game {
          * }
          */
         this.gameOptions = settings ? settings.gameOptions : []
+        this.defaultPlayer = settings ? settings.defaultPlayer : { score: 0, info: {} }
     }
 
     get leader () { return this.gameMaster }
@@ -44,27 +45,33 @@ module.exports = class Game {
     /**
      * Begins a new game. This will be called by the play command.
      */
-    init() {
+    async init() {
         this.stage = 'init'
 
         // Check if downtime is going to start
-        if(this.msg.client.timeToDowntime() > 0 && this.msg.client.timeToDowntime() <= 10 * 60 * 1000) {
-            const downtime = Math.round(this.msg.client.timeToDowntime() / 60000)
-            this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Games cannot be started right now. For more information, [see our support server.](${options.serverInvite})`, 'Error!', options.colors.error)
-            this.forceStop()
-            return
-        } else if(this.msg.client.timeToDowntime() > 0) {
-            this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${Math.round(this.msg.client.timeToDowntime() / 60000)} minutes. Any active games will be automatically ended. For more information, [see our support server.](${options.serverInvite})`, 'Warning!', options.colors.warning)
-        }
+        // Refresh downtime
+        this.msg.client.getTimeToDowntime().then(timeToDowntime => {
+            var downtime = Math.ceil(timeToDowntime / 60000)
+            if(timeToDowntime > 0 && timeToDowntime <= 5 * 60000) {
+                const downtime = Math.round(timeToDowntime / 60000)
+                this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Games cannot be started right now. For more information, [see our support server.](${options.serverInvite})`, 'Error!', options.colors.error)
+                this.forceStop()
+                return
+            } else if(timeToDowntime > 0) {
+                this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Any active games will be automatically ended. For more information, [see our support server.](${options.serverInvite})`, 'Warning!', options.colors.warning)
+            }
 
-        // Create listener for commands
-        this.msg.client.on('message', this.messageListener)
+            // Create listener for commands
+            this.msg.client.on('message', this.messageListener)
 
-        this.join(async () => {
-            // Allow game leader to configure options
-            await this.configureOptions()
-            // Begin playing the game
-            await this.play()
+            this.join(async () => {
+                // Allow game leader to configure options
+                await this.configureOptions()
+                // Initialize specific game
+                await this.gameInit()
+                // Begin playing the game
+                await this.play()
+            })
         })
     }
 
@@ -299,6 +306,7 @@ module.exports = class Game {
                     })
                     isConfigured = true
                 } else {
+                    console.error(err)
                     optionMessage.edit({
                         embed: {
                             title: 'Error!',
@@ -380,7 +388,8 @@ module.exports = class Game {
             
         member.user.createDM().then(dmChannel => {
             return new Promise(resolve => {
-                this.players.set(member.id, { score: 0, info: {}, user: member.user, dmChannel })
+                var player = { ...this.defaultPlayer, user: member.user, dmChannel}
+                this.players.set(member.id, player)
                 resolve(dmChannel)
             })
         }).then(dmChannel => {
