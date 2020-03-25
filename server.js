@@ -57,6 +57,7 @@ app.post('/voted', async (req, res) => {
 
 app.post('/donations', (req, res) => {
   console.log(req.body)
+  console.log(req)
 })
 
 // Listen on port 5000
