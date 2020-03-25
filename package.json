@@ -17,6 +17,7 @@
     "jimp": "^0.6.4",
     "mongodb": "^3.3.2",
     "paypal-rest-sdk": "^1.8.1",
+    "request": "^2.88.2",
     "text2png": "^2.1.0"
   }
 }
