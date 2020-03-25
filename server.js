@@ -5,7 +5,8 @@ const manager = new Discord.ShardingManager('./bot.js', { token: options.token }
 manager.on('shardCreate', shard => console.log(`hi`))
 manager.spawn(2).catch(err => console.error(err))
 
-const express = require("express")
+const request = require('request')
+const express = require('express')
 const app = express()
 
 // Handle all GET requests
