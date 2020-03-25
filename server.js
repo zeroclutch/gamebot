@@ -80,7 +80,7 @@ app.post('/donations', (req, res) => {
 	console.log(postreq);
 	console.log('\n\n');
 	var options = {
-		url: 'https://www.sandbox.paypal.com/cgi-bin/webscr',
+		url: 'https://ipnpb.paypal.com/cgi-bin/webscr',
 		method: 'POST',
 		headers: {
 			'Connection': 'close'
@@ -94,7 +94,7 @@ app.post('/donations', (req, res) => {
 
 	request(options, function callback(error, response, body) {
 		if (!error && response.statusCode === 200) {
-
+      console.log(body)
 			// inspect IPN validation result and act accordingly
 			if (body.substring(0, 8) === 'VERIFIED') {
 				// The IPN is verified, process it
@@ -136,7 +136,7 @@ app.post('/donations', (req, res) => {
 			} else if (body.substring(0, 7) === 'INVALID') {
 				// IPN invalid, log for manual investigation
 				console.log('Invalid IPN!');
-				console.log('\n\n');
+        console.log('\n\n');
 			}
 		}
 	});
