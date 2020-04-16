@@ -106,7 +106,6 @@ module.exports = class Game {
             }
             this.addPlayer(m.author.id)
             m.delete()
-            m.channel.send(`${m.author} joined!`)
         })
 
         collector.on('end', collected => {
@@ -464,8 +463,10 @@ module.exports = class Game {
             if(winner) {
                 endPhrase = `${winner.user} has won!`
             } else {
-                endPhrase = 'Game ended.'
+                endPhrase = '**Game ended.**'
             }
+
+            endPhrase += `\nTo play games with the community, [join our server](${options.serverInvite})!`
         }
 
         // Send a message in the game channel (this.msg.channel) that the game is over.

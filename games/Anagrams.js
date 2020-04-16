@@ -24,7 +24,7 @@ module.exports = class Anagrams extends Game {
         this.gameOptions = [
             {
                 friendlyName: 'Game Mode',
-                choices: ['Frenzy'],
+                choices: ['Frenzy'/*, 'DMs'*/],
                 default: 'Frenzy',
                 type: 'radio',
                 note: 'In frenzy, the game is played in this channel, and two players cannot submit the same word. In DMs (coming soon!), players compete by entering words in their direct messages.'
@@ -37,6 +37,11 @@ module.exports = class Anagrams extends Game {
                 note: 'The new value must be 7 characters long and contain only letters. Enter "none" to disable the custom word.',
             },
         ]
+
+        this.defaultPlayer = {
+            words: [],
+            score: 0
+        }
     }
 
     /**
@@ -83,6 +88,14 @@ module.exports = class Anagrams extends Game {
     }
 
     /**
+     * Converts a word into Discord emojis
+     * @param {String} word 
+     */
+    emojify(word) {
+        return word.split('').map(letter => letter = `:regional_indicator_${letter.toLowerCase()}:`).join('')
+    }
+
+    /**
      * Checks to see if a given word is a real word and enough letters.
      * @param {string} word The submitted word to be validated. 
      * @param {string} originalWord The original word.
@@ -98,6 +111,10 @@ module.exports = class Anagrams extends Game {
         }
 
         if(word.length < 3) {
+            return false
+        }
+
+        if(player.words.includes(word)) {
             return false
         }
 
@@ -139,7 +156,7 @@ module.exports = class Anagrams extends Game {
             message.edit({
                 embed: {
                     title: 'Anagrams',
-                    description: `To earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible. You don't have to use all the letters, and longer words are worth more points.\n\n**The letters are: \`${this.word}\`**`,
+                    description: `To earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible. You don't have to use all the letters, and longer words are worth more points.\n\n**The letters are: ${this.emojify(this.word)}**`,
                     color: options.colors.info
                 }
             })
@@ -150,25 +167,25 @@ module.exports = class Anagrams extends Game {
             const collector = this.channel.createMessageCollector(filter, {time: ROUND_LENGTH})
             const isPangram = word => word.length == this.word.length
 
+            this.collectors.push(collector)
+
             collector.on('collect', message => {
                 if(this.ending) return
 
-                if(!this.validateWord(message.content, this.word)) return
-                let word = message.content.toUpperCase()
-                // check if player already has submitted this word
-                if(words.includes(word)) return
-                
                 const player = this.players.get(message.author.id)
+
+                if(!this.validateWord(message.content, this.word, player)) return
+                let word = message.content.toUpperCase()
+                
                 player.words = player.words || []
 
                 let score = this.getWordScore(message.content)
-                console.log(this.getWordScore(message.content))
          
 
                 words.push(word)
                 player.words.push(word)
                 player.score += score
-                this.channel.sendMsgEmbed(`<@${message.author.id}> got **${word}** for **${score}** points.\n\nThe letters are: \`${this.word}\``, isPangram(word) ? 'PANGRAM!' : '', isPangram(word) ? options.colors.economy : options.colors.info)
+                this.channel.sendMsgEmbed(`<@${message.author.id}> got **${word}** for **${score}** points.\n\nThe letters are: ${this.emojify(this.word)}`, isPangram(word) ? 'PANGRAM!' : '', isPangram(word) ? options.colors.economy : options.colors.info)
             })
 
             setTimeout(() => {
@@ -189,8 +206,6 @@ module.exports = class Anagrams extends Game {
         }
         this.channel.sendMsgEmbed('The game will start in 5 seconds. Check your direct messages to see the letters you have to unscramble!')
         this.players.forEach(player => {
-            player.words = player.words || []
-
             // Alert each user the game is starting
             player.dmChannel.send({
                 embed: {
@@ -204,33 +219,42 @@ module.exports = class Anagrams extends Game {
                 message.edit({
                     embed: {
                         title: 'Anagrams',
-                        description: `To earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible.\n\n**The letters are: \`${this.word}\`**`,
+                        description: `To earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible.\n\n**The letters are: ${this.emojify(this.word)}**`,
                         color: options.colors.info
                     }
-                }).then(message => {
-                    // create a collector on each DM channel
-                    const filter = m => { return true } //this.validateWord(m.content, this.word) && !player.words.includes(word)
-                    player.collector = player.dmChannel.createMessageCollector(filter, {time: 60000, max: 1000})
-
-                    player.collector.on('collect', m => console.log(`Collected ${m.content}`));
-                    /*collector.on('collect', (message) => {
-                        let word = message.content.toUpperCase()
-                        let score = this.getWordScore(word)
-                        player.dmChannel.send({
-                            embed: {
-                                description: `You got **${word}** for **${score}** points.\n\nThe letters are: \`${this.word}\``,
-                                title: isPangram(word) ? 'PANGRAM!' : '', 
-                                color: isPangram(word) ? options.colors.economy : options.colors.info
-                            }
-                        })
-                        player.score += this.getWordScore(word)
-                        player.words.push(word)
-                    })*/
-                    player.collector.on('end', (collected) => {
-                        callback()
-                    })
                 })
-            })
+                // create a collector on each DM channel
+                 //this.validateWord(m.content, this.word) && !player.words.includes(word)
+                //console.log(player.dmChannel)
+                player.user.createDM().then(channel => {
+                    
+                    console.log('Hi i\'m here')
+                    const filter = m => {
+                        console.log(m.content)
+                        return true
+                    }
+                    let collector = channel.createMessageCollector(filter, { time: 15000 })
+                    collector.on('collect', m => console.log(`Collected ${m.content}`))
+                    collector.on('end', collected => console.log(`Collected ${collected.size} items`));
+                    
+                })
+                /* collector.on('collect', (message) => {
+                    let word = message.content.toUpperCase()
+                    let score = this.getWordScore(word)
+                    player.dmChannel.send({
+                        embed: {
+                            description: `You got **${word}** for **${score}** points.\n\nThe letters are: \`${this.word}\``,
+                            title: isPangram(word) ? 'PANGRAM!' : '', 
+                            color: isPangram(word) ? options.colors.economy : options.colors.info
+                        }
+                    })
+                    player.score += this.getWordScore(word)
+                    player.words.push(word)
+                })*/
+                /*player.collector.on('end', (collected) => {
+                    callback()
+                })*/
+            }).catch(console.error)
         })
     }
 
@@ -258,10 +282,9 @@ module.exports = class Anagrams extends Game {
                 value: player.words && player.words.length > 0 ? player.words.join(', ') : 'No words submitted.'
             })
         })
-        console.log(fields)
         var title
         if(winner.length == 1) {
-            title = `The winner is ${winner[0].user}!`
+            title = `The winner is ${winner[0].user.tag}!`
         } else {
             title = 'The winners are '
             winner.forEach(winningPlayer => {
