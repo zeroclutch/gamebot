@@ -65,6 +65,7 @@ module.exports = class Game {
             this.msg.client.on('message', this.messageListener)
 
             this.join(async () => {
+                await this.generateOptions()
                 // Allow game leader to configure options
                 await this.configureOptions()
                 // Initialize specific game
@@ -86,7 +87,7 @@ module.exports = class Game {
         await this.msg.channel.send({
             embed: {
                 title: `${this.msg.author.tag} is starting a ${this.gameName} game!`,
-                description: `Type **${options.prefix}join** to join in the next **60 seconds**.`,
+                description: `Type **${options.prefix}join** to join in the next **120 seconds**. Type \`${options.prefix}start\` to begin once everyone has joined.`,
                 color: 4886754
             }
         })
@@ -95,7 +96,7 @@ module.exports = class Game {
         this.addPlayer(this.gameMaster.id)
 
         const filter = m => (m.content.startsWith(`${options.prefix}join`) && !this.players.has(m.author.id)) || (m.author.id == this.gameMaster.id && m.content.startsWith(`${options.prefix}start`))
-        const collector = this.channel.createMessageCollector(filter, { max: this.playerCount.max, time: 60000 })
+        const collector = this.channel.createMessageCollector(filter, { max: this.playerCount.max, time: 120000 })
         this.collectors.push(collector)
         collector.on('collect', m => {
             if(this.ending) return
@@ -112,7 +113,7 @@ module.exports = class Game {
             if(this.ending) return
             // check if there are enough players
             if(this.players.size >= this.playerCount.min) {
-                var players = []
+                let players = []
                 this.players.forEach(player => { players.push(player.user) })
                 this.msg.channel.sendMsgEmbed(`${players.join(", ")} joined the game!`, 'Time\'s up!')
             } else {
@@ -123,6 +124,13 @@ module.exports = class Game {
             // continue playing
             callback()
         })
+    }
+
+    /**
+     * Generates option lists, each game implements this function in its own way 
+     */
+    async generateOptions() {
+        return
     }
 
     renderOptionInfo (option) {
@@ -337,8 +345,8 @@ module.exports = class Game {
         if(message.author.id == this.gameMaster.id) {
             // add command
             if(message.content.startsWith(`${options.prefix}add`)) {
-                var user = message.content.substring(options.prefix.length + 3, message.content.length).replace(/\D/g, '')
-                this.addPlayer(user)
+                let member = message.content.substring(options.prefix.length + 3, message.content.length).replace(/\D/g, '')
+                this.addPlayer(member)
             }
 
             // kick command

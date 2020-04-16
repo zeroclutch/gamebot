@@ -65,8 +65,8 @@ console.error = (message) => {
 
 // configure DBL 
 var dbl
-if(process.env.DBL_TOKEN_OFF)
-  dbl = new DBL(process.env.DBL_TOKEN_OFF, client)
+if(process.env.DBL_TOKEN)
+  dbl = new DBL(process.env.DBL_TOKEN)
 client.dbl = dbl
 
 // initialization
@@ -76,6 +76,10 @@ client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag} on shard ${client.shard.id}!`); 
   client.user.setActivity(options.activity.game, { type: options.activity.type }) 
   .catch(console.error);
+  setInterval(() => {
+    if(dbl)
+      dbl.postStats(client.guilds.size, client.shard.id, client.shard.count);
+  }, 1800000);
 });
 
 // configuration

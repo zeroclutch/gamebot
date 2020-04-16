@@ -2,13 +2,11 @@ const Discord = require('discord.js');
 const options = require('./config/options')
 const manager = new Discord.ShardingManager('./bot.js', { token: options.token })
 
-manager.on('shardCreate', shard => console.log(`hi`))
 manager.spawn(2).catch(err => console.error(err))
-
 
 const request = require('request')
 const bodyParser = require('body-parser')
-var querystring = require('querystring');
+const querystring = require('querystring');
 const express = require('express')
 const app = express()
 
@@ -43,11 +41,9 @@ app.post('/voted', async (req, res) => {
   }
   const json = req.body
   const collection = client.database.collection('users')
-  var user = client.users.get(json.user)
-  if(!user) {
-    await client.fetchUser(json.user).then(u => user = u)
+  await client.fetchUser(json.user).then(u => user = u)
     .catch(console.error)
-  }
+
   await user.fetchDBInfo().then(info => {
     collection.updateOne(
       { userID: json.user },
@@ -105,9 +101,6 @@ app.post('/donations', (req, res) => {
 		if (!error && response.statusCode === 200) {
 			// inspect IPN validation result and act accordingly
 			if (body.substring(0, 8) === 'VERIFIED') {
-				// The IPN is verified, process it
-				console.log('Verified IPN!');
-				console.log('\n\n');
 
 				// assign posted variables to local variables
         const PAYMENT_AMOUNT = req.body['mc_gross'];
@@ -116,6 +109,13 @@ app.post('/donations', (req, res) => {
         const creditsEarned = Math.floor(PAYMENT_AMOUNT * 1000)
 
 				// IPN message values depend upon the type of notification sent.
+        // check for refund
+        if(creditsEarned < 0) {
+          manager.shards.first().eval(`this.users.get('${userID}').createDM().then(channel => channel.sendMsgEmbed('You were refunded \$${PAYMENT_AMOUNT} USD from Gamebot.', 'Refunded!', 3510190)).catch(err => console.error(err))`)
+          return
+        }
+
+        // update database
         manager.shards.first().eval(`\
         this.database.collection('users').findOneAndUpdate( {\
           userID: '${userID}'\

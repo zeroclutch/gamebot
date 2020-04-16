@@ -1,6 +1,8 @@
+> Update: As of 3-25-2019, this guide is outdated. The Game class has many added functionalities that are not reflected in this guide.
+
 # Creating a Game
 
-This guide is intended to help get you started in the process of developing a game. It includes a list of required commands, methods, and fields. If you are interested in creating a game, you should have knowledge of JavaScript ES6 syntax. People who contribute a game that is approved into Gamebot will be receive a reward. Rewards are TBD.
+This guide is intended to help get you started in the process of developing a game. It includes a list of required commands, methods, and fields. If you are interested in creating a game, you should have knowledge of JavaScript ES6 syntax.
 
 Ideally, Gamebot games should be playable by small groups and larger groups, simple to use for new players, and most importantly, fun! Games also should avoid taking too long—starting a game with Gamebot shouldn't have to be a scheduled activity or something that requires a lot of commitment for users.
 
@@ -14,7 +16,7 @@ The title should be the name of the game in `UpperCamelCase` and the file should
 
 ## 3. Create your Game class.
 
-Gamebot uses a module based system, where files in the `/games` directory are exported. You must export your game class so that it may be stored, and you must extend the parent `Game` class (though it has no functionalities). You should must
+Gamebot uses a module based system, where files in the `/games` directory are exported. You must export your game class so that it may be stored, and you must extend the parent `Game` class.
 
 ```js
 // global dependencies

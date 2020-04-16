@@ -59,9 +59,10 @@ class CAHDeck {
             black: []
         }
         this.blackCard = new BlackCard('')
+        console.log(this.sets)
         this.sets.forEach(set => {
-            whiteCards.find((cards, metadata) => metadata.abbr == set).forEach(card => this.whiteCards.push(card))
-            blackCards.find((cards, metadata) => metadata.abbr == set).forEach(card => this.blackCards.push(card))
+            whiteCards.find((cards, metadata) => metadata.name == set).forEach(card => this.whiteCards.push(card))
+            blackCards.find((cards, metadata) => metadata.name == set).forEach(card => this.blackCards.push(card))
         })
     }
 
@@ -174,10 +175,11 @@ module.exports = class CardsAgainstHumanity extends Game {
         this.settings.sets = ['Base', 'CAHe1', 'CAHe2', 'CAHe3', 'CAHe4', 'CAHe5', 'CAHe6']
         this.gameName = 'Cards Against Humanity'
         this.settings.isDmNeeded = true
+        // Default options, reconfigured later in this.generateOptions()
         this.gameOptions = [
             {
                 friendlyName: 'Sets',
-                choices: this.renderSetList(),
+                choices: this.settings.sets,
                 default: ['**Base Set** *(460 cards)*'],
                 type: 'checkboxes',
                 note: `You can purchase more packs in the shop, using the command \`${options.prefix}shop cah\``
@@ -210,6 +212,9 @@ module.exports = class CardsAgainstHumanity extends Game {
 
         // update settings
         this.settings.timeLimit   = parseInt(this.options['Timer']) * 1000
+
+        // update set list
+        this.settings.sets = await this.getSets(this.options['Sets'])
         
         // create and shuffle the deck
         this.cardDeck = new CAHDeck(this.settings.sets)
@@ -259,9 +264,9 @@ module.exports = class CardsAgainstHumanity extends Game {
                     return
                 }
                 if(this.stage != 'init') {
-                    this.playersToAdd.push(member.user)
+                    this.playersToAdd.push(member.id)
                 } else {
-                    this.addPlayer(member.user)
+                    this.addPlayer(member.id)
                     this.msg.channel.sendMsgEmbed(`${member.user} was added to the game.`)
                     return
                 }
@@ -337,7 +342,27 @@ module.exports = class CardsAgainstHumanity extends Game {
         return this.czar
     }
 
-    renderSetList () {
+
+    async generateOptions () {
+        this.gameOptions = [
+            {
+                friendlyName: 'Sets',
+                choices: await this.renderSetList(),
+                default: ['**Base Set** *(460 cards)*'],
+                type: 'checkboxes',
+                note: `You can purchase more packs in the shop, using the command \`${options.prefix}shop cah\``
+            },
+            {
+                friendlyName: 'Timer',
+                type: 'free',
+                default: 60,
+                filter: m => !isNaN(parseInt(m.content)) && (parseInt(m.content) <= 300) && (parseInt(m.content) >= 30),
+                note: 'Enter a value in seconds for the countdown timer, between 30 and 300 seconds.'
+            }
+        ]
+    }
+
+    async renderSetList () {
          // Build the list of sets
          var setList = []
          var whiteCount = 0
@@ -346,24 +371,37 @@ module.exports = class CardsAgainstHumanity extends Game {
         this.availableSets = this.settings.sets.slice(0)
         // add defaults
         this.availableSets = this.settings.sets.concat(['BaseUK'])
-        this.gameMaster.fetchDBInfo().then(info => {
+        await this.gameMaster.fetchDBInfo().then(info => {
             // get unlocked items
             info.unlockedItems.forEach(item => {
                 if(CARD_PACKS[item]) {
                     // map item ids to availableSets
                     var packs = CARD_PACKS[item]
                     if(typeof packs == 'string') this.availableSets.push(packs)
-                    if(typeof packs == 'object') this.availableSets = this.availableSets.concat(packs)
+                    else this.availableSets = this.availableSets.concat(packs)
                 }
             })
         })
 
-         whiteCards.forEach((cards, metadata) => {
+        whiteCards.forEach((cards, metadata) => {
              if(!metadata.official) return
              if(!this.availableSets.includes(metadata.abbr)) return
              setList.push(`**${metadata.name}** *(${cards.length} cards)*`)
              if(this.settings.sets.includes(metadata.abbr)) whiteCount += cards.length
         })
+        return setList
+    }
+
+    /**
+     * @returns List of sets by set ID
+     */
+    async getSets (setList) {
+        // Extract pack name from string
+        console.log(setList)
+        setList = setList.map(set => set.match(/([^\*\*])+(?=\*\*)/g).join())
+
+        // Replace pack name with ID
+        console.log(setList)
         return setList
     }
 
@@ -619,7 +657,6 @@ module.exports = class CardsAgainstHumanity extends Game {
                 return
             }
             this.addPlayer(user)
-            this.msg.channel.sendMsgEmbed(`${user} was added to the game.`)
         })
 
         // kick players
