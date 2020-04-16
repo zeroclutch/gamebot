@@ -65,10 +65,10 @@ class CAHDeck {
         })
 
         this.defaultPlayer = {
-            cards: [],
-            score: 0,
-            currentHand: '',
-            submitted: false
+            cards: 'Array',
+            score: 'Number',
+            currentHand: 'String',
+            submitted: 'Boolean'
         }
     }
 
