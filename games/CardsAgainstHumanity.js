@@ -3,7 +3,6 @@ const Discord = require('./../discord_mod')
 const Game = require('./Game')
 const options = require('./../config/options')
 const fs = require('fs')
-const EventEmitter = require('events');
 
 // cah dependencies
 const { createCanvas, registerFont } = require('canvas')
@@ -64,6 +63,13 @@ class CAHDeck {
             whiteCards.find((cards, metadata) => metadata.name == set).forEach(card => this.whiteCards.push(card))
             blackCards.find((cards, metadata) => metadata.name == set).forEach(card => this.blackCards.push(card))
         })
+
+        this.defaultPlayer = {
+            cards: [],
+            score: 0,
+            currentHand: '',
+            submitted: false
+        }
     }
 
     // shuffles an array
