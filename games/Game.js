@@ -395,23 +395,7 @@ module.exports = class Game {
             
         member.user.createDM().then(dmChannel => {
             return new Promise(resolve => {
-                // Map key/value pairs to player
-                let newPlayer = {}
-                for(let key in this.defaultPlayer) {
-                    let value = this.defaultPlayer[key]
-                    if(value == 'Number')
-                        newPlayer[key] = 0
-                    else if(value == 'String')
-                        newPlayer[key] = ''
-                    else if(value == 'Boolean')
-                        newPlayer[key] = false
-                    else if(value == 'Array')
-                        newPlayer[key] = []
-                    else if(value == 'Object')
-                        newPlayer[key] = {}
-                }
-
-                var player = { ...newPlayer, user: member.user, dmChannel}
+                var player = { ...this.defaultPlayer, user: member.user, dmChannel}
                 this.players.set(member.id, player)
                 resolve(dmChannel)
             })
