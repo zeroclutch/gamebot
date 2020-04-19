@@ -39,8 +39,8 @@ module.exports = class Anagrams extends Game {
         ]
 
         this.defaultPlayer = {
-            words: 'Array',
-            score: 'Number'
+            words: [],
+            score: 0
         }
     }
 
@@ -114,11 +114,8 @@ module.exports = class Anagrams extends Game {
             return false
         }
 
-        // check if word has been made before
-        for(let player of this.players.values()) {
-            if(player.words.includes(word)) {
-                return false
-            }
+        if(player.words.includes(word)) {
+            return false
         }
 
         // check if word can be created
@@ -175,13 +172,17 @@ module.exports = class Anagrams extends Game {
             collector.on('collect', message => {
                 if(this.ending) return
 
-                let player = this.players.get(message.author.id)
+                const player = this.players.get(message.author.id)
 
                 if(!this.validateWord(message.content, this.word, player)) return
                 let word = message.content.toUpperCase()
+                
+                player.words = player.words || []
 
                 let score = this.getWordScore(message.content)
          
+
+                words.push(word)
                 player.words.push(word)
                 player.score += score
                 this.channel.sendMsgEmbed(`<@${message.author.id}> got **${word}** for **${score}** points.\n\nThe letters are: ${this.emojify(this.word)}`, isPangram(word) ? 'PANGRAM!' : '', isPangram(word) ? options.colors.economy : options.colors.info)
