@@ -18,7 +18,6 @@ module.exports = class Anagrams extends Game {
     constructor(msg, settings) {
         settings = settings || {}
         settings.gameName = 'Anagrams'
-        settings.isDmNeeded = true
         super(msg, settings)
         
         this.gameOptions = [
@@ -27,7 +26,7 @@ module.exports = class Anagrams extends Game {
                 choices: ['Frenzy'/*, 'DMs'*/],
                 default: 'Frenzy',
                 type: 'radio',
-                note: 'In frenzy, the game is played in this channel, and two players cannot submit the same word. In DMs (coming soon!), players compete by entering words in their direct messages.'
+                note: 'In frenzy, the game is played in this channel, and two players cannot submit the same word.'
             },
             {
                 friendlyName: 'Custom Word',

@@ -87,7 +87,7 @@ module.exports = class Game {
         await this.msg.channel.send({
             embed: {
                 title: `${this.msg.author.tag} is starting a ${this.gameName} game!`,
-                description: `Type **${options.prefix}join** to join in the next **120 seconds**. Type \`${options.prefix}start\` to begin once everyone has joined.`,
+                description: `Type \`${options.prefix}join\` to join in the next **120 seconds**.\n\n${this.leader}, type \`${options.prefix}start\` to begin once everyone has joined.`,
                 color: 4886754
             }
         })

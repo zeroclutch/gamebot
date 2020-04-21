@@ -113,7 +113,7 @@ for(const file of folder) {
 
 // provide help
 client.help = function(msg, command) {
-  const prefix = msg.prefix
+  const prefix = options.prefix
   // find command in question
   const helpCmd = client.commands.find(cmd => cmd.name === command.args.join(" ")) ||  client.commands.find(cmd => cmd.aliases.includes(command.args.join(" ")))
   // find help for a specific command
@@ -163,7 +163,7 @@ client.help = function(msg, command) {
 
 // handle commands
 client.on('message', async function(msg) {
-  var prefix = msg.prefix = options.prefix
+  var prefix = options.prefix
   if (msg.content.startsWith(`<@!${client.user.id}>`)) msg.content = msg.content.replace(`<@!${client.user.id}> `, prefix).replace(`<@!${client.user.id}>`, prefix)
   if (msg.content.startsWith(`<@${client.user.id}>`)) msg.content = msg.content.replace(`<@${client.user.id}> `, prefix).replace(`<@${client.user.id}>`, prefix)
   if (!msg.content.startsWith(prefix) || msg.author.bot) return
@@ -209,7 +209,7 @@ client.on('message', async function(msg) {
     if(msg.channel.type == 'dm' && !cmd.dmCommand) {
       msg.channel.send('This command is not available in a DM channel. Please try this again in a server.')
     } else if(cmd.args && command.args.join('') === '') {
-        msg.channel.sendMsgEmbed(`Incorrect usage of this command. Usage: \`${msg.prefix}${cmd.usage}\`.`)
+        msg.channel.sendMsgEmbed(`Incorrect usage of this command. Usage: \`${options.prefix}${cmd.usage}\`.`)
     } else {
       await new Promise((resolve, reject) => {
         try {
