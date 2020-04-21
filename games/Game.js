@@ -111,7 +111,10 @@ module.exports = class Game {
         collector.on('end', collected => {
             if(this.ending) return
             // check if there are enough players
-            if(this.players.size >= this.playerCount.min) {
+            let size = this.players.size
+            if(this.playersToAdd)  size += this.playersToAdd.length
+            if(this.playersToKick) size -= this.playersToKick.length
+            if(size >= this.playerCount.min) {
                 let players = []
                 this.players.forEach(player => { players.push(player.user) })
                 this.msg.channel.sendMsgEmbed(`${players.join(", ")} joined the game!`, 'Time\'s up!')
@@ -383,7 +386,7 @@ module.exports = class Game {
     addPlayer(member) {
         if(typeof member == 'string') member = this.msg.guild.members.get(member)
         
-        if(this.players.size == this.playerCount.max) {
+        if(this.players.size >= this.playerCount.max) {  
             this.msg.channel.sendMsgEmbed(`The game can't have more than ${this.playerCount.max} player${this.playerCount.max == 1 ? '' : 's'}! Player could not be added.`)
             return
         }
@@ -395,7 +398,18 @@ module.exports = class Game {
             
         member.user.createDM().then(dmChannel => {
             return new Promise(resolve => {
-                var player = { ...this.defaultPlayer, user: member.user, dmChannel}
+                var player = { user: member.user, dmChannel}
+                for(let key in this.defaultPlayer) {
+                    if(this.defaultPlayer[key] == 'String') {
+                        player[key] = ''
+                    } else if (this.defaultPlayer[key] == 'Array') {
+                        player[key] = []
+                    } else if (this.defaultPlayer[key] == 'Object') {
+                        player[key] = {}
+                    } else {
+                        player[key] = this.defaultPlayer[key]
+                    }
+                }
                 this.players.set(member.id, player)
                 resolve(dmChannel)
             })
@@ -406,6 +420,10 @@ module.exports = class Game {
             this.msg.channel.sendMsgEmbed(`${member.user} was added to the game!`)
         }).catch(err => {
             console.error(err)
+            if(err.message == 'Cannot send messages to this user') {
+                return
+            }
+
             if(member.id == this.gameMaster.id) {
                 this.msg.channel.sendMsgEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error)
                 this.forceStop()
