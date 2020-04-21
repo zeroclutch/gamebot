@@ -38,9 +38,11 @@ module.exports = class Anagrams extends Game {
         ]
 
         this.defaultPlayer = {
-            words: [],
+            words: 'Array',
             score: 0
         }
+        
+        this.words = []
     }
 
     /**
@@ -91,7 +93,7 @@ module.exports = class Anagrams extends Game {
      * @param {String} word 
      */
     emojify(word) {
-        return word.split('').map(letter => letter = `:regional_indicator_${letter.toLowerCase()}:`).join('')
+        return word.split('').map(letter => `\`${letter.toUpperCase()}\``).join(' ')
     }
 
     /**
@@ -113,7 +115,7 @@ module.exports = class Anagrams extends Game {
             return false
         }
 
-        if(player.words.includes(word)) {
+        if(this.words.includes(word)) {
             return false
         }
 
@@ -180,8 +182,7 @@ module.exports = class Anagrams extends Game {
 
                 let score = this.getWordScore(message.content)
          
-
-                words.push(word)
+                this.words.push(word)
                 player.words.push(word)
                 player.score += score
                 this.channel.sendMsgEmbed(`<@${message.author.id}> got **${word}** for **${score}** points.\n\nThe letters are: ${this.emojify(this.word)}`, isPangram(word) ? 'PANGRAM!' : '', isPangram(word) ? options.colors.economy : options.colors.info)

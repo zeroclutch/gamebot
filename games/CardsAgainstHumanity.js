@@ -62,13 +62,6 @@ class CAHDeck {
             whiteCards.find((cards, metadata) => metadata.name == set).forEach(card => this.whiteCards.push(card))
             blackCards.find((cards, metadata) => metadata.name == set).forEach(card => this.blackCards.push(card))
         })
-
-        this.defaultPlayer = {
-            cards: [],
-            score: 0,
-            currentHand: '',
-            submitted: false
-        }
     }
 
     // shuffles an array
@@ -163,7 +156,7 @@ module.exports = class CardsAgainstHumanity extends Game {
         this.gameMaster = msg.author
         this.playerCount = {
             min: 3,
-            max: 12
+            max: 20
         }
         this.submittedCards = []
         this.lastMessageID
@@ -197,7 +190,13 @@ module.exports = class CardsAgainstHumanity extends Game {
                 note: 'Enter a value in seconds for the countdown timer, between 30 and 300 seconds.'
             }
         ]
-        
+
+        this.defaultPlayer = {
+            cards: 'Array',
+            score: 0,
+            currentHand: 'String',
+            submitted: false
+        }
         
         if(!this.settings.handLimit)   this.settings.handLimit   = 10
         if(!this.settings.pointsToWin) this.settings.pointsToWin = 5
@@ -241,7 +240,7 @@ module.exports = class CardsAgainstHumanity extends Game {
                 msg.channel.sendMsgEmbed(`The game leader can\'t be kicked! To end a game, use the command \`${options.prefix}end.\``)
                 return
             }
-            if(this.players.size + this.playersToAdd.length - this.playersToKick.length <= this.playerCount.min) {
+            if((this.players.size + this.playersToAdd.length - this.playersToKick.length) <= this.playerCount.min) {
                 msg.channel.sendMsgEmbed(`The game can't have fewer than ${this.playerCount.min} player${this.playerCount.min == 1 ? '' : 's'}! To end a game, use the command \`${options.prefix}end.\``)
                 return
             }
@@ -257,7 +256,7 @@ module.exports = class CardsAgainstHumanity extends Game {
                 return
             }
             
-            if(this.players.size - this.playersToKick.length + this.playersToAdd >= this.playerCount.max) {
+            if((this.players.size + this.playersToAdd.length - this.playersToKick.length) >= this.playerCount.max) {
                 msg.channel.sendMsgEmbed(`The game can't have more than ${this.playerCount.max} player${this.playerCount.max == 1 ? '' : 's'}! Player could not be added.`)
                 return
             }
@@ -731,8 +730,7 @@ module.exports = class CardsAgainstHumanity extends Game {
 
             // refill hand to max limit
             player.cards = player.cards || []
-            var drawnCards = await this.cardDeck.draw('white', this.settings.handLimit - player.cards.length)
-            player.cards = player.cards.concat(drawnCards)
+            player.cards = player.cards.concat(this.cardDeck.draw('white', this.settings.handLimit - player.cards.length))
 
             // dm each player with their hand
             await player.user.send('View your hand and select a card.', {
@@ -758,7 +756,13 @@ module.exports = class CardsAgainstHumanity extends Game {
         }
         // create new listener on the main channel
         let filter = m => {
-            if(isNaN(m.content) || !this.players.has(m.author.id) || m.author.id == this.czar.user.id) return false
+            if(isNaN(m.content) ||
+            !this.players.has(m.author.id) ||
+            m.author.id == this.czar.user.id ||
+            this.players.get(m.author.id).submitted) {
+                return false
+            }
+            
             let number = parseInt(m.content)
             // Only allow valid card indexes to be selected
             return number <= this.settings.handLimit && number > 0 && this.players.get(m.author.id).cards[parseInt(m.content) - 1] != '' 
@@ -784,9 +788,20 @@ module.exports = class CardsAgainstHumanity extends Game {
                 player,
                 card: [player.cards[cardRemoved]]
             })
+            player.submitted = true
+
+            // update in chat
+            this.msg.channel.fetchMessage(this.lastMessageID).then(message => {
+                message.edit('', {
+                    embed: {
+                        title: 'Submission status',
+                        description: this.renderSubmissionStatus(),
+                        color: 4513714
+                    }
+                })
+            })
 
             // remove cards from hand
-            var cardRemoved = parseInt(m.content) - 1
             player.cards.splice(cardRemoved, 1, '')
 
         })
@@ -805,48 +820,15 @@ module.exports = class CardsAgainstHumanity extends Game {
                     player.dmChannel.send({
                         embed: {
                             description: `Time has run out. **Return to game chat <#${this.channel.id}>.**`,
-                            color: 4513714
+                            color: options.colors.info
                         }
                     })
-                }
-            }
-
-            if(collected.size > 0) {
-                // get player by id
-                var player = this.players.get(collected.values().next().value.author.id)
-
-                // update in chat that this user has selected their card
-                if(this.blackCard.responses == collected.size) {
-                    player.submitted = true
                 }
 
                 // remove the empty cards
                 player.cards = player.cards.filter(card => card != '')
             }
-
-            // update in chat
-            this.msg.channel.fetchMessage(this.lastMessageID).then(message => {
-                message.edit('', {
-                    embed: {
-                        title: 'Submission status',
-                        description: this.renderSubmissionStatus(),
-                        color: 4513714
-                    }
-                })
-            })
-
-            // check if everyone has submitted or if time has run out, if so, move to selection phase
-            var submitted = 0
-            for(var item of this.players) {
-                // create reference variables
-                var key = item[0]
-                var player = item[1]
-                // tick off user if the player has submitted or was added mid-round
-                if(player.submitted) {
-                    submitted++
-                }
-            }
-            if(submitted >= this.players.size - 1 && this.stage != 'selection') {
+            if(this.stage != 'selection') {
                 CAHDeck.shuffleArray(this.submittedCards)
                 this.clearCollectors(this.collectors)
                 this.runSelection()
@@ -892,7 +874,7 @@ module.exports.id = 'cah'
 module.exports.gameName = 'Cards Against Humanity'
 module.exports.playerCount = {
     min: 3,
-    max: 12
+    max: 20
 }
 module.exports.genre = 'Card'
 module.exports.about = 'A party game for horrible people.'
