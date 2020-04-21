@@ -4,7 +4,13 @@ const clean = text => {
   if (typeof(text) === 'string')
     return text.replace(/`/g, "`" + String.fromCharCode(8203)).replace(/@/g, "@" + String.fromCharCode(8203));
   else if(typeof(text) == 'object' || typeof(text) == 'map' || typeof(text) == 'collection') 
-    return JSON.stringify(text, null, 2)
+  try {
+    let response = JSON.stringify(text, null, 2)
+    text = response
+  } catch {
+    console.info(text)
+    text = 'Unable to stringify. Output in console.'
+  }
   return text;
 }
 

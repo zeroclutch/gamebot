@@ -50,7 +50,7 @@ const CARD_PACKS = {
 class CAHDeck {
     constructor(sets) {
         // adds all appropriate sets to the collection of cards
-        this.sets = sets
+        this.sets = sets.length == 0 ? ['Base Set'] : sets
         this.whiteCards = []
         this.blackCards = []
         this.discards = {
@@ -58,7 +58,6 @@ class CAHDeck {
             black: []
         }
         this.blackCard = new BlackCard('')
-        console.log(this.sets)
         this.sets.forEach(set => {
             whiteCards.find((cards, metadata) => metadata.name == set).forEach(card => this.whiteCards.push(card))
             blackCards.find((cards, metadata) => metadata.name == set).forEach(card => this.blackCards.push(card))
@@ -163,7 +162,7 @@ module.exports = class CardsAgainstHumanity extends Game {
         this.czar
         this.gameMaster = msg.author
         this.playerCount = {
-            min: 1,
+            min: 3,
             max: 12
         }
         this.submittedCards = []
@@ -186,7 +185,7 @@ module.exports = class CardsAgainstHumanity extends Game {
             {
                 friendlyName: 'Sets',
                 choices: this.settings.sets,
-                default: ['**Base Set** *(460 cards)*'],
+                default: ['**Base Set** *(460 cards)*', '**The First Expansion** *(80 cards)*', '**The Second Expansion** *(75 cards)*', '**The Third Expansion** *(75 cards)*', '**The Fourth Expansion** *(70 cards)*', '**The Fifth Expansion** *(75 cards)*', '**The Sixth Expansion** *(75 cards)*'],
                 type: 'checkboxes',
                 note: `You can purchase more packs in the shop, using the command \`${options.prefix}shop cah\``
             },
@@ -403,11 +402,9 @@ module.exports = class CardsAgainstHumanity extends Game {
      */
     async getSets (setList) {
         // Extract pack name from string
-        console.log(setList)
         setList = setList.map(set => set.match(/([^\*\*])+(?=\*\*)/g).join())
 
         // Replace pack name with ID
-        console.log(setList)
         return setList
     }
 
@@ -488,7 +485,7 @@ module.exports = class CardsAgainstHumanity extends Game {
             if(card == '') continue
             cardList += `**${i + 1}:** ${card}\n`
         }
-        return `The selected black card is: **${this.blackCard.escaped}**\n\n${cardList}\nReturn to game chat: <#${this.msg.channel.id}>`
+        return `The selected black card is: **${this.blackCard.escaped}**\n\n${cardList}\nEnter the number next to the card in the channel <#${this.channel.id}> to select it. You need to select ${this.blackCard.responses} more cards.`
     }
 
     renderSubmissionStatus() {
@@ -733,138 +730,128 @@ module.exports = class CardsAgainstHumanity extends Game {
             if(key == this.czar.user.id) continue
 
             // refill hand to max limit
+            player.cards = player.cards || []
             var drawnCards = await this.cardDeck.draw('white', this.settings.handLimit - player.cards.length)
             player.cards = player.cards.concat(drawnCards)
 
-            
             // dm each player with their hand
             await player.user.send('View your hand and select a card.', {
                 embed: {
                     title: `Cards Against Humanity - Your Current Hand`,
                     description: this.renderPlayerHand(player),
-                    color: 4886754,
-                    footer: {
-                       text: `Type the number of the card in DM to select it. You need to select ${this.blackCard.responses} more cards.`
-                    }
+                    color: 4886754
                 }
-            }).then(m => {
+            }).then(async m => {
+                await player.user.send('View your hand and select a card.',{
+                    embed: {
+                        description: `Remember, type your card number in <#${this.channel.id}>, NOT in this channel!`,
+                        color: options.colors.warning,
+                        footer:  {
+                            text: 'This is due to a recent change in Gamebot. For more info, see our support server.'
+                        }
+                    }
+                })
                 player.currentHandID = m.id
                 player.currentHand = m.url
                 player.dmChannel = m.channel
-            }).then(() => {
-                // create new listener on each player channel
-                const filter = m => (!isNaN(m.content) && parseInt(m.content) <= this.settings.handLimit && parseInt(m.content) > 0 && player.cards[parseInt(m.content) - 1] != '')
-                // await X messages, depending on how many white cards are needed
-                // for some reason black cards with 3+ are stopping at 1 less than they need to, to rectify this I have added this hideous ternary operator!
-                player.collector = player.dmChannel.createMessageCollector(filter, { max: this.blackCard.responses < 3 ? this.blackCard.responses : this.blackCard.responses + 1,  time: this.settings.timeLimit });
-                this.collectors.push(player.collector)
-                player.collector.on('collect', m => {
-                    var player = this.players.get(m.author.id)
-                    var cardRemoved = parseInt(m.content) - 1
-                    // tell user which card they selected
-                    m.channel.send('You have selected: ' + player.cards[cardRemoved])
-
-                    // check to see if player has already submitted a card
-                    if(player.collector.collected.size > 1) {
-                        // add selection
-                        this.submittedCards.find(item => player.user.id == item.player.user.id).card.push(player.cards[cardRemoved])
-                    } else {
-                        // save selection
-                        this.submittedCards.push({
-                            player,
-                            card: [player.cards[cardRemoved]]
-                        })
-                    }
-
-                    // remove cards from hand
-                    var cardRemoved = parseInt(m.content) - 1
-                    player.cards.splice(cardRemoved, 1, '')
-
-                    var playerCards = this.submittedCards.find(item => player.user.id == item.player.user.id).card
-                    
-                    m.channel.fetchMessage(player.currentHandID).then(message => {
-                        var remaining = this.blackCard.responses - playerCards.length
-                        message.edit('', {
-                            embed: {
-                                title: `Cards Against Humanity - Your Current Hand`,
-                                description: this.renderPlayerHand(player),
-                                color: 4886754,
-                                footer: {
-                                    text: `Type the number of the card in DM to select it. You need to select ${remaining} more card${remaining == 1 ? '' : 's'}.`
-                                }
-                            }
-                        })
-                    })
-                });
-
-                player.collector.on('end', (collected, reason) => {
-                    if(this.ending) return
-                    // check all players at the end
-                    for(var item of this.players) {
-                        // create reference variables
-                        var key = item[0]
-                        var player = item[1]
-
-                        // handle timeout
-                        if(reason == 'time' && !player.submitted && this.czar.user.id != player.user.id) {
-                            player.submitted = 'time'
-                            player.user.send({
-                                embed: {
-                                    description: `Time has run out. **Return to game chat <#${this.msg.channel.id}>.**`,
-                                    color: 4513714
-                                }
-                            })
-                        }
-                    }
-
-                    if(collected.size > 0) {
-                        // get player by id
-                        var player = this.players.get(collected.values().next().value.author.id)
-
-                        // update in chat that this user has selected their card
-                        if(this.blackCard.responses == collected.size) {
-                            player.submitted = true
-                            player.user.send({
-                                embed: {
-                                    description: `You have submitted all the cards. **Return to game chat <#${this.msg.channel.id}>.**`,
-                                    color: 4513714
-                                }
-                            })
-                        }
-
-                        // remove the empty cards
-                        player.cards = player.cards.filter(card => card != '')
-                    }
-
-                    // update in chat
-                    this.msg.channel.fetchMessage(this.lastMessageID).then(message => {
-                        message.edit('', {
-                            embed: {
-                                title: 'Submission status',
-                                description: this.renderSubmissionStatus(),
-                                color: 4513714
-                            }
-                        })
-                    })
-
-                    // check if everyone has submitted or if time has run out, if so, move to selection phase
-                    var submitted = 0
-                    for(var item of this.players) {
-                        // create reference variables
-                        var key = item[0]
-                        var player = item[1]
-                        // tick off user if the player has submitted or was added mid-round
-                        if(player.submitted) {
-                            submitted++
-                        }
-                    }
-                    if(submitted >= this.players.size - 1 && this.stage != 'selection') {
-                        CAHDeck.shuffleArray(this.submittedCards)
-                        this.runSelection()
-                    }
-                });
             })
         }
+        // create new listener on the main channel
+        let filter = m => {
+            if(isNaN(m.content) || !this.players.has(m.author.id) || m.author.id == this.czar.user.id) return false
+            let number = parseInt(m.content)
+            // Only allow valid card indexes to be selected
+            return number <= this.settings.handLimit && number > 0 && this.players.get(m.author.id).cards[parseInt(m.content) - 1] != '' 
+        }
+        
+        // await X messages, depending on how many white cards are needed
+        // for some reason black cards with 3+ are stopping at 1 less than they need to, to rectify this I have added this hideous ternary operator!
+        let collector = this.channel.createMessageCollector(filter, { max: this.players.size,  time: this.settings.timeLimit });
+
+        this.collectors.push(collector)
+        collector.on('collect', m => {
+            if(this.ending) return 
+
+            m.delete()
+
+            var player = this.players.get(m.author.id)
+            var cardRemoved = parseInt(m.content) - 1
+            // tell user which card they selected
+            player.dmChannel.sendMsgEmbed(`You have selected: ${player.cards[cardRemoved]}\n\n**Return to game chat: <#${this.channel.id}>**`)
+
+            // save selection for one card
+            this.submittedCards.push({
+                player,
+                card: [player.cards[cardRemoved]]
+            })
+
+            // remove cards from hand
+            var cardRemoved = parseInt(m.content) - 1
+            player.cards.splice(cardRemoved, 1, '')
+
+        })
+
+        collector.on('end', (collected, reason) => {
+            if(this.ending) return
+            // check all players at the end
+            for(var item of this.players) {
+                // create reference variables
+                var key = item[0]
+                var player = item[1]
+
+                // handle timeout
+                if(reason == 'time' && !player.submitted && this.czar.user.id != player.user.id) {
+                    player.submitted = 'time'
+                    player.dmChannel.send({
+                        embed: {
+                            description: `Time has run out. **Return to game chat <#${this.channel.id}>.**`,
+                            color: 4513714
+                        }
+                    })
+                }
+            }
+
+            if(collected.size > 0) {
+                // get player by id
+                var player = this.players.get(collected.values().next().value.author.id)
+
+                // update in chat that this user has selected their card
+                if(this.blackCard.responses == collected.size) {
+                    player.submitted = true
+                }
+
+                // remove the empty cards
+                player.cards = player.cards.filter(card => card != '')
+            }
+
+            // update in chat
+            this.msg.channel.fetchMessage(this.lastMessageID).then(message => {
+                message.edit('', {
+                    embed: {
+                        title: 'Submission status',
+                        description: this.renderSubmissionStatus(),
+                        color: 4513714
+                    }
+                })
+            })
+
+            // check if everyone has submitted or if time has run out, if so, move to selection phase
+            var submitted = 0
+            for(var item of this.players) {
+                // create reference variables
+                var key = item[0]
+                var player = item[1]
+                // tick off user if the player has submitted or was added mid-round
+                if(player.submitted) {
+                    submitted++
+                }
+            }
+            if(submitted >= this.players.size - 1 && this.stage != 'selection') {
+                CAHDeck.shuffleArray(this.submittedCards)
+                this.clearCollectors(this.collectors)
+                this.runSelection()
+            }
+        })
 
         // send an embed to main channel with links to each player hand [Go to hand](m.url)
         this.msg.channel.sendMsgEmbed(this.renderSubmissionStatus(), 'Submission status').then(m => {
