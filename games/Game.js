@@ -383,7 +383,7 @@ module.exports = class Game {
     addPlayer(member) {
         if(typeof member == 'string') member = this.msg.guild.members.get(member)
         
-        if(this.players.size >= this.playerCount.max) {
+        if(this.players.size == this.playerCount.max) {
             this.msg.channel.sendMsgEmbed(`The game can't have more than ${this.playerCount.max} player${this.playerCount.max == 1 ? '' : 's'}! Player could not be added.`)
             return
         }
@@ -399,18 +399,18 @@ module.exports = class Game {
                 this.players.set(member.id, player)
                 resolve(dmChannel)
             })
-        }).then(dmChannel => {
+        }).then(async dmChannel => {
             if(this.settings.isDmNeeded){
-                dmChannel.sendMsgEmbed(`You have joined a ${this.gameName} game in <#${this.msg.channel.id}>.`)
+                await dmChannel.sendMsgEmbed(`You have joined a ${this.gameName} game in <#${this.msg.channel.id}>.`)
             }
             this.msg.channel.sendMsgEmbed(`${member.user} was added to the game!`)
         }).catch(err => {
             console.error(err)
-            if(user.id == this.gameMaster.id) {
+            if(member.id == this.gameMaster.id) {
                 this.msg.channel.sendMsgEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error)
                 this.forceStop()
             } else {
-                this.msg.channel.sendMsgEmbed(`${user} must change their privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: Player could not be added.`, options.colors.error)
+                this.msg.channel.sendMsgEmbed(`${member.user} must change their privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: Player could not be added.`, options.colors.error)
             }
         })
     }
