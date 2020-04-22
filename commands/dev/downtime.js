@@ -10,21 +10,28 @@ module.exports = {
     dmCommand: true,
     args: true,
     run: function(msg, args) {
+        const collection = msg.client.database.collection('status')
         const length =  Math.round(parseFloat(args[0]) * 60000)
         const startTime = Date.now() + length
-        if(msg.client.downtime > 0) {
+        if(!args[0]) {
             msg.channel.sendMsgEmbed('Would you like to disable the current downtime message? Enter `yes` or `no`.')
             msg.channel.awaitMessages(m => (m.content.toLowerCase() == 'yes' || m.content.toLowerCase() == 'no') && m.author.id == msg.author.id, {max: 1, time: 30000 }).then(collected => {
                 const message = collected.first().content.toLowerCase()
                 if(message == 'yes') {
-                    msg.client.downtime = -1
+                    collection.findOneAndUpdate(
+                        { type: 'downtime' },
+                        { $set: { downtimeStart: -1 } }
+                    )
                     msg.channel.sendMsgEmbed('Downtime cancelled.')
                 } else {
                     msg.channel.sendMsgEmbed('Downtime not cancelled.')
                 }
             })
         } else if(!isNaN(length)) {
-            msg.client.downtimeStart = startTime
+            collection.findOneAndUpdate(
+                { type: 'downtime' },
+                { $set: { downtimeStart: startTime } }
+            )
             msg.client.setTimeout(() => {
                 msg.client.emit('downtimeStart')
             }, length);

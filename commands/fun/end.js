@@ -12,6 +12,8 @@ module.exports = {
   run: async function(msg, args) {
     if(msg.channel.game && msg.author.id == msg.channel.game.leader.id) {
         await msg.channel.game.forceStop()
+        // allow object to be garbage collected to prevent memory leaks
+        delete msg.channel.game
     }  else if (msg.channel.game && msg.author.id != msg.channel.game.leader.id) {
       msg.channel.sendMsgEmbed('Only the game leader may end the game.', 'Error!', 13632027)
     } else {
