@@ -878,4 +878,4 @@ module.exports.playerCount = {
 }
 module.exports.genre = 'Card'
 module.exports.about = 'A party game for horrible people.'
-module.exports.rules = 'Each round, a black card is selected, and everyone else answers with their funniest white card. Your white cards will be DMed to you, and you will select them from your DMs. One player is selected to be the Card Czar each round, and they give a point to the player with the funniest white card.'
+module.exports.rules = 'Each round, a black card is selected, and everyone else answers with their funniest white card. Your white cards will be DMed to you, and you will enter them in your server\'s channel. One player is selected to be the Card Czar each round, and they give a point to the player with the funniest white card.'

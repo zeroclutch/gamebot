@@ -316,4 +316,4 @@ module.exports.playerCount = {
 }
 module.exports.genre = 'Word' // options are Card, Party, Board, Arcade, Tabletop, etc.
 module.exports.about = 'Unscramble words faster than your friends!' // a one-sentence summary of the game
-module.exports.rules = 'Players are sent a DM with the word that they have to unscramble. Type as many 3+ letter words as possible before time runs out. At the end, the scores are tallied up and the winner is announced.' // explanation about how to play
+module.exports.rules = 'A set of letters is sent in the channel. Use those letters to make as many 3+ letter words as possible before time runs out. At the end, the scores are tallied up and the winner is announced.' // explanation about how to play
