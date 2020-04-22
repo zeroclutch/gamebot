@@ -8,7 +8,11 @@
   },
   "author": "zeroclutch",
   "license": "MIT",
+  "engines": {
+    "node": "10.14.1"
+  },
   "dependencies": {
+    "body-parser": "^1.19.0",
     "canvas": "^2.5.0",
     "dblapi.js": "^2.3.0",
     "discord.js": "^11.5.1",
@@ -17,6 +21,8 @@
     "jimp": "^0.6.4",
     "mongodb": "^3.3.2",
     "paypal-rest-sdk": "^1.8.1",
+    "querystring": "^0.2.0",
+    "request": "^2.88.2",
     "text2png": "^2.1.0"
   }
 }
