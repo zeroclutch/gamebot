@@ -37,7 +37,9 @@ module.exports = {
             **Cost:** ${item.cost}${options.creditIcon}
             **Game:** ${msg.client.games.get(item.game).gameName}`)
             if(item.image) {
-                embed.setImage(item.image)
+                let image = `./assets/images/cah-shop/${item.image}`
+                embed.attachFile(image)
+                embed.setImage(`attachment://${item.image}`)
             }
             if(command != 'buy') {
                 embed.setFooter(`To buy this item, type ${options.prefix}item buy ${item.itemID}`)
