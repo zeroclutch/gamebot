@@ -39,27 +39,29 @@ app.post('/voted', async (req, res) => {
     res.send()
     throw new Error('Invalid credentials when attempting to vote using a webhook.')
   }
-  const json = req.body
-  const collection = client.database.collection('users')
-  await client.fetchUser(json.user).then(u => user = u)
-    .catch(console.error)
+  const userID = req.body.user
 
-  await user.fetchDBInfo().then(info => {
-    collection.updateOne(
-      { userID: json.user },
-      {
-        $set: {
-          dailyClaimed: false,
-          lastClaim: Date.now()
-        }
+  manager.shards.first().eval(`
+  this.fetchUser('${userID}', false).then(info => {
+    this.database.collection('users').findOneAndUpdate(
+    {
+      userID: '${userID}'
+    },
+    {
+      $set: {
+        dailyClaimed: false,
+        lastClaim: Date.now()
       }
-    )
+    })
+  }).catch(console.error)
+  `).then(() => {
     res.status(200)
+    res.send()
   }).catch(err => {
     console.error(err)
     res.status(500)
+    res.send()
   })
-  res.send()
 })
 
 

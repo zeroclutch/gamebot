@@ -31,6 +31,10 @@ module.exports = {
     
     // create new instance of game
     msg.channel.game = new (msg.client.games.get(selection))(msg, gameOptions.length > 0 ? gameOptions : undefined)
+    
+    if(gameOptions.includes('dev') && msg.author.id == options.ownerID) {
+      msg.channel.game.playerCount.min = 0
+    }
     // run initialization of game
     msg.channel.game.init()
     

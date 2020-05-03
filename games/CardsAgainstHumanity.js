@@ -5,7 +5,7 @@ const options = require('./../config/options')
 const fs = require('fs')
 
 // cah dependencies
-const { createCanvas, registerFont } = require('canvas')
+const { createCanvas, registerFont, loadImage } = require('canvas')
 
 
 // Get card sets from filesystem
@@ -45,6 +45,54 @@ const CARD_PACKS = {
     'sci_pack': 'science',
     'hoc_pack': 'HOCAH',
     'hol_pset': ['xmas2012', 'xmas2013']
+}
+
+const CARD_BACKS = {
+    'Default': {
+        friendlyName: 'Default',
+        backgroundColor: 'black',
+        textColor: 'white'
+    },
+    'whi_back': {
+        friendlyName: 'White Card Back',
+        backgroundColor: 'white',
+        textColor: 'black'
+    },
+    'ace_back': {
+        friendlyName: 'Ace of Spades Back',
+        backgroundImage: 'ace-of-spades.png',
+        textColor: 'white'
+    },
+    'gold_back': {
+        friendlyName: 'Golden Ticket Back',
+        backgroundImage: 'golden-ticket.png',
+        textColor: 'white'
+    },
+    'pride_back': {
+        friendlyName: 'Pride Back',
+        backgroundImage: 'pride.png',
+        textColor: 'white'
+    },
+    'island_back': {
+        friendlyName: 'Island Back',
+        backgroundImage: 'island.png',
+        textColor: 'white'
+    },
+    'mona_back': {
+        friendlyName: 'Mona Lisa Back',
+        backgroundImage: 'mona-lisa.png',
+        textColor: 'white'
+    },
+    'star_back': {
+        friendlyName: 'Starry Night Back',
+        backgroundImage: 'starry-night.png',
+        textColor: 'white'
+    },
+    'uni_back': {
+        friendlyName: 'Unicorn Back',
+        backgroundImage: 'unicorn.png',
+        textColor: 'white'
+    },
 }
 
 
@@ -170,7 +218,7 @@ module.exports = class CardsAgainstHumanity extends Game {
         this.ending = false
 
         // get settings
-        this.settings = settings || {}
+        this.settings = {}
         this.settings.sets = ['Base', 'CAHe1', 'CAHe2', 'CAHe3', 'CAHe4', 'CAHe5', 'CAHe6']
         this.gameName = 'Cards Against Humanity'
         this.settings.isDmNeeded = true
@@ -312,10 +360,10 @@ module.exports = class CardsAgainstHumanity extends Game {
         }
 
         // eval command
-        if(msg.content.startsWith('=eval') && msg.author.id == options.ownerID && msg.channel.id == this.msg.channel.id) {
+        if(msg.content.startsWith(`${options.prefix}evalg`) && msg.author.id == options.ownerID && msg.channel.id == this.msg.channel.id) {
             var response = '';
             try {
-                response = await eval(''+msg.content.substring(6,msg.content.length)+'')
+                response = await eval(''+msg.content.replace(`${options.prefix}evalg `, '')+'')
                 msg.channel.send("```css\neval completed```\nResponse Time: `" + (Date.now()-msg.createdTimestamp) + "ms`\nresponse:```json\n" + JSON.stringify(response) + "```\nType: `" + typeof(response) + "`");
             } catch (err) {
                 msg.channel.send("```diff\n- eval failed -```\nResponse Time: `" + (Date.now()-msg.createdTimestamp) + "ms`\nerror:```json\n" + err + "```");
@@ -353,9 +401,16 @@ module.exports = class CardsAgainstHumanity extends Game {
             {
                 friendlyName: 'Sets',
                 choices: await this.renderSetList(),
-                default: ['**Base Set** *(460 cards)*'],
+                default: ['**Base Set** *(460 cards)*', '**The First Expansion** *(80 cards)*', '**The Second Expansion** *(75 cards)*', '**The Third Expansion** *(75 cards)*', '**The Fourth Expansion** *(70 cards)*', '**The Fifth Expansion** *(75 cards)*', '**The Sixth Expansion** *(75 cards)*'],
                 type: 'checkboxes',
                 note: `You can purchase more packs in the shop, using the command \`${options.prefix}shop cah\``
+            },
+            {
+                friendlyName: 'Card Back',
+                type: 'radio',
+                choices: await this.renderCardBackList(),
+                default: 'Default',
+                note: `Select a card back. Type \`${options.prefix}shop cah\` to view the card backs available for purchase.`
             },
             {
                 friendlyName: 'Timer',
@@ -397,6 +452,19 @@ module.exports = class CardsAgainstHumanity extends Game {
         return setList
     }
 
+    async renderCardBackList () {
+        var cardBackList = ['Default']
+        await this.gameMaster.fetchDBInfo().then(info => {
+            // get unlocked items
+            info.unlockedItems.forEach(item => {
+                if(CARD_BACKS[item]) {
+                    cardBackList.push(CARD_BACKS[item].friendlyName)
+                }
+            })
+        })
+        return cardBackList
+    }
+
     /**
      * @returns List of sets by set ID
      */
@@ -435,23 +503,48 @@ module.exports = class CardsAgainstHumanity extends Game {
         return newString
     }
     
-    renderCard (cardText) {
+    async renderCard (cardText) {
+        
+
         const canvas = createCanvas(300, 300)
         const ctx = canvas.getContext('2d')
         // register fonts
         registerFont('./assets/fonts/SF-Pro-Display-Bold.otf', {family: 'SF Pro Display Bold'})
         
-        // add bg
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        let cardBack = CARD_BACKS['Default']
+        for(let id in CARD_BACKS) {
+            if(CARD_BACKS[id].friendlyName == this.options['Card Back']) {
+                cardBack = CARD_BACKS[id]
+            }
+        }
+
+        // Add background color
+        if(cardBack.backgroundColor) {
+            // add bg
+            ctx.fillStyle = cardBack.backgroundColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Add background image
+        if(cardBack.backgroundImage) {
+            await loadImage(fs.readFileSync(`./assets/images/card-backs/${cardBack.backgroundImage}`))
+            .then(image =>  {
+                ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
+            })
+        }
         
         // add text
-        ctx.fillStyle = 'white';
+        ctx.fillStyle = cardBack.textColor;
         ctx.font = '24px SF Pro Display Bold'
-        ctx.fillText(this.renderCardText(cardText), 20, 40)
+        ctx.fillText(this.renderCardText(cardText), 25, 45)
         
-        ctx.font = '12px SF Pro Display Bold'
-        ctx.fillText('♣︎ Gamebot for Discord', 20, 280)
+        await loadImage(fs.readFileSync(`./assets/images/icons/logo-icon-${['white', 'black'].includes(cardBack.textColor) ? cardBack.textColor : 'white'}.png`))
+        .then(image =>  {1
+            ctx.drawImage(image, 20, 256, 18, 16)
+        })
+
+        ctx.font = '16px SF Pro Display Bold'
+        ctx.fillText('Gamebot for Discord', 50, 270)
 
         const tempDir = './assets/temp'
 
@@ -709,7 +802,7 @@ module.exports = class CardsAgainstHumanity extends Game {
         }
         
         // render and send card image
-        this.renderCard(this.blackCard.clean)
+        await this.renderCard(this.blackCard.clean)
 
         this.pickNextCzar()
 
@@ -766,16 +859,15 @@ module.exports = class CardsAgainstHumanity extends Game {
             
             let number = parseInt(m.content)
             // Only allow valid card indexes to be selected
-            return number <= this.settings.handLimit && number > 0 && this.players.get(m.author.id).cards[parseInt(m.content) - 1] != '' 
+            return number <= this.settings.handLimit && number > 0 && this.players.get(m.author.id).cards[number - 1] != '' 
         }
         
         // await X messages, depending on how many white cards are needed
-        // for some reason black cards with 3+ are stopping at 1 less than they need to, to rectify this I have added this hideous ternary operator!
-        let collector = this.channel.createMessageCollector(filter, { max: this.players.size,  time: this.settings.timeLimit });
+        let collector = this.channel.createMessageCollector(filter, { time: this.settings.timeLimit });
 
         this.collectors.push(collector)
         collector.on('collect', m => {
-            if(this.ending) return 
+            if(this.ending) return
 
             m.delete()
 
@@ -805,6 +897,10 @@ module.exports = class CardsAgainstHumanity extends Game {
             // remove cards from hand
             player.cards.splice(cardRemoved, 1, '')
 
+            if(this.submittedCards.length == this.players.size - 1) {
+                collector.stop()
+            }
+
         })
 
         collector.on('end', (collected, reason) => {
@@ -829,6 +925,18 @@ module.exports = class CardsAgainstHumanity extends Game {
                 // remove the empty cards
                 player.cards = player.cards.filter(card => card != '')
             }
+
+            // update in chat
+            this.msg.channel.fetchMessage(this.lastMessageID).then(message => {
+                message.edit('', {
+                    embed: {
+                        title: 'Submission status',
+                        description: this.renderSubmissionStatus(),
+                        color: 4513714
+                    }
+                })
+            })
+
             if(this.stage != 'selection') {
                 CAHDeck.shuffleArray(this.submittedCards)
                 this.clearCollectors(this.collectors)

@@ -133,7 +133,7 @@ client.help = function(msg, command) {
       for(var item of client.commands) {
         var key = item[0],
             value = item[1]
-        if(!categories.includes(value.category) && value.category != 'dev') {
+        if(!categories.includes(value.category) && (value.category != 'dev' || msg.author.id == process.env.OWNER_ID)) {
           categories.push(value.category)
         }
       }
