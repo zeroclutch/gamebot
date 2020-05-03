@@ -48,7 +48,7 @@ module.exports = {
                 msg.channel.send({
                     embed: {
                         title: 'Claim your daily rewards!',
-                        description: `[Vote for Gamebot on DiscordBots.org here](https://discordbots.org/bot/620307267241377793/vote) and receive credits each day! After voting, type \`${options.prefix}daily\` to claim your rewards.`,
+                        description: `[Vote for Gamebot on top.gg here](https://top.gg/bot/620307267241377793/vote) and receive credits each day! After voting, type \`${options.prefix}daily\` to claim your rewards.`,
                         fields: [{
                             name: 'Current vote streak',
                             value: voteStreak(info.voteStreak)
