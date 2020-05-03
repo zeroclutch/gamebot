@@ -8,6 +8,7 @@ module.exports = class Game {
      * @param {object} settings An optional object with custom settings for the game.
      */
     constructor(msg, settings) {
+
         /** REQUIRED FIELDS **/
         this.msg = msg
         this.channel = msg.channel
@@ -23,8 +24,6 @@ module.exports = class Game {
         this.stage = 'init'
 
         /** SETTINGS **/
-        this.settings = settings
-        this.gameName = settings ? settings.gameName : 'Game'
         /**
          * {
          *  'label': {
@@ -36,8 +35,6 @@ module.exports = class Game {
          *  },
          * }
          */
-        this.gameOptions = settings ? settings.gameOptions : []
-        this.defaultPlayer = settings ? settings.defaultPlayer : { score: 0, info: {} }
     }
 
     get leader () { return this.gameMaster }

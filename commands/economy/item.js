@@ -13,8 +13,11 @@ module.exports = {
     run: async function(msg, args) {
         const collection = msg.client.database.collection('items')
         const command = args[0].toLowerCase()
-        const itemID = (args[1] || '').toLowerCase()
-        var item = await collection.find({ itemID }).toArray()
+        const itemID = (args.slice(1).join(' ')).toLowerCase()
+        const filter = {
+            $or: [{ itemID }, { friendlyName: { $regex: new RegExp( itemID, 'i') } }]
+        }
+        var item = await collection.find(filter).toArray()
         item = item[0]
         if(!item) {
             msg.channel.sendMsgEmbed(`Type \`${options.prefix}shop <game>\` to see available shop items. Be sure to enter the **item ID** if you want to view an item, **not the item name**.`, 'Item not found!', 13632027)

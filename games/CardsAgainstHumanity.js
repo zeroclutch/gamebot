@@ -217,7 +217,7 @@ module.exports = class CardsAgainstHumanity extends Game {
         this.ending = false
 
         // get settings
-        this.settings = settings || {}
+        this.settings = {}
         this.settings.sets = ['Base', 'CAHe1', 'CAHe2', 'CAHe3', 'CAHe4', 'CAHe5', 'CAHe6']
         this.gameName = 'Cards Against Humanity'
         this.settings.isDmNeeded = true
@@ -400,7 +400,7 @@ module.exports = class CardsAgainstHumanity extends Game {
             {
                 friendlyName: 'Sets',
                 choices: await this.renderSetList(),
-                default: ['**Base Set** *(460 cards)*'],
+                default: ['**Base Set** *(460 cards)*', '**The First Expansion** *(80 cards)*', '**The Second Expansion** *(75 cards)*', '**The Third Expansion** *(75 cards)*', '**The Fourth Expansion** *(70 cards)*', '**The Fifth Expansion** *(75 cards)*', '**The Sixth Expansion** *(75 cards)*'],
                 type: 'checkboxes',
                 note: `You can purchase more packs in the shop, using the command \`${options.prefix}shop cah\``
             },
@@ -858,16 +858,15 @@ module.exports = class CardsAgainstHumanity extends Game {
             
             let number = parseInt(m.content)
             // Only allow valid card indexes to be selected
-            return number <= this.settings.handLimit && number > 0 && this.players.get(m.author.id).cards[parseInt(m.content) - 1] != '' 
+            return number <= this.settings.handLimit && number > 0 && this.players.get(m.author.id).cards[number - 1] != '' 
         }
         
         // await X messages, depending on how many white cards are needed
-        // for some reason black cards with 3+ are stopping at 1 less than they need to, to rectify this I have added this hideous ternary operator!
-        let collector = this.channel.createMessageCollector(filter, { max: this.players.size,  time: this.settings.timeLimit });
+        let collector = this.channel.createMessageCollector(filter, { time: this.settings.timeLimit });
 
         this.collectors.push(collector)
         collector.on('collect', m => {
-            if(this.ending) return 
+            if(this.ending) return
 
             m.delete()
 
@@ -897,6 +896,10 @@ module.exports = class CardsAgainstHumanity extends Game {
             // remove cards from hand
             player.cards.splice(cardRemoved, 1, '')
 
+            if(this.submittedCards.length == this.players.size - 1) {
+                collector.stop()
+            }
+
         })
 
         collector.on('end', (collected, reason) => {
@@ -921,6 +924,18 @@ module.exports = class CardsAgainstHumanity extends Game {
                 // remove the empty cards
                 player.cards = player.cards.filter(card => card != '')
             }
+
+            // update in chat
+            this.msg.channel.fetchMessage(this.lastMessageID).then(message => {
+                message.edit('', {
+                    embed: {
+                        title: 'Submission status',
+                        description: this.renderSubmissionStatus(),
+                        color: 4513714
+                    }
+                })
+            })
+
             if(this.stage != 'selection') {
                 CAHDeck.shuffleArray(this.submittedCards)
                 this.clearCollectors(this.collectors)
