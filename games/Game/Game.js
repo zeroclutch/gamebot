@@ -1,5 +1,7 @@
-const options = require('../config/options')
-const Discord = require('./../discord_mod')
+const options = require('./../../config/options')
+const Discord = require('./../../discord_mod')
+const fs = require('fs')
+const metadata = require('./metadata.json')
 
 module.exports = class Game {
     /**
@@ -8,8 +10,8 @@ module.exports = class Game {
      * @param {object} settings An optional object with custom settings for the game.
      */
     constructor(msg, settings) {
-
         /** REQUIRED FIELDS **/
+        this.metadata = metadata
         this.msg = msg
         this.channel = msg.channel
         this.gameMaster = msg.author
@@ -22,6 +24,9 @@ module.exports = class Game {
         this.collectors = [] // Whenever a MessageCollector or ReactionCollector is created, push it to this.collectors
         this.messageListener = msg => { this.onMessage(msg) } // whenever a message is sent, it is handled by the this.onMessage(msg) callback
         this.stage = 'init'
+        this.settings = {
+            isDmNeeded: false
+        }
 
         /** SETTINGS **/
         /**
@@ -83,7 +88,7 @@ module.exports = class Game {
         // allow players to join
         await this.msg.channel.send({
             embed: {
-                title: `${this.msg.author.tag} is starting a ${this.gameName} game!`,
+                title: `${this.msg.author.tag} is starting a ${this.metadata.name} game!`,
                 description: `Type \`${options.prefix}join\` to join in the next **120 seconds**.\n\n${this.leader}, type \`${options.prefix}start\` to begin once everyone has joined.`,
                 color: 4886754
             }
@@ -412,7 +417,7 @@ module.exports = class Game {
             })
         }).then(async dmChannel => {
             if(this.settings.isDmNeeded){
-                await dmChannel.sendMsgEmbed(`You have joined a ${this.gameName} game in <#${this.msg.channel.id}>.`)
+                await dmChannel.sendMsgEmbed(`You have joined a ${this.metadata.name} game in <#${this.msg.channel.id}>.`)
             }
             this.msg.channel.sendMsgEmbed(`${member.user} was added to the game!`)
         }).catch(err => {
@@ -502,14 +507,3 @@ module.exports = class Game {
         this.end()
     }
 }
-
-// static fields
-module.exports.id = 'game' // a 3-4 letter identifier for the game that people will use to start a game
-module.exports.gameName = 'Game' // friendly name for display purposes
-module.exports.playerCount = {
-    min: 1, // minimum required player count
-    max: 12 // maximum required player count
-}
-module.exports.genre = 'Game' // options are Card, Party, Board, Arcade, Tabletop, etc.
-module.exports.about = 'A game.' // a one-sentence summary of the game
-module.exports.rules = 'Rules about the game.' // explanation about how to play

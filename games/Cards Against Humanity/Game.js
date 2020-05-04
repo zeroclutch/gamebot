@@ -1,34 +1,15 @@
-// global dependencies
-const Discord = require('./../discord_mod')
-const Game = require('./Game')
-const options = require('./../config/options')
+// Global dependencies
+const options = require('./../../config/options')
+const Discord = require('./../../discord_mod')
+const metadata = require('./metadata.json')
 const fs = require('fs')
 
-// cah dependencies
+// CAH dependencies
+const Game = require('./../Game/Game')
 const { createCanvas, registerFont, loadImage } = require('canvas')
-
-
-// Get card sets from filesystem
-// Collection<Object metadata, Array<String card> cards>
-var blackCards = new Discord.Collection()
-
-// Collection<Object metadata, Array<String card> cards>
-var whiteCards = new Discord.Collection()
-
-// get card sets
-const cardFolder = fs.readdirSync('./gameData/CardsAgainstHumanity')
-
-// add cards to list
-for (const cardSet of cardFolder) {
-  //search through each folder
-  if(!cardSet.includes('.DS_Store')) {
-    var metadata = JSON.parse(fs.readFileSync(`./gameData/CardsAgainstHumanity/${cardSet}/metadata.json`, 'utf8'))
-    var blackCardList = fs.readFileSync(`./gameData/CardsAgainstHumanity/${cardSet}/black.md.txt`, 'utf8').split('\n')
-    var whiteCardList = fs.readFileSync(`./gameData/CardsAgainstHumanity/${cardSet}/white.md.txt`, 'utf8').split('\n')
-    blackCards.set(metadata, blackCardList)
-    whiteCards.set(metadata, whiteCardList)
-  }
-}
+const { whiteCards, blackCards } = require('./assets/cards')
+const CAHDeck = require('./classes/CAHDeck')
+const BlackCard = require('./classes/BlackCard')
 
 const CARD_PACKS = {
     '90sn_pack': '90s',
@@ -94,94 +75,6 @@ const CARD_BACKS = {
     },
 }
 
-
-class CAHDeck {
-    constructor(sets) {
-        // adds all appropriate sets to the collection of cards
-        this.sets = sets.length == 0 ? ['Base Set'] : sets
-        this.whiteCards = []
-        this.blackCards = []
-        this.discards = {
-            white: [],
-            black: []
-        }
-        this.blackCard = new BlackCard('')
-        this.sets.forEach(set => {
-            whiteCards.find((cards, metadata) => metadata.name == set).forEach(card => this.whiteCards.push(card))
-            blackCards.find((cards, metadata) => metadata.name == set).forEach(card => this.blackCards.push(card))
-        })
-    }
-
-    // shuffles an array
-    static shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-    }
-
-    // shuffles both decks
-    shuffle (options) {
-        this.constructor.shuffleArray(this.whiteCards)
-        this.constructor.shuffleArray(this.blackCards)
-    }
-
-    // draws the top card(s) from the deck
-    draw (deck, count) {
-        count = isNaN(count) ? 1 : count
-        if(deck == 'white') deck = this.whiteCards
-        if(deck == 'black') deck = this.blackCards
-        var drawCards = deck.slice(0, count)
-        deck.splice(0, count)
-        return drawCards
-    }
-
-    // discards a card
-    discard (deck, cards) {
-        if(deck == 'white') this.discards.white.concat(cards)
-        if(deck == 'black') this.discards.black.concat(cards)
-    }
-}
-
-class BlackCard {
-    constructor(text) {
-        this.cardText = text
-        // get possible card responses based on blanks, minimum 1
-        this.cardResponses =  Math.max(text.split(/\_/g).length - 1, 1)
-        // if a number is specified, use that instead.
-        if(text.charAt(0) == '[' && text.charAt(2) == ']') {
-            this.cardResponses = parseInt(text.charAt(1))
-            this.cardText = this.cardText.substring(3, text.length)
-        }
-
-    }
-
-    get responses () {
-        return this.cardResponses
-    }
-
-    get text() {
-        return this.cardText
-    }
-
-    /**
-     * Extends underscores and removes '\n's
-     */
-    get clean() {
-        return this.cardText.replace(/\_/g, '_____').replace(/\\n/g, ' ')
-    }
-
-    /**
-     * Cleans text and escapes markdown characters to be discord-text friendly
-     */
-    get escaped() {
-        return this.cardText.replace(/\_/g, '_____').replace(/\\n/g, ' ').replace(/\_/g, '\\_').replace(/\*/g, '\\*').replace(/\~/g, '\\~')
-    }
-}
-
-// static field sets
-CAHDeck.sets = []
-
 module.exports = class CardsAgainstHumanity extends Game {
     /**
      * name: the name of the game 
@@ -196,12 +89,10 @@ module.exports = class CardsAgainstHumanity extends Game {
 
     constructor(msg, settings) {
         super(msg, settings)
-        this.players = new Discord.Collection()
-        this.msg = msg
+        this.metadata = metadata
         this.czars
         this.czarIndex = 0
         this.czar
-        this.gameMaster = msg.author
         this.playerCount = {
             min: 3,
             max: 20
@@ -211,33 +102,15 @@ module.exports = class CardsAgainstHumanity extends Game {
         this.gameStart = false
         this.cardDeck
         this.collectors = []
-        this.stage = ''
         this.playersToKick = []
         this.playersToAdd = []
-        this.ending = false
 
         // get settings
         this.settings = {}
         this.settings.sets = ['Base', 'CAHe1', 'CAHe2', 'CAHe3', 'CAHe4', 'CAHe5', 'CAHe6']
-        this.gameName = 'Cards Against Humanity'
         this.settings.isDmNeeded = true
         // Default options, reconfigured later in this.generateOptions()
-        this.gameOptions = [
-            {
-                friendlyName: 'Sets',
-                choices: this.settings.sets,
-                default: ['**Base Set** *(460 cards)*', '**The First Expansion** *(80 cards)*', '**The Second Expansion** *(75 cards)*', '**The Third Expansion** *(75 cards)*', '**The Fourth Expansion** *(70 cards)*', '**The Fifth Expansion** *(75 cards)*', '**The Sixth Expansion** *(75 cards)*'],
-                type: 'checkboxes',
-                note: `You can purchase more packs in the shop, using the command \`${options.prefix}shop cah\``
-            },
-            {
-                friendlyName: 'Timer',
-                type: 'free',
-                default: 60,
-                filter: m => !isNaN(parseInt(m.content)) && (parseInt(m.content) <= 300) && (parseInt(m.content) >= 30),
-                note: 'Enter a value in seconds for the countdown timer, between 30 and 300 seconds.'
-            }
-        ]
+        this.gameOptions = []
 
         this.defaultPlayer = {
             cards: 'Array',
@@ -264,6 +137,7 @@ module.exports = class CardsAgainstHumanity extends Game {
 
         // update settings
         this.settings.timeLimit   = parseInt(this.options['Timer']) * 1000
+        this.settings.pointsToWin = parseInt(this.options['Points to Win'])
 
         // update set list
         this.settings.sets = await this.getSets(this.options['Sets'])
@@ -417,7 +291,15 @@ module.exports = class CardsAgainstHumanity extends Game {
                 default: 60,
                 filter: m => !isNaN(parseInt(m.content)) && (parseInt(m.content) <= 300) && (parseInt(m.content) >= 30),
                 note: 'Enter a value in seconds for the countdown timer, between 30 and 300 seconds.'
-            }
+            },
+            {
+                friendlyName: 'Points to Win',
+                type: 'free',
+                default: 5,
+                filter: m => !isNaN(parseInt(m.content)) && (parseInt(m.content) <= 12) && (parseInt(m.content) >= 2),
+                note: 'Enter a number of points to win, between 2 and 12 points.'
+            },
+
         ]
     }
 
@@ -503,10 +385,9 @@ module.exports = class CardsAgainstHumanity extends Game {
     }
     
     async renderCard (cardText) {
-        
-
         const canvas = createCanvas(300, 300)
         const ctx = canvas.getContext('2d')
+
         // register fonts
         registerFont('./assets/fonts/SF-Pro-Display-Bold.otf', {family: 'SF Pro Display Bold'})
         
@@ -534,11 +415,23 @@ module.exports = class CardsAgainstHumanity extends Game {
         
         // add text
         ctx.fillStyle = cardBack.textColor;
-        ctx.font = '24px SF Pro Display Bold'
-        ctx.fillText(this.renderCardText(cardText), 25, 45)
+        ctx.font = '22px SF Pro Display Bold'
+        let wordList = cardText.split(/[\n\s]/g),
+            textLine = '',
+            textTotal = ''
+        for(var i = 0; i < wordList.length; i++) {
+            // See if adding the next word would exceed the size
+            if(ctx.measureText(textLine + wordList[i]).width > 255) {
+                textTotal += textLine + '\n'
+                textLine = ''
+            }
+            textLine += wordList[i] + ' '
+        }
+        textTotal += textLine
+        ctx.fillText(textTotal , 25, 45)
         
         await loadImage(fs.readFileSync(`./assets/images/icons/logo-icon-${['white', 'black'].includes(cardBack.textColor) ? cardBack.textColor : 'white'}.png`))
-        .then(image =>  {1
+        .then(image =>  {
             ctx.drawImage(image, 20, 256, 18, 16)
         })
 
@@ -976,14 +869,3 @@ module.exports = class CardsAgainstHumanity extends Game {
     }
 
 }
-
-// static fields
-module.exports.id = 'cah'
-module.exports.gameName = 'Cards Against Humanity'
-module.exports.playerCount = {
-    min: 3,
-    max: 20
-}
-module.exports.genre = 'Card'
-module.exports.about = 'A party game for horrible people.'
-module.exports.rules = 'Each round, a black card is selected, and everyone else answers with their funniest white card. Your white cards will be DMed to you, and you will enter them in your server\'s channel. One player is selected to be the Card Czar each round, and they give a point to the player with the funniest white card.'

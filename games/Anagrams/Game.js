@@ -1,6 +1,7 @@
-const Game = require('./Game')
-const options = require('./../config/options')
-const Discord = require('../discord_mod')
+const Game = require('./../Game/Game')
+const options = require('./../../config/options')
+const Discord = require('./../../discord_mod')
+const metadata = require('./metadata.json')
 const fs = require('fs')
 
 var words = fs.readFileSync('./gameData/WordGames/Collins_Scrabble_Dictionary.txt', { encoding: 'utf-8' }, err => {
@@ -16,10 +17,8 @@ words.forEach(word => wordRegistry[word] = true)
 
 module.exports = class Anagrams extends Game {
     constructor(msg, settings) {
-        settings = settings || {}
-        settings.gameName = 'Anagrams'
         super(msg, settings)
-        
+        this.metadata = metadata
         this.gameOptions = [
             {
                 friendlyName: 'Game Mode',
@@ -305,15 +304,3 @@ module.exports = class Anagrams extends Game {
     
 
 }
-
-
-// static fields
-module.exports.id = 'ana' // a 3-4 letter identifier for the game that people will use to start a game
-module.exports.gameName = 'Anagrams' // friendly name for display purposes
-module.exports.playerCount = {
-    min: 1, // minimum required player count
-    max: 20 // maximum required player count
-}
-module.exports.genre = 'Word' // options are Card, Party, Board, Arcade, Tabletop, etc.
-module.exports.about = 'Unscramble words faster than your friends!' // a one-sentence summary of the game
-module.exports.rules = 'A set of letters is sent in the channel. Use those letters to make as many 3+ letter words as possible before time runs out. At the end, the scores are tallied up and the winner is announced.' // explanation about how to play
