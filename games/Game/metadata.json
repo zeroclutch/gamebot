@@ -1,0 +1,11 @@
+{
+    "id": "game",
+    "name": "Game",
+    "playerCount": {
+        "min": 1,
+        "max": 12
+    },
+    "genre": "Game",
+    "about": "A game.",
+    "rules": "Rules about the game."
+}

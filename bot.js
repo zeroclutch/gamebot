@@ -42,8 +42,6 @@ dbClient.connect(err => {
 })
 
 
-
-// bandaid fix
 client.setMaxListeners(40)
 
 // configure Discord logging
@@ -90,10 +88,10 @@ const commandFiles = fs.readdirSync('./commands');
 for (const commandFolder of commandFiles) {
   //search through each folder
   if(!commandFolder.includes('.DS_Store')) {
-    const folder = fs.readdirSync(`./commands/${commandFolder}`);
+    const folder = fs.readdirSync(`./commands/${commandFolder}`)
     for(const file of folder) {
       if(file == '.DS_Store') continue
-      const command = require(`./commands/${commandFolder}/${file}`);
+      const command = require(`./commands/${commandFolder}/${file}`)
       client.commands.set(command.name, command);
     }
   }
@@ -101,14 +99,15 @@ for (const commandFolder of commandFiles) {
 
 
 client.games = new Discord.Collection()
-const folder = fs.readdirSync('./games');
+const folder = fs.readdirSync('./games')
 
 // add game classes to collection
-for(const file of folder) {
+for(let game of folder) {
   // ignore Game class
-  if(file == 'Game.js') continue
-  let game = require(`./games/${file}`);
-  client.games.set(game.id.toLowerCase(), game);
+  if(game == 'Game' || game == '.DS_Store') continue
+  let runFile = require(`./games/${game}/Game`)
+  let metadata = require(`./games/${game}/metadata.json`)
+  client.games.set(metadata, runFile)
 }
 
 // provide help
