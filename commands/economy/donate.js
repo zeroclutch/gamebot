@@ -14,7 +14,7 @@ module.exports = {
         const donationLink = new URL('https://www.paypal.com/cgi-bin/webscr')
         const params = donationLink.searchParams
 
-        const url = process.env.BASE_URL || 'https://gamebot-discord-staging.herokuapp.com/'
+        const url = process.env.BASE_URL || 'https://gamebot-production.herokuapp.com/'
 
         params.append('cmd', '_donations')
         params.append('business', 'BDWKJXN5ABEU4')

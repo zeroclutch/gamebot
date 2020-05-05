@@ -356,34 +356,12 @@ module.exports = class CardsAgainstHumanity extends Game {
         // Replace pack name with ID
         return setList
     }
-
-    renderCardText (string) {
-        // split to whitespace and newlines
-        var stringParts = string.split(/[\n\s]/g)
-        var newString = ''
-        var lineCount = 0
-        for(let i = 0; i < stringParts.length - 1; i++) {
-            newString += stringParts[i] + ' '
     
-            // add next 2 string parts
-            lineCount += stringParts[i].length
-            lineCount += stringParts[i + 1].length
-    
-            if(lineCount > 16) {
-                // insert break if line is too long
-                newString += '\n'
-                lineCount = 0
-            } else {
-                // remove next string part
-                lineCount -= stringParts[i + 1].length
-            }
-        }
-        // add last part
-        newString += stringParts[stringParts.length - 1]
-    
-        return newString
-    }
-    
+    /**
+     * Renders and sends a black card to the game channel.
+     * @param {String} cardText The text to display on the card
+     * @returns {Buffer} A buffer of the generated PNG
+     */
     async renderCard (cardText) {
         const canvas = createCanvas(300, 300)
         const ctx = canvas.getContext('2d')
@@ -445,21 +423,19 @@ module.exports = class CardsAgainstHumanity extends Game {
         }
         
         const fileName = Math.round(Math.random()*1000000) + '.png'
-        const filePath = `${tempDir}/${fileName}`
-        const out = fs.createWriteStream(filePath)
+        //const filePath = `${tempDir}/${fileName}`
         const stream = canvas.createPNGStream()
-        stream.pipe(out)
-        
-        out.on('finish', () =>  {
-            const embed = new Discord.RichEmbed()
-            .setTitle('This round\'s black card')
-            .attachFiles([filePath])
-            .setFooter(this.blackCard.clean)
-            .setImage(`attachment://${fileName}`)
-            .setColor(4886754)
-            this.msg.channel.send(embed)
-            .then(() => fs.unlinkSync(filePath))
-        }) 
+        const embed = new Discord.RichEmbed()
+        .setTitle('This round\'s black card')
+        .attachFile({
+            attachment: stream,
+            name: fileName
+        })
+        .setFooter(this.blackCard.clean)
+        .setImage(`attachment://${fileName}`)
+        .setColor(4886754)
+        this.msg.channel.send(embed).catch(console.error)
+        return stream
     }
 
     renderPlayerHand(player) {
