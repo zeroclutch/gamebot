@@ -2,12 +2,12 @@
 const options = require('./../../config/options')
 
 module.exports = {
-  name: 'play',
-  usage: 'play <game>',
-  aliases: ['p'],
-  description: 'Starts a new game!',
-  category: 'fun',
-  permissions: [],
+  name: 'debug',
+  usage: 'debug <game>',
+  aliases: ['db'],
+  description: 'Starts a new game with no minimum player count.',
+  category: 'dev',
+  permissions: ['GOD'],
   dmCommand: false,
   args: true,
   run: function(msg, args) {
@@ -32,6 +32,9 @@ module.exports = {
     
     // create new instance of game
     msg.channel.game = new (game)(msg, gameOptions)
+
+    // configure dev options
+    msg.channel.game.playerCount.min = 0
 
     // run initialization of game
     msg.channel.game.init()

@@ -1,19 +1,6 @@
 // create Collection<Game> of all the games
 const Discord = require('../../discord_mod')
 const options = require('../../config/options')
-const fs = require('fs')
-
-
-var games = new Discord.Collection()
-const folder = fs.readdirSync('./games');
-
-// add game classes to collection
-for(const file of folder) {
-  // ignore game
-  if(file == 'Game.js') continue
-  let game = require(`../../games/${file}`);
-  games.set(game.id.toLowerCase(), game);
-}
 
 module.exports = {
     name: 'info',
@@ -26,15 +13,15 @@ module.exports = {
     args: true,
     run: function(msg, args) {
         // require() selected game and get their exported info
-        const selection = args.join(' ')
-        const game = games.get(selection) || games.find(game => game.name.toLowerCase() == selection.toLowerCase())
+        const selection = args.join(' ').toLowerCase()
+        const game = msg.client.games.findKey((game, meta) => meta.id == selection || meta.name.toLowerCase() == selection)
         if(!game) {
             msg.channel.sendMsgEmbed('Game not found.', 'Error!', 13632027)
             return
         } else {
             msg.channel.send({
                 embed: {
-                    title: `${game.gameName} [${game.id}]`,
+                    title: `${game.name} [${game.id}]`,
                     description: game.about,
                     color: 4886754,
                     thumbnail: {

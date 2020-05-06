@@ -17,7 +17,7 @@ module.exports = {
                     description: `You have **${user.balance}**${options.creditIcon}.`,
                     color: 4513714,
                     footer: {
-                        text: `Get credits by typing ${options.prefix}daily or from giveaways in the support server!`
+                        text: `Get credits by typing ${options.prefix}daily, ${options.prefix}donate, and from giveaways in the support server!`
                     }
                 } 
             })
