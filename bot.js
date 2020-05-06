@@ -1,6 +1,11 @@
 require('dotenv').config()
 const Discord = require("./discord_mod.js")
-const client = new Discord.Client()
+const client = new Discord.Client({
+  messageCacheLifetime: 120,
+  messageSweepInterval: 10,
+  messageCacheMaxSize: 50,
+  disabledEvents: ['TYPING_START','MESSAGE_UPDATE', 'PRESENCE_UPDATE', 'GUILD_MEMBER_ADD', 'GUILD_MEMBER_REMOVE']
+})
 const fs = require('fs')
 const options = require('./config/options')
 
