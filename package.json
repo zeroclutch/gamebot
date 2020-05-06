@@ -4,12 +4,13 @@
   "description": "Add multiplayer games to Discord with Gamebot!",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "debug": "node --nolazy --inspect-brk=9229 server.js"
   },
   "author": "zeroclutch",
   "license": "MIT",
   "engines": {
-    "node": "10.14.1"
+    "node": "10.x.x"
   },
   "dependencies": {
     "body-parser": "^1.19.0",

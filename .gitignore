@@ -16,6 +16,7 @@ node_modules/
 
 # dotenv environment variables file
 .env
+app.yaml
 
 # store files
 .DS_Store

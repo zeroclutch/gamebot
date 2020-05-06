@@ -1,6 +1,11 @@
 require('dotenv').config()
 const Discord = require("./discord_mod.js")
-const client = new Discord.Client()
+const client = new Discord.Client({
+  messageCacheLifetime: 120,
+  messageSweepInterval: 10,
+  messageCacheMaxSize: 50,
+  disabledEvents: ['TYPING_START','MESSAGE_UPDATE', 'PRESENCE_UPDATE', 'GUILD_MEMBER_ADD', 'GUILD_MEMBER_REMOVE']
+})
 const fs = require('fs')
 const options = require('./config/options')
 
@@ -42,8 +47,6 @@ dbClient.connect(err => {
 })
 
 
-
-// bandaid fix
 client.setMaxListeners(40)
 
 // configure Discord logging
@@ -90,10 +93,10 @@ const commandFiles = fs.readdirSync('./commands');
 for (const commandFolder of commandFiles) {
   //search through each folder
   if(!commandFolder.includes('.DS_Store')) {
-    const folder = fs.readdirSync(`./commands/${commandFolder}`);
+    const folder = fs.readdirSync(`./commands/${commandFolder}`)
     for(const file of folder) {
       if(file == '.DS_Store') continue
-      const command = require(`./commands/${commandFolder}/${file}`);
+      const command = require(`./commands/${commandFolder}/${file}`)
       client.commands.set(command.name, command);
     }
   }
@@ -101,14 +104,15 @@ for (const commandFolder of commandFiles) {
 
 
 client.games = new Discord.Collection()
-const folder = fs.readdirSync('./games');
+const folder = fs.readdirSync('./games')
 
 // add game classes to collection
-for(const file of folder) {
+for(let game of folder) {
   // ignore Game class
-  if(file == 'Game.js') continue
-  let game = require(`./games/${file}`);
-  client.games.set(game.id.toLowerCase(), game);
+  if(game == 'Game.js' || game == '.DS_Store') continue
+  let runFile = require(`./games/${game}/main`)
+  let metadata = require(`./games/${game}/metadata.json`)
+  client.games.set(metadata, runFile)
 }
 
 // provide help
@@ -125,8 +129,6 @@ client.help = function(msg, command) {
                     \nAliases: \`${(helpCmd.aliases.join(", ")||'None')}\``)
     // find list of commands
   } else {
-      var list = {},
-          response = '**Commands**\n'
       // sort each command by category
       // get category list
       var categories = []
@@ -168,9 +170,9 @@ client.on('message', async function(msg) {
   if (msg.content.startsWith(`<@${client.user.id}>`)) msg.content = msg.content.replace(`<@${client.user.id}> `, prefix).replace(`<@${client.user.id}>`, prefix)
   if (!msg.content.startsWith(prefix) || msg.author.bot) return
 
-  const message = msg.content.substring(prefix.length, msg.content.length).split(" ")
+  let message = msg.content.substring(prefix.length, msg.content.length).split(' ')
   
-  const command = { 
+  let command = { 
     name: message[0],
     args: message.splice(1)
   }
