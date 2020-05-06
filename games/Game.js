@@ -1,7 +1,5 @@
-const options = require('./../../config/options')
-const Discord = require('./../../discord_mod')
-const fs = require('fs')
-const metadata = require('./metadata.json')
+const options = require('../config/options')
+const Discord = require('../discord_mod')
 
 module.exports = class Game {
     /**
@@ -11,7 +9,7 @@ module.exports = class Game {
      */
     constructor(msg, settings) {
         /** REQUIRED FIELDS **/
-        this.metadata = metadata
+        this.metadata = { id: 'game', name: 'Game', about: 'About this game.', rules: 'Rules for this game.', playerCount: { min: 99, max: 99} }
         this.msg = msg
         this.channel = msg.channel
         this.gameMaster = msg.author
