@@ -1,15 +1,15 @@
 // Global dependencies
-const options = require('./../../config/options')
-const Discord = require('./../../discord_mod')
-const metadata = require('./metadata.json')
+const options = require('../../../config/options')
+const Discord = require('../../../discord_mod')
+const metadata = require('../metadata.json')
 const fs = require('fs')
 
 // CAH dependencies
-const Game = require('./../Game/Game')
+const Game = require('../../Game')
 const { createCanvas, registerFont, loadImage } = require('canvas')
-const { whiteCards, blackCards } = require('./assets/cards')
-const CAHDeck = require('./classes/CAHDeck')
-const BlackCard = require('./classes/BlackCard')
+const { whiteCards } = require('../assets/cards')
+const CAHDeck = require('./CAHDeck')
+const BlackCard = require('./BlackCard')
 
 const CARD_PACKS = {
     '90sn_pack': '90s',
@@ -85,8 +85,6 @@ module.exports = class CardsAgainstHumanity extends Game {
      * rules: the instructions on how to play the game
      * players: array of players in the game, Array<GuildMember>
      */
-
-
     constructor(msg, settings) {
         super(msg, settings)
         this.metadata = metadata
@@ -153,7 +151,6 @@ module.exports = class CardsAgainstHumanity extends Game {
         // kick command
         if(msg.content.startsWith(`${options.prefix}kick `) && msg.author.id == this.gameMaster.id && msg.channel.id == this.msg.channel.id) {
             const user = msg.content.substring(options.prefix.length + 4).replace(/\D/g, '')
-            // TODO ADD THIS CODE TO LEAVE AND ADD CMDS
             if(this.playersToKick.find(player => player == user)) {
                 msg.channel.sendMsgEmbed(`<@${user}> is already being removed at the start of the next round.`)
                 return
@@ -196,7 +193,6 @@ module.exports = class CardsAgainstHumanity extends Game {
                     this.msg.channel.sendMsgEmbed(`${member.user} was added to the game.`)
                     return
                 }
-                // refresh czars list
                 msg.channel.sendMsgEmbed(`${member.user} will be added at the start of the next round.`)
             }
             
@@ -415,15 +411,8 @@ module.exports = class CardsAgainstHumanity extends Game {
 
         ctx.font = '16px SF Pro Display Bold'
         ctx.fillText('Gamebot for Discord', 50, 270)
-
-        const tempDir = './assets/temp'
-
-        if (!fs.existsSync(tempDir)) {
-            fs.mkdirSync(tempDir);
-        }
         
         const fileName = Math.round(Math.random()*1000000) + '.png'
-        //const filePath = `${tempDir}/${fileName}`
         const stream = canvas.createPNGStream()
         const embed = new Discord.RichEmbed()
         .setTitle('This round\'s black card')

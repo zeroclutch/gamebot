@@ -1,7 +1,6 @@
-const Game = require('./../Game/Game')
-const options = require('./../../config/options')
-const Discord = require('./../../discord_mod')
-const metadata = require('./metadata.json')
+const Game = require('../../Game')
+const options = require('../../../config/options')
+const metadata = require('../metadata.json')
 const fs = require('fs')
 
 var words = fs.readFileSync('./gameData/WordGames/Collins_Scrabble_Dictionary.txt', { encoding: 'utf-8' }, err => {

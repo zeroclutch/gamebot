@@ -104,8 +104,8 @@ const folder = fs.readdirSync('./games')
 // add game classes to collection
 for(let game of folder) {
   // ignore Game class
-  if(game == 'Game' || game == '.DS_Store') continue
-  let runFile = require(`./games/${game}/Game`)
+  if(game == 'Game.js' || game == '.DS_Store') continue
+  let runFile = require(`./games/${game}/main`)
   let metadata = require(`./games/${game}/metadata.json`)
   client.games.set(metadata, runFile)
 }
@@ -124,8 +124,6 @@ client.help = function(msg, command) {
                     \nAliases: \`${(helpCmd.aliases.join(", ")||'None')}\``)
     // find list of commands
   } else {
-      var list = {},
-          response = '**Commands**\n'
       // sort each command by category
       // get category list
       var categories = []
@@ -167,9 +165,9 @@ client.on('message', async function(msg) {
   if (msg.content.startsWith(`<@${client.user.id}>`)) msg.content = msg.content.replace(`<@${client.user.id}> `, prefix).replace(`<@${client.user.id}>`, prefix)
   if (!msg.content.startsWith(prefix) || msg.author.bot) return
 
-  const message = msg.content.substring(prefix.length, msg.content.length).split(" ")
+  let message = msg.content.substring(prefix.length, msg.content.length).split(' ')
   
-  const command = { 
+  let command = { 
     name: message[0],
     args: message.splice(1)
   }
