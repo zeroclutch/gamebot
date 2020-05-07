@@ -495,6 +495,17 @@ module.exports = class Game {
             this.msg.channel.game = undefined
             this.msg.client.removeListener('message', this.messageListener)
         })
+
+
+        // If there's downtime and there was the last game, let the owner know that the bot is safe to restart.
+        this.msg.client.getTimeToDowntime().then(async timeToDowntime => {
+            if(timeToDowntime > 0) {
+                let activeGames = await this.msg.client.shard.broadcastEval('this.channels.filter(c => c.game).size')
+                if(activeGames.reduce((prev, val) => prev + val) == 0) {
+                    this.msg.client.channels.get(options.loggingChannel).send(`All games finished, <@${options.ownerID}>`)
+                }
+            }
+        })
     }
 
     /**

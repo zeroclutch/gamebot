@@ -33,16 +33,17 @@ module.exports = {
             embed.setTitle(`Shop Items - ${shopCategories.length} Categor${shopCategories.length == 1 ? 'y' : 'ies'}`)
             embed.setColor(3510190)
             shopCategories.forEach(async (itemType, index) => {
-                const game = msg.client.games.get(itemType).gameName
-                const count = items.filter(item => item.game == itemType).length
+                let game = msg.client.games.findKey((game, meta) => meta.id == itemType).name
+                let count = items.filter(item => item.game == itemType).length
                 embed.addField(`Category: ${game || itemType} - ${count} item${count == 1 ? '' : 's'}`, `Type \`${options.prefix}shop ${itemType}\` to view all items.`)
             })
             embed.setFooter(`To see the available items in a category, type ${options.prefix}shop <category name>.`)
             await msg.channel.send({ embed }).catch(console.error)
         } else {
-            const game = args[0].toLowerCase()
-            if(msg.client.games.get(game)) {
-               var shopItems = await collection.find({ game }).toArray()
+            let selection = args[0].toLowerCase()
+            let game = msg.client.games.findKey((game, meta) => meta.id == selection || meta.name == selection)
+            if(game) {
+               var shopItems = await collection.find({ game: game.id }).toArray()
 
                // get categories
                var itemTypes = []
