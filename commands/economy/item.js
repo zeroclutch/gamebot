@@ -33,12 +33,13 @@ module.exports = {
         // display item info
         if (command == 'info' || command == 'buy') {
             var embed = new Discord.RichEmbed()
+            let game = msg.client.games.findKey((game, meta) => meta.id == item.game).name
             embed.setTitle(`Info for ${item.friendlyName} - \`${item.itemID}\``)
             embed.setColor(3510190)
             embed.setDescription(`
             **Description:** ${item.description}
             **Cost:** ${item.cost}${options.creditIcon}
-            **Game:** ${msg.client.games.get(item.game).gameName}`)
+            **Game:** ${game}`)
             if(item.image) {
                 let image = `./assets/images/cah-shop/${item.image}`
                 embed.attachFile(image)
