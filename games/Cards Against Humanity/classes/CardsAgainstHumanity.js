@@ -809,28 +809,4 @@ module.exports = class CardsAgainstHumanity extends Game {
         })
     }
 
-    async end(winner) {
-        this.stage = 'over'
-
-        var endPhrase = ''
-        if(winner) {
-            endPhrase = `${winner.user} has won!`
-        } else {
-            endPhrase = 'Game ended. There is no winner.'
-        }
-
-        this.msg.channel.sendMsgEmbed(endPhrase).then(msg => {
-            this.clearCollectors(this.collectors)
-            this.reset()
-            this.msg.channel.gamePlaying = false
-            this.msg.channel.game = undefined
-            this.msg.client.removeListener('message', this.messageListener)
-        })
-    }
-
-    forceStop() {
-        this.ending = true
-        this.end()
-    }
-
 }
