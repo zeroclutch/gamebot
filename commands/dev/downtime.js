@@ -8,24 +8,27 @@ module.exports = {
     category: 'dev',
     permissions: ['GOD'],
     dmCommand: true,
-    args: true,
+    args: false,
     run: function(msg, args) {
         const collection = msg.client.database.collection('status')
         const length =  Math.round(parseFloat(args[0]) * 60000)
         const startTime = Date.now() + length
         if(!args[0]) {
-            msg.channel.sendMsgEmbed('Would you like to disable the current downtime message? Enter `yes` or `no`.')
-            msg.channel.awaitMessages(m => (m.content.toLowerCase() == 'yes' || m.content.toLowerCase() == 'no') && m.author.id == msg.author.id, {max: 1, time: 30000 }).then(collected => {
-                const message = collected.first().content.toLowerCase()
-                if(message == 'yes') {
-                    collection.findOneAndUpdate(
-                        { type: 'downtime' },
-                        { $set: { downtimeStart: -1 } }
-                    )
-                    msg.channel.sendMsgEmbed('Downtime cancelled.')
-                } else {
-                    msg.channel.sendMsgEmbed('Downtime not cancelled.')
-                }
+            msg.client.getTimeToDowntime().then(timeToDowntime => {
+                var downtime = Math.ceil(timeToDowntime / 60000)
+                msg.channel.sendMsgEmbed(`Downtime currently set for ${downtime} minute(s). Would you like to disable the current downtime message? Enter \`yes\` or \`no\`.`)
+                msg.channel.awaitMessages(m => (m.content.toLowerCase() == 'yes' || m.content.toLowerCase() == 'no') && m.author.id == msg.author.id, {max: 1, time: 30000 }).then(collected => {
+                    const message = collected.first().content.toLowerCase()
+                    if(message == 'yes') {
+                        collection.findOneAndUpdate(
+                            { type: 'downtime' },
+                            { $set: { downtimeStart: -1 } }
+                        )
+                        msg.channel.sendMsgEmbed('Downtime cancelled.')
+                    } else {
+                        msg.channel.sendMsgEmbed('Downtime not cancelled.')
+                    }
+                })
             })
         } else if(!isNaN(length)) {
             collection.findOneAndUpdate(
