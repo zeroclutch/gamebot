@@ -13,15 +13,15 @@ module.exports = class ConnectFour extends Game {
             {
                 friendlyName: 'Board Height',
                 type: 'free',
-                default: 8,
-                filter: m => !isNaN(m.content) && (parseInt(m.content) <= 15) && (parseInt(m.content) >= 5),
+                default: 6,
+                filter: m => !isNaN(m.content) && (parseInt(m.content) <= 15) && (parseInt(m.content) >= 3),
                 note: `Enter how tall the board's height should be, from 5 to 15. Larger boards are recommended for more players.`
             },
             {
                 friendlyName: 'Board Width',
                 type: 'free',
-                default: 8,
-                filter: m => !isNaN(m.content) && (parseInt(m.content) <= 10) && (parseInt(m.content) >= 5),
+                default: 7,
+                filter: m => !isNaN(m.content) && (parseInt(m.content) <= 10) && (parseInt(m.content) >= 3),
                 note: `Enter how tall the board's height should be, from 7 to 10. Larger boards are recommended for more players.`
             },
             {
@@ -114,7 +114,7 @@ module.exports = class ConnectFour extends Game {
             board += '\n'
         }
 
-        return `\`\`\`http\n${board}${footer}\`\`\``
+        return `\`\`\`${board}${footer}\`\`\``
     }
 
     /**
@@ -211,7 +211,7 @@ module.exports = class ConnectFour extends Game {
             let column = -1
             do {
                 if(this.ending) return
-                await this.channel.sendMsgEmbed(`${this.renderBoard()}\n\n${player.user} ${ICONS[player.id]}, select a column between 1-${this.board[0].length} in ${Math.floor(this.timeLimit/1000)} seconds!`).catch(console.error)
+                await this.channel.sendMsgEmbed(`First to ${this.options['Connect More?']} in a row wins!\n${this.renderBoard()}\n\n${player.user} ${ICONS[player.id]}, select a column between 1-${this.board[0].length} in ${Math.floor(this.timeLimit/1000)} seconds!`).catch(console.error)
                 column = await this.allowSelection(player).catch(console.error)
             } while(this.columnIsFull(column))
             this.dropTile(player.id, column)

@@ -493,7 +493,7 @@ module.exports = class Game {
         }
 
         // Send a message in the game channel (this.msg.channel) that the game is over.
-        this.msg.channel.sendMsgEmbed(endPhrase, 'Game over!').then(msg => {
+        this.msg.channel.sendMsgEmbed(endPhrase, 'Game over!', options.colors.economy).then(msg => {
             this.clearCollectors(this.collectors)
             // Remove all event listeners created during this game.
             this.msg.channel.gamePlaying = false
