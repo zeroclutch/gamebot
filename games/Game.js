@@ -9,15 +9,15 @@ module.exports = class Game {
      */
     constructor(msg, settings) {
         /** REQUIRED FIELDS **/
-        this.metadata = { id: 'game', name: 'Game', about: 'About this game.', rules: 'Rules for this game.', playerCount: { min: 99, max: 99} }
+        this.metadata = { id: 'game', name: 'Game', about: 'About this game.', rules: 'Rules for this game.', playerCount: { min: 1, max: 20} }
         this.msg = msg
         this.channel = msg.channel
         this.gameMaster = msg.author
         this.players = new Discord.Collection()
         this.ending = false
         this.playerCount = {
-            min: 1,
-            max: 20
+            min: this.metadata.playerCount.min,
+            max: this.metadata.playerCount.max
         }
         this.collectors = [] // Whenever a MessageCollector or ReactionCollector is created, push it to this.collectors
         this.messageListener = msg => { this.onMessage(msg) } // whenever a message is sent, it is handled by the this.onMessage(msg) callback
@@ -66,10 +66,15 @@ module.exports = class Game {
 
             this.join(async () => {
                 await this.generateOptions()
-                // Allow game leader to configure options
-                await this.configureOptions()
+                
+                if(this.gameOptions) {
+                    // Allow game leader to configure options
+                    await this.configureOptions()
+                }
+
                 // Initialize specific game
                 await this.gameInit()
+
                 // Begin playing the game
                 await this.play()
             })
@@ -96,7 +101,7 @@ module.exports = class Game {
         this.addPlayer(this.gameMaster.id)
 
         const filter = m => (m.content.startsWith(`${options.prefix}join`) && !this.players.has(m.author.id)) || (m.author.id == this.gameMaster.id && m.content.startsWith(`${options.prefix}start`))
-        const collector = this.channel.createMessageCollector(filter, { max: this.playerCount.max, time: 120000 })
+        const collector = this.channel.createMessageCollector(filter, { max: this.metadata.playerCount.max, time: 120000 })
         this.collectors.push(collector)
         collector.on('collect', m => {
             if(this.ending) return
@@ -114,7 +119,7 @@ module.exports = class Game {
             let size = this.players.size
             if(this.playersToAdd)  size += this.playersToAdd.length
             if(this.playersToKick) size -= this.playersToKick.length
-            if(size >= this.playerCount.min) {
+            if(size >= this.metadata.playerCount.min) {
                 let players = []
                 this.players.forEach(player => { players.push(player.user) })
                 this.msg.channel.sendMsgEmbed(`${players.join(", ")} joined the game!`, 'Time\'s up!')
@@ -386,8 +391,8 @@ module.exports = class Game {
     addPlayer(member) {
         if(typeof member == 'string') member = this.msg.guild.members.get(member)
         
-        if(this.players.size >= this.playerCount.max) {  
-            this.msg.channel.sendMsgEmbed(`The game can't have more than ${this.playerCount.max} player${this.playerCount.max == 1 ? '' : 's'}! Player could not be added.`)
+        if(this.players.size >= this.metadata.playerCount.max) {  
+            this.msg.channel.sendMsgEmbed(`The game can't have more than ${this.metadata.playerCount.max} player${this.metadata.playerCount.max == 1 ? '' : 's'}! Player could not be added.`)
             return
         }
 
@@ -447,8 +452,8 @@ module.exports = class Game {
             return
         }
 
-        if(this.players.size <= this.playerCount.min) {
-            this.msg.channel.sendMsgEmbed(`The game can't have fewer than ${this.playerCount.min} player${this.playerCount.min == 1 ? '' : 's'}! Player could not be removed.`)
+        if(this.players.size <= this.metadata.playerCount.min) {
+            this.msg.channel.sendMsgEmbed(`The game can't have fewer than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! Player could not be removed.`)
             return
         }
 
@@ -481,14 +486,14 @@ module.exports = class Game {
             if(winner) {
                 endPhrase = `${winner.user} has won!`
             } else {
-                endPhrase = '**Game ended.**'
+                endPhrase = ''
             }
 
             endPhrase += `\nTo play games with the community, [join our server](${options.serverInvite})!`
         }
 
         // Send a message in the game channel (this.msg.channel) that the game is over.
-        this.msg.channel.sendMsgEmbed(endPhrase).then(msg => {
+        this.msg.channel.sendMsgEmbed(endPhrase, 'Game over!').then(msg => {
             this.clearCollectors(this.collectors)
             // Remove all event listeners created during this game.
             this.msg.channel.gamePlaying = false

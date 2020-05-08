@@ -3,7 +3,7 @@ module.exports = {
   token: process.env.DISCORD_BOT_TOKEN,
   ownerID: process.env.OWNER_ID,
   activity: {
-    game: process.env.PREFIX + 'games',
+    game: 'Type ' + process.env.PREFIX + 'help',
     type: 'PLAYING'
   },
   loggingChannel: process.env.LOGGING_CHANNEL,
