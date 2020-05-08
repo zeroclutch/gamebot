@@ -34,6 +34,7 @@ module.exports = {
     msg.channel.game = new (game)(msg, gameOptions)
 
     // configure dev options
+    msg.channel.game.metadata.playerCount.min = 0
     msg.channel.game.playerCount.min = 0
 
     // run initialization of game
