@@ -16,7 +16,7 @@ module.exports = {
       msg.channel.sendMsgEmbed(`**Active Games:** ${games.reduce((acc, val) => acc + val)}\n
       **Total Guilds:** ${guilds.reduce((prev, val) => prev + val, 0)}\n
       **Total Channels:** ${channels.reduce((prev, val) => prev + val, 0)}\n
-      **Total Users:** ${channels.reduce((prev, val) => prev + val, 0)}\n
+      **Total Users:** ${users.reduce((prev, val) => prev + val, 0)}\n
       **Users in DB:** ${usersInDB.count}\n
       `)
     })
