@@ -1,14 +1,36 @@
+
+![](https://cdn.discordapp.com/attachments/618344107290525698/618657323380113419/information.png)
+
 # Gamebot for Discord
 
-Add multiplayer games to Discord with Gamebot! **You can invite the bot to your server [using this link.](https://discordapp.com/oauth2/authorize?client_id=620307267241377793&scope=bot&permissions=1547041872)**
+Add fun multiplayer games to Discord with Gamebot! **You can invite the bot to your server [using this link.](https://discordapp.com/oauth2/authorize?client_id=620307267241377793&scope=bot&permissions=1547041872)**
 
-# About
+[![Discord Bots](https://top.gg/api/widget/620307267241377793.svg)](https://top.gg/bot/620307267241377793)
 
-## Main Features
-* In-depth multiplayer games that can be played for fun or as server events!
-* Economy system with tons of unlockable in-game content *(coming soon)*!
+# Main Features
+* In-depth multiplayer games that can be played for fun or for server events
+* Economy system with tons of unlockable in-game content
+* Frequent updates and a large userbase
+* Easy-to-use commands
+* No setup or configuration required to start playing
+* Helpful and responsive support server
 
-## Commands
+# Current Game List
+## 1. Cards Against Humanity
+### *A party game for horrible people.*
+Each round, a black card is selected, and everyone else answers with their funniest white card. Your white cards will be DMed to you, and you will select one. One player is selected to be the Card Czar each round, and they give a point to the player with the funniest white card.
+
+## 2. Anagrams
+### *Unscramble words in a frenzy against your friends.*
+Everyone is given a set of letters, and score points by making words. Whoever makes the most words in 60 seconds is the winner! Longer words get more points, and duplicates aren't allowed.
+
+## 3. Connect 4
+### *Classic Connect 4, but with a whole lot more.*
+Players take turns dropping one colored disc into a game board, which falls to the bottom. Whoever gets four in a row diagonally, horizontally, or vertically, wins! Try playing with more than 2 people, or playing the Connect 3 or Connect 5 variants.
+
+>  **Note:** More games are in development!
+
+# Commands
 
 `&play <game>` - Starts a new game!
 
@@ -21,6 +43,20 @@ Add multiplayer games to Discord with Gamebot! **You can invite the bot to your 
 `&invite` - Invite the bot to your server!
 
 `&ping` - Pings the server.
+
+**Economy Commands**
+
+`&balance` - Get your current balance.
+
+`&daily` - Claim today's credits for voting on the bot.
+
+`&donate` - Get credits and rewards for donating to Gamebot!
+
+`&inventory <item type>` - Display the items that you have purchased.
+  
+`&item <buy/info> <item id>` - Buys or displays info for a specific item.
+  
+`&shop <game (optional)>` - Shows the available shop items for a game.
 
 **In-game Commands**
 
@@ -38,15 +74,4 @@ Add multiplayer games to Discord with Gamebot! **You can invite the bot to your 
 
 Join the [Discord Support Server here](https://discord.gg/7pNEJQC).
 
-[<img src="./assets/images/invite_link.png">](https://discord.gg/7pNEJQC)
-
-# Current Game List
-## 1. Cards Against Humanity
-### *A party game for horrible people.*
-Each round, a black card is selected, and everyone else answers with their funniest white card. Your white cards will be DMed to you, and you will select them from your DMs. One player is selected to be the Card Czar each round, and they give a point to the player with the funniest white card.
-
->**Note:** More games are in development.
-
-# Contributing
-
-If you want to contribute to game development, read [the creating a game guide.](./CREATING_A_GAME.md) If you have any questions, contact zerooo#1234 on Discord.
+![](https://github.com/zeroclutch/gamebot/blob/master/assets/images/invite_link.png?raw=true)
