@@ -20,7 +20,7 @@ module.exports = {
         var item = await collection.find(filter).toArray()
         item = item[0]
         if(!item) {
-            msg.channel.sendMsgEmbed(`Type \`${options.prefix}shop <game>\` to see available shop items. Be sure to enter the **item ID** if you want to view an item, **not the item name**.`, 'Item not found!', 13632027)
+            msg.channel.sendMsgEmbed(`Type \`${options.prefix}shop <game>\` to see available shop items. You can enter the item ID or the item name to specify an item.`, 'Item not found!', 13632027)
             return
         }
 
