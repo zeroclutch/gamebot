@@ -80,7 +80,7 @@ module.exports = {
 
                     let message
                     if(index == 0) {
-                        message = `**${msg.client.games.get(game).gameName}** Shop - ${shopItems.length} items`
+                        message = `**${game.name}** Shop - ${shopItems.length} items`
                     } 
                     await msg.channel.send(message, embed)
                 })
