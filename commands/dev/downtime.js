@@ -39,6 +39,10 @@ module.exports = {
                 msg.client.emit('downtimeStart')
             }, length);
             msg.channel.sendMsgEmbed(`Downtime enabled for ${args[0]} minute(s).`)
+
+            // Update players currently in game about the oncoming downtime.
+            msg.client.shard.broadcastEval("this.channels.filter(c => c.game).forEach(c => c.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in " + args[0] + " minute" + (args[0] == 1 ? "" : "s") + ". Any active games will be automatically ended. For more information, [see our support server.](" + options.serverInvite + ")`, `Warning!`, " + options.colors.warning + "))")
+
         } else {
             msg.channel.sendMsgEmbed(`Invalid time, set time as a floating point value in minutes.`, 'Error!', options.colors.error)
         }
