@@ -507,7 +507,8 @@ module.exports = class Game {
             if(timeToDowntime > 0) {
                 let activeGames = await this.msg.client.shard.broadcastEval('this.channels.filter(c => c.game).size')
                 if(activeGames.reduce((prev, val) => prev + val) == 0) {
-                    this.msg.client.channels.get(options.loggingChannel).send(`All games finished, <@${options.ownerID}>`)
+                    let channel = this.msg.client.channels.get(options.loggingChannel)
+                    if(channel) channel.send(`All games finished, <@${options.ownerID}>`)
                 }
             }
         })
