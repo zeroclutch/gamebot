@@ -76,9 +76,14 @@ client.dbl = dbl
 client.login(process.env.DISCORD_BOT_TOKEN)
 
 client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag} on shard ${client.shard.id}!`); 
-  client.user.setActivity(options.activity.game, { type: options.activity.type }) 
+  // Logged in!
+  console.log(`Logged in as ${client.user.tag} on shard ${client.shard.id}!`)
+
+  // Refresh user activity
+  client.user.setActivity(options.activity.game, { type: options.activity.type })
   .catch(console.error);
+
+  // Post DBL stats every 30 minutes
   setInterval(() => {
     if(dbl)
       dbl.postStats(client.guilds.size, client.shard.id, client.shard.count);
@@ -198,7 +203,7 @@ client.on('message', async function(msg) {
   
   if(cmd) {
     // test for permissions
-    if(cmd.permissions && msg.author.id !== process.env.OWNER_ID && (cmd.permissions.includes('GOD') || cmd.permissions && !msg.member ||!msg.member.hasPermission(cmd.permissions))) {
+    if(cmd.permissions && cmd.permissions.length > 0 && msg.author.id !== process.env.OWNER_ID && (cmd.permissions.includes('GOD') || !msg.member ||!msg.member.hasPermission(cmd.permissions))) {
       msg.channel.sendMsgEmbed('Sorry, you don\'t have the necessary permissions for this command.')
       return
     }
