@@ -2,13 +2,18 @@ const Game = require('../../Game')
 const options = require('../../../config/options')
 const metadata = require('../metadata.json')
 
-const ICONS = ['⚪️','🔴','🔵', '🟢', '🟡', '🟣', '🟤']
+const ICONS = ['⚪️','🔴','🔵', '💚', '💛', '💜', '🖤']
 const FOOTER = ['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟']
 
+/**
+ * The base class for Connect 4 games.
+ */
 module.exports = class ConnectFour extends Game {
     constructor(msg, settings) {
         super(msg, settings)
+        
         this.metadata = metadata
+
         this.gameOptions = [
             {
                 friendlyName: 'Board Height',
@@ -36,17 +41,6 @@ module.exports = class ConnectFour extends Game {
         this.defaultPlayer = {
             id: -1
         }
-        
-        /*this.board = [
-            [0,0,0,0,0,1,2,2],
-            [0,0,0,0,0,2,1,1],
-            [0,0,0,0,0,1,2,2],
-            [0,0,0,0,0,1,2,1],
-            [0,0,0,0,2,2,1,1],
-            [0,0,0,2,1,2,1,2],
-            [0,0,0,0,1,2,2,1],
-            [0,0,0,0,0,0,2,1],
-        ]*/
 
         this.timeLimit = 60000
 
@@ -89,7 +83,7 @@ module.exports = class ConnectFour extends Game {
     /**
      * Check if a column is full
      * @param {Number} column The column to consider.
-     * @returns true if the column has no more blank spaces.
+     * @returns {Boolean} true if the column has no more blank spaces.
      */
     columnIsFull(column) {
         if(!this.board[0][column]) return false
@@ -98,7 +92,7 @@ module.exports = class ConnectFour extends Game {
     }
 
     /**
-     * @returns the game board, stringified
+     * @returns {String} the game board, stringified
      */
     renderBoard () {
         let arr = this.board
