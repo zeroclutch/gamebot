@@ -1,45 +1,179 @@
 const options = require('../config/options')
 const Discord = require('../discord_mod')
 
+/**
+ * The base class for all games.
+ */
 module.exports = class Game {
     /**
-     * 
+     * Creates a new game.
      * @param {Discord.Message} msg The message object.
-     * @param {object} settings An optional object with custom settings for the game.
+     * @param {Object} settings     An optional object with custom settings for the game.
      */
     constructor(msg, settings) {
-        /** REQUIRED FIELDS **/
-        this.metadata = { id: 'game', name: 'Game', about: 'About this game.', rules: 'Rules for this game.', playerCount: { min: 1, max: 20} }
+        /**
+         * @typedef GameMetadata
+         * @type {Object}
+         * @property {String} id              The game's unique identifier.
+         * @property {String} name            The name of the game.
+         * @property {String} about           A short description about the game.
+         * @property {String} rules           This game's rules and instructions.
+         * @property {Object} playerCount     The number of players that can join this game.
+         * @property {number} playerCount.min The minimum required number of players.
+         * @property {number} playerCount.max The maximum required number of players.
+         */
+
+        /**
+         * The metadata from the game, typically read from a metadata.json file.
+         * @type {GameMetadata}
+         * @example
+         * this.metadata = require('./metadata.json')
+         * @static
+         */
+        this.metadata = {
+            id: 'game',
+            name: 'Game',
+            about: 'About this game.',
+            rules: 'Rules for this game.',
+            playerCount: {
+                min: 1,
+                max: 20
+            }
+        }
+        
+        /**
+         * The Discord message that initialized this game.
+         * @type {Discord.Message}
+         */
         this.msg = msg
+
+        /**
+         * The Discord channel that this game is played in.
+         * @type {Discord.TextChannel}
+         */
         this.channel = msg.channel
+
+        /**
+         * The Discord user who initialized this game.
+         * @type {Discord.User}
+         */
         this.gameMaster = msg.author
+
+        /**
+         * The collection of players who are added to this game during the join phase.
+         * @type {Discord.Collection}
+         */
         this.players = new Discord.Collection()
+
+        /**
+         * Helper field that is only true when `this.forceStop()` is called. This should be used to prevent the game from continuing when unexpectedly ended.
+         * @type {Boolean}
+         * @example
+         * const collector = this.channel.createMessageCollector(filter, options)
+         * collector.on('message', message => {
+         *     if(this.ending) return
+         *     // ...
+         * })
+         */
         this.ending = false
+
+        /**
+         * The game's minimum and maximum player count. Use `this.metadata` instead.
+         * @type {Object}
+         * @namespace
+         * @property {Number} min The minimum player count for this game.
+         * @property {Number} max The maximum player count for this game.
+         * @deprecated
+         */
         this.playerCount = {
             min: this.metadata.playerCount.min,
             max: this.metadata.playerCount.max
         }
-        this.collectors = [] // Whenever a MessageCollector or ReactionCollector is created, push it to this.collectors
-        this.messageListener = msg => { this.onMessage(msg) } // whenever a message is sent, it is handled by the this.onMessage(msg) callback
+
+        /**
+         * A list of collectors that is cleared when `this.clearCollectors(this.collectors)` is called. Whenever a `MessageCollector` or `ReactionCollector` is created, push it to `this.collectors()`.
+         * @type {Array<Discord.Collector>}
+         * @deprecated
+         */
+        this.collectors = []
+
+        /**
+         * The message listener wrapper function. Whenever a message is sent, the message is handled by the `this.onMessage(msg)` callback in order to provide custom command functionality.
+         * @type {callback}
+         */
+        this.messageListener = msg => { this.onMessage(msg) }
+
+        /**
+         * The current stage of the game. Default stages include 'join' and 'init'.
+         * @type {String}
+         */
         this.stage = 'init'
+
+        /**
+         * Game-specific settings that are configurable on a class level.
+         * @static
+         */
         this.settings = {
             isDmNeeded: false
         }
 
-        /** SETTINGS **/
         /**
-         * {
-         *  'label': {
-         *    friendlyName: 'Label',
-         *    choices: ['value1', 'value2'],
-         *    default: 'value1',
-         *    type: 'checkboxes'|'free'|'radio',
-         *    filter: m => true
-         *  },
-         * }
+         * A user-configurable option for a game, modified during a game's init stage.
+         * @typedef GameOption
+         * @type {Object}
+         * @property {String} friendlyName The user-friendly name of this option.
+         * @property {String} type The type of option. Must be one of:
+         * * `checkboxes`
+         * * `radio`
+         * * `free`
+         * * `number`
+         * @property {String|Number|Array<String>|Number>} default The default value for this option.
+         * @property {Array<String>} [choices] An array of choices the user can pick from. Required for checkboxes and radio types.
+         * @property {String} [note] A note displayed during the selection screen
+         * @property {Function<Discord.Message>} [filter] A filter function that validates the user's input message, and only accepts the input if the function returns true.
          */
+
+        /**
+         * The list of user-configurable options for this game. The configured options will be accessible from `this.options[friendlyName]` after the init stage.
+         * @type {Array<GameOption>}
+         * @example
+         * this.gameOptions = [
+         *     {
+         *         friendlyName: 'Categories',
+         *         type: 'checkboxes'
+         *         default: ['Game of Thrones']
+         *         choices: ['Game of Thrones', 'Narnia', 'Lord of the Rings', 'Harry Potter'],
+         *         note: 'Choose the categories for this game.'
+         *     },
+         *     {
+         *         friendlyName: 'Game Mode',
+         *         type: 'radio',
+         *         default: 'Solo',
+         *         choices: ['Team', 'Solo'],
+         *         note: 'In team, players are matched up against each other in groups. In solo, it\'s everyone for themself!'
+         *     },
+         *     {
+         *         friendlyName: 'Timer',
+         *         type: 'number',
+         *         default: 60,
+         *         note: 'Enter a new value in seconds, between 30-60.',
+         *         filter: m => parseInt(m.content) >= 30 && parseInt(m.content) <= 60
+         *     },
+         *     {
+         *         friendlyName: 'Clan Tag',
+         *         type: 'free',
+         *         default: 'none',
+         *         note: 'Enter a new 3-letter clan tag, or type \'none\' for no name.',
+         *         filter: m => m.content.length == 3 || m.content == 'none'
+         *     }
+         * ]
+         */
+        this.gameOptions = []
     }
 
+    /**
+     * @returns {Discord.User} The game leader.
+     */
     get leader () { return this.gameMaster }
 
     /**
@@ -65,10 +199,11 @@ module.exports = class Game {
             this.msg.client.on('message', this.messageListener)
 
             this.join(async () => {
+                // Generate the game-specific option lists
                 await this.generateOptions()
                 
                 if(this.gameOptions) {
-                    // Allow game leader to configure options
+                    // Allow game leader to configure options. Configured ptions will be outputted to this.options
                     await this.configureOptions()
                 }
 
@@ -160,19 +295,12 @@ module.exports = class Game {
     }
 
     /**
-     * Allow the game leader to set options. 
-     * @returns The configured options
+     * @typedef ConfiguredOption
      */
-    /** SETTINGS **/
+
     /**
-     * [
-     *  {
-     *    friendlyName: 'Label',
-     *    choices: ['value1', 'value2'],
-     *    default: 'value1',
-     *    type: 'checkboxes'|'free'|'radio'
-     *  },
-     * ]
+     * Allow the game leader to set options, and outputs the options to `this.options`.
+     * @returns {Object<String,String|Number|Array<String|Number>} The configured options, with their key as the option friendly name, and value as the configured value.
      */
     async configureOptions () {
         var isConfigured = false
@@ -238,6 +366,10 @@ module.exports = class Game {
                             footer: 'Enter a new value.',
                             filter:  m => m.author.id == this.gameMaster.id
                         },
+                        'number': {
+                            footer: 'Enter a new value.',
+                            filter:  m => m.author.id == this.gameMaster.id && !isNaN(m.content)
+                        },
                         'radio': {
                             footer: `Type the option's number to select a new option.`,
                             filter: m => m.author.id == this.gameMaster.id && !isNaN(m.content) && parseInt(m.content) <= option.choices.length && parseInt(m.content) > 0
@@ -255,9 +387,13 @@ module.exports = class Game {
                             }
 
                         }
+                    }).catch(err => {
+                        console.error(err)
+                        this.channel.sendMsgEmbed(`Something went wrong when editing the message. Type \`${options.prefix}start\` to begin the game.`, 'Error!', options.colors.error).delete(5000)
                     })
+
                     // await a response for the option
-                    await this.channel.awaitMessages(m => optionData[option.type].filter, {
+                    await this.channel.awaitMessages(m => (optionData[option.type].filter)(m), {
                         time: 60000, max: 1
                     }).then(collected => {
                         if(this.ending) return
@@ -337,11 +473,11 @@ module.exports = class Game {
         this.gameOptions.forEach(option => {
             this.options[option.friendlyName] = option.value 
         })
+        return this.options
     }
 
     /**
      * Handles message events emitted by the client.
-     * 
      * @param {Discord.Message} message The message emitted by the client.
     */
     async onMessage(message) {
@@ -386,7 +522,7 @@ module.exports = class Game {
 
     /**
      * Add a player to the game.
-     * @param {Discord.Member|string} member The member or id of the member to add.
+     * @param {Discord.Member|String} member The member or id of the member to add.
      */
     addPlayer(member) {
         if(typeof member == 'string') member = this.msg.guild.members.get(member)
@@ -396,7 +532,7 @@ module.exports = class Game {
             return
         }
 
-        if(this.players.has(member.id) || !member || member.bot) {
+        if(!member || this.players.has(member.id) || member.bot) {
             this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027)
             return
         }
@@ -463,7 +599,6 @@ module.exports = class Game {
 
     /**
      * Stop all collectors and reset collector list.
-     * 
      * @param {Array<Discord.Collector>} List of collectors
      */
     async clearCollectors(collectors) {
@@ -475,7 +610,6 @@ module.exports = class Game {
 
     /**
      * End a game. This will be called when a player wins or the game is force stopped.
-     *
      * @param {object} winner The game winner
      * @param {string} endPhrase The message to be sent at the end of the game.
      */
