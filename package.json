@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "debug": "node --nolazy --inspect-brk=9229 server.js"
+    "debug": "node --nolazy --inspect-brk=9229 server.js",
+    "dev": "node server.dev.js",
+    "generate-docs": "jsdoc -c .jsdoc.json"
   },
   "author": "zeroclutch",
   "license": "MIT",
@@ -25,5 +27,8 @@
     "querystring": "^0.2.0",
     "request": "^2.88.2",
     "text2png": "^2.1.0"
+  },
+  "devDependencies": {
+    "minami": "^1.2.3"
   }
 }

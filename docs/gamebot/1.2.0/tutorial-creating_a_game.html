@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Creating a Game - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Tutorials</li><li class="nav-item"><a href="tutorial-creating_a_game.html">Creating a Game</a></li><li class="nav-item"><a href="tutorial-getting_started.html">Getting Started</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Game.html">Game</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#addPlayer">addPlayer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#clearCollectors">clearCollectors</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#configureOptions">configureOptions</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#end">end</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#forceStop">forceStop</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#generateOptions">generateOptions</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#init">init</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#join">join</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#messageListener">messageListener</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#onMessage">onMessage</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#play">play</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#removePlayer">removePlayer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#renderOptionInfo">renderOptionInfo</a></span></li><li class="nav-heading">Namespaces</li><li class="nav-heading"><span class="nav-item-type type-namespace">N</span><span class="nav-item-name"><a href="Game_playerCount.html">playerCount</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Creating a Game</h1>
+    
+
+    <section>
+
+<header>
+    
+</header>
+
+<article>
+    <blockquote>
+<p>Update: As of 3-25-2019, this guide is outdated. The Game class has many added functionalities that are not reflected in this guide.</p>
+</blockquote>
+<p>This guide is intended to help get you started in the process of developing a game. It includes a list of required commands, methods, and fields. If you are interested in creating a game, you should have knowledge of JavaScript ES6 syntax.</p>
+<p>Ideally, Gamebot games should be playable by small groups and larger groups, simple to use for new players, and most importantly, fun! Games also should avoid taking too long—starting a game with Gamebot shouldn't have to be a scheduled activity or something that requires a lot of commitment for users.</p>
+<h2>1. Create your own bot instance.</h2>
+<p>Fork or clone the repository to your local machine. Detailed instructions coming soon.</p>
+<h2>2. Create a new file in the <code>/games</code> directory.</h2>
+<p>The title should be the name of the game in <code>UpperCamelCase</code> and the file should have the extension <code>.js</code>.</p>
+<h2>3. Create your Game class.</h2>
+<p>Gamebot uses a module based system, where files in the <code>/games</code> directory are exported. You must export your game class so that it may be stored, and you must extend the parent <code>Game</code> class.</p>
+<pre class="prettyprint source lang-js"><code>// global dependencies
+const Game = require('./Game')
+const Discord = require('./../discord_mod')
+const options = require('./../config/options')
+
+/** @class Class representing My Game */
+module.exports = class MyGame extends Game {
+    constructor() {
+        super()
+        // constructor code
+    }
+}
+</code></pre>
+<h2>4. Create the constructor.</h2>
+<p>The constructor has two parameters:</p>
+<ol>
+<li><code>msg</code> - The original message that was sent to start the game. Type: <code>Discord.Message</code>.</li>
+<li><code>settings</code> - The settings the game master uses to configure the game. Type: <code>object</code>.</li>
+</ol>
+<blockquote>
+<p>It is not recommended you use the <code>settings</code> parameter outside of debugging and testing, use the <code>init()</code> method to allow the user to set those values.</p>
+</blockquote>
+<p>The required and recommended constructor fields are displayed below.</p>
+<pre class="prettyprint source lang-js"><code>// ...
+module.exports = class MyGame extends Game {
+    /**
+     * Creates and instantiates a new MyGame.
+     * 
+     * @constructor
+     * @param {Discord.Message} msg The original message that was sent to start the game.
+     * @param {object} settings The settings the game master uses to configure the game.
+     */
+    constructor(msg, settings) {
+        super()
+
+        /** REQUIRED FIELDS **/
+        this.msg = msg
+        this.gameMaster = msg.author
+        this.players = new Discord.Collection()
+        this.ending = false
+        this.collectors = [] // Whenever a MessageCollector or ReactionCollector is created, push it to this.collectors
+        this.messageListener = msg => { this.onMessage(msg) } // whenever a message is sent, it is handled by the this.onMessage(msg) callback
+
+        /** RECOMMENDED FIELDS **/
+        this.stage = 'init'
+    }
+}
+</code></pre>
+<h2>6. Implement the required methods.</h2>
+<p>As JavaScript ES6 does not have interface capabilities, <code>Game.js</code> is not at true interface. However, you are required to override each of the methods in the Game class.</p>
+<pre class="prettyprint source lang-js"><code>// ...
+module.exports = class MyGame extends Game {
+    constructor(msg, settings) {
+        // ...
+    }
+
+    /**
+     * Gets the leader of the game.
+     *
+     * @return {Discord.User} The leader of the game.
+     */
+    get leader() {
+        return this.gameMaster
+    }
+
+    /**
+     * Begins a new game. This will be called by the play command.
+     *
+     */
+    init() {
+        // Create listener for commands
+        this.msg.client.on('message', this.messageListener)
+
+        // Allow game leader to configure options
+        // Begin playing the game
+    }
+
+    /**
+     * Handles message events emitted by the client.
+     * 
+     * @param {Discord.Message} message The message emitted by the client.
+    */
+    onMessage(message) {
+        // Only listen to messages sent in the game channel
+        if(message.channel !== this.msg.channel) return
+        // Handle commands
+    }
+
+
+    /**
+     * Stop all collectors and reset collector list.
+     * 
+     * @param {Array&lt;Discord.Collector>} 
+     */
+    async clearCollectors(collectors) {
+        // Iterate over collectors and call Discord.Collector.stop()
+    }
+    
+
+    /**
+     * End a game. This will be called when a player wins or the game is force stopped.
+     *
+     * @param {object} winner
+     */
+    async end(winner) {
+        // Send a message in the game channel (this.msg.channel) that the game is over.
+        // Destroy all MessageCollectors and ReactionCollectors
+        // Remove all event listeners created during this game.
+        // Set this.msg.channel.gamePlaying to false
+        // set this.msg.channel.game to undefined
+    }
+
+    /**
+     * Force ends a game. This will be called by the end command.
+     *
+     */
+    forceStop() {
+        // Set this.ending to true
+        // Call end command
+    }
+
+}
+</code></pre>
+<h2>7. Add the required static fields.</h2>
+<pre class="prettyprint source lang-js"><code>// ...
+module.exports = class MyGame extends Game {
+    // ...
+}
+
+// static fields
+module.exports.id = 'myg' // a 3-4 letter identifier for the game that people will use to start a game
+module.exports.gameName = 'My Game' // friendly name for display purposes
+module.exports.playerCount = { 
+    min: 2, // minimum player count
+    max: 10 // maximum player count
+}
+module.exports.genre = 'Card' // options are Card, Party, Board, Arcade, Tabletop, etc.
+module.exports.about = 'A fun game about world domination.' // a one-sentence summary of the game
+module.exports.rules = 'Blah blah blah rules rules rules.' // explanation about how to play
+</code></pre>
+<h2>8. Adding commands</h2>
+<p>Each game must include and handle these commands:</p>
+<ul>
+<li><code>join</code> - Allows players to join a game after <code>play &lt;game&gt;</code> is called. Make sure the player count does not exceed the maximum.</li>
+<li><code>leave</code> - Allows players to leave a game after joining. Make sure the player count does not drop below the required minimum.</li>
+<li><code>add &lt;@player&gt;</code> - Allows the game leader to add a player. Make sure the player count does not exceed the maximum.</li>
+<li><code>kick &lt;@player&gt;</code> - Allows the game leader to kick a player. Make sure the player count does not drop below the required minimum.</li>
+</ul>
+<pre class="prettyprint source lang-js"><code></code></pre>
+<h2>9. Example starting framework.</h2>
+<pre class="prettyprint source lang-js"><code>// global dependencies
+const Game = require('./Game')
+const Discord = require('./../discord_mod')
+const options = require('./../config/options')
+
+/** @class Class representing My Game */
+module.exports = class MyGame extends Game {
+    /**
+     * Creates and instantiates a new MyGame.
+     * 
+     * @constructor
+     * @param {Discord.Message} msg The original message that was sent to start the game.
+     * @param {object} settings The settings the game master uses to configure the game.
+     */
+    constructor(msg, settings) {
+        super()
+
+        /** REQUIRED FIELDS **/
+        this.msg = msg
+        this.gameMaster = msg.author
+        this.players = new Discord.Collection()
+        this.ending = false
+        this.collectors = [] // Whenever a MessageCollector or ReactionCollector is created, push it to this.collectors
+        this.messageListener = msg => { this.onMessage(msg) } // whenever a message is sent, it is handled by the this.onMessage(msg) callback
+
+        /** RECOMMENDED FIELDS **/
+        this.stage = 'init'
+    }
+
+    /**
+     * Gets the leader of the game.
+     *
+     * @return {Discord.User} The leader of the game.
+     */
+    get leader() {
+        return this.gameMaster
+    }
+
+    /**
+     * Begins a new game. This will be called by the play command.
+     *
+     */
+    init() {
+        // Create listener for commands
+        this.msg.client.on('message', this.messageListener)
+
+        // Allow game leader to configure options
+        // Begin playing the game
+    }
+
+    /**
+     * Handles message events emitted by the client.
+     * 
+     * @param {Discord.Message} message The message emitted by the client.
+    */
+    onMessage(message) {
+        // Only listen to messages sent in the game channel
+        if(message.channel !== this.msg.channel) return
+        
+        // leader commands
+        if(message.author.id == this.gameMaster.id) {
+            // add command
+            if(message.content.startsWith(`${options.prefix}add`)) {
+                // check if the player count will stay within the min and max
+                // add player to this.players
+            }
+
+            // kick command
+            if(message.content.startsWith(`${options.prefix}kick`)) {
+                // check if the player count will stay within the min and max
+                // remove player from this.players
+            }
+        } else {
+            // leave command
+            if(message.content.startsWith(`${options.prefix}leave`)) {
+                // check if the player count will stay within the min and max
+                // remove player from this.players
+            }
+        }
+    }
+
+    /**
+     * Stop all collectors and reset collector list.
+     * 
+     * @param {Array&lt;Discord.Collector>} List of collectors
+     */
+    async clearCollectors(collectors) {
+        await collectors.forEach(collector => {
+            collector.stop('Force stopped.')
+        })
+        collectors = []
+    }
+    
+
+    /**
+     * End a game. This will be called when a player wins or the game is force stopped.
+     *
+     * @param {object} winner
+     */
+    end(winner) {
+        // Send a message in the game channel (this.msg.channel) that the game is over.
+        this.clearCollectors(this.collectors)
+        // Remove all event listeners created during this game.
+        this.msg.channel.gamePlaying = false
+        this.msg.channel.game = undefined
+    }
+
+    /**
+     * Force ends a game. This will be called by the end command.
+     */
+    forceStop() {
+        this.ending = true
+        this.end()
+    }
+
+}
+
+// static fields
+module.exports.id = 'myg' // a 3-4 letter identifier for the game that people will use to start a game
+module.exports.gameName = 'My Game' // friendly name for display purposes
+module.exports.playerCount = {
+    min: 2, // minimum required player count
+    max: 10 // maximum required player count
+}
+module.exports.genre = 'Card' // options are Card, Party, Board, Arcade, Tabletop, etc.
+module.exports.about = 'A fun game about world domination.' // a one-sentence summary of the game
+module.exports.rules = 'Blah blah blah rules rules rules.' // explanation about how to play
+</code></pre>
+<h2>10. Important notes:</h2>
+<ul>
+<li>Always use <code>options.prefix</code> whenever you need to have a command prefix in your code.</li>
+<li>Ending a game should stop all commands and processes. Check <code>this.ending</code> on all event handlers before executing any code. If the game is ending, <code>return</code> the function.</li>
+</ul>
+</article>
+
+</section>
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Sat May 09 2020 17:06:11 GMT-0700 (Pacific Daylight Time) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
