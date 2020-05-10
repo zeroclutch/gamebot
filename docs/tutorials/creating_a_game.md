@@ -1,7 +1,5 @@
 > Update: As of 3-25-2019, this guide is outdated. The Game class has many added functionalities that are not reflected in this guide.
 
-# Creating a Game
-
 This guide is intended to help get you started in the process of developing a game. It includes a list of required commands, methods, and fields. If you are interested in creating a game, you should have knowledge of JavaScript ES6 syntax.
 
 Ideally, Gamebot games should be playable by small groups and larger groups, simple to use for new players, and most importantly, fun! Games also should avoid taking too long—starting a game with Gamebot shouldn't have to be a scheduled activity or something that requires a lot of commitment for users.
