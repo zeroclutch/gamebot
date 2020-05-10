@@ -1,17 +1,21 @@
 /**
- * Discord Mod
- * An extension of the discord.js module to streamline usage of this bot
+ * Discord Mod. An extension of the discord.js module to streamline usage of this bot.
  */
-
 const Discord = require('discord.js')
 
-// returns true if a user has a role
+/**
+ * Checks if a Discord.GuildMember has a role
+ * @returns {Boolean} True if the member has that role
+ */
 Discord.GuildMember.prototype.hasRole = function(roleID) {
     if(this.roles.array().find(role=>role.id === roleID)) return true
     return false
   }
   
-// asynchronous TextChannel.startTyping()
+/**
+ * Asynchronous version of {@link https://discord.js.org/#/docs/main/11.5.1/class/TextChannel?scrollTo=startTyping|Discord.TextChannel.startTyping()}
+ * @returns {Promise<Boolean>} Always resolves to true.
+ */
 Discord.TextChannel.prototype.startTypingAsync = function (channelResolvable) {
   return new Promise((resolve, reject) => { 
     try {
@@ -23,7 +27,14 @@ Discord.TextChannel.prototype.startTypingAsync = function (channelResolvable) {
   })
 }
 
-// easily send a message as an embed
+/**
+ * Easily send a message to a TextChannel or DMChannel as an embed.
+ * @param {String} description The description field of the embed.
+ * @param {String} title The title of the embed.
+ * @param {Discord.ColorResolvable} color The color of the embed.
+ * @see {@link https://discord.js.org/#/docs/main/11.5.1/typedef/ColorResolvable|Discord.ColorResolvable}
+ * @returns {Promise<Discord.Message>}
+ */
 Discord.DMChannel.prototype.sendMsgEmbed = Discord.TextChannel.prototype.sendMsgEmbed = function(description, title, embedColor) {
   return this.send('', {
     embed: {
@@ -71,6 +82,17 @@ Discord.User.prototype.createDBInfo = function() {
   })
 }
 
+/**
+ * @typedef UserData
+ * @type {Object}
+ * @property {String} userID The user's ID
+ * @property {Array.<String>} unlockedItems The list of unlocked items, categorized by ID
+ */
+
+/**
+ * Fetches a user's database information.
+ * @returns {Promise<UserData>}
+ */
 Discord.User.prototype.fetchDBInfo = function() {
   return new Promise(async (resolve, reject) => {
     if(!this.client.database || !this.client.database.collection('users')) {
@@ -82,6 +104,10 @@ Discord.User.prototype.fetchDBInfo = function() {
   })
 }
 
+/**
+ * Sees if a user has an item in their inventory.
+ * @returns {Boolean}
+ */
 Discord.User.prototype.hasItem = async function (itemID) {
   var isItemUnlocked = false
   await this.fetchDBInfo()
@@ -95,37 +121,5 @@ Discord.User.prototype.hasItem = async function (itemID) {
   })
   return isItemUnlocked
 }
-
-// 
-/**
- * MessageOptions or Attachment or RichEmbed or StringResolvable message
- * GuildMember or User member
- * TextChannel channel
- * Integer timeout
- * Awaits a response from a single member
- */
-/*Discord.TextChannel.prototype.ask = function (message, member, timeout) {
-  // send message to channel
-  this.send(message)
-  
-  const endAskingSession = msg => {
-    if(!msg) {
-      // time's up
-      return
-    }
-
-    // delete listener after message has been found
-    if(msg.member.id == member.id) {
-      this.send('end run')
-      this.client.removeListener('message', arguments.callee)
-      return new Promise((resolve, reject) => { resolve(msg) })
-    }
-  }
-
-  // begin countdown
-  setTimeout(endAskingSession, timeout)
-  
-  this.client.on('message', endAskingSession)
-}*/
 
 module.exports = Discord

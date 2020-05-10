@@ -92,7 +92,6 @@ const Game = class Game {
         /**
          * The game's minimum and maximum player count. Use `this.metadata` instead.
          * @type {Object}
-         * @namespace
          * @property {Number} min The minimum player count for this game.
          * @property {Number} max The maximum player count for this game.
          * @deprecated
@@ -104,7 +103,7 @@ const Game = class Game {
 
         /**
          * A list of Discord collectors that is cleared when `this.clearCollectors(this.collectors)` is called. Whenever a `MessageCollector` or `ReactionCollector` is created, push it to `this.collectors()`.
-         * @type {Array<Discord.Collector>}
+         * @type {Array.<Discord.Collector>}
          * @see {@link https://discord.js.org/#/docs/main/11.5.1/class/Collector|Discord.Collector}
          * @deprecated
          */
@@ -140,8 +139,8 @@ const Game = class Game {
          * * `radio`
          * * `free`
          * * `number`
-         * @property {String|Number|Array<String|Number>} default The default value for this option.
-         * @property {Array<String>} [choices] An array of choices the user can pick from. Required for checkboxes and radio types.
+         * @property {String|Number|Array.<String|Number>} default The default value for this option.
+         * @property {Array.<String>} [choices] An array of choices the user can pick from. Required for checkboxes and radio types.
          * @property {String} [note] A note displayed during the selection screen
          * @property {Function(Discord.Message)} [filter] A filter function that validates the user's input message, and only accepts the input if the function returns true.
          * @see {@link https://discord.js.org/#/docs/main/11.5.1/class/Message|Discord.Message}
@@ -149,7 +148,7 @@ const Game = class Game {
 
         /**
          * The list of user-configurable options for this game. The configured options will be accessible from `this.options[friendlyName]` after the init stage.
-         * @type {Array<GameOption>}
+         * @type {Array.<GameOption>}
          * @example
          * this.gameOptions = [
          *     {
@@ -317,7 +316,7 @@ const Game = class Game {
     /**
      * An option that has been configured by the game leader and has a set value.
      * @typedef ConfiguredOption
-     * @type {String|Number|Array<String|Number>}
+     * @type {String|Number|Array.<String|Number>}
      */
 
     /**
@@ -636,10 +635,11 @@ const Game = class Game {
 
     /**
      * Stop all collectors and reset collector list.
-     * @param {Array<Discord.Collector>} List of collectors
+     * @param {Array.<Discord.Collector>} collectors List of collectors
+     * @deprecated
      */
     async clearCollectors(collectors) {
-        await collectors.forEach(collector => {
+        collectors.forEach(collector => {
             collector.stop('Force stopped.')
         })
         collectors = []
