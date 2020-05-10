@@ -2,10 +2,10 @@ const Discord = require('./../../../discord_mod')
 const fs = require('fs')
 
 // Get card sets from filesystem
-// Collection<Object metadata, Array<String card> cards>
+// Collection<Object metadata, Array.<String card> cards>
 var blackCards = new Discord.Collection()
 
-// Collection<Object metadata, Array<String card> cards>
+// Collection<Object metadata, Array.<String card> cards>
 var whiteCards = new Discord.Collection()
 
 // get card sets
