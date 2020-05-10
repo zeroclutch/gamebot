@@ -13,7 +13,10 @@ Add fun multiplayer games to Discord with Gamebot! **You can invite the bot to y
 * Frequent updates and a large userbase
 * Easy-to-use commands
 * No setup or configuration required to start playing
-* Helpful and responsive support server
+* Helpful and responsive support server 
+
+# Contributing and Documentation
+The documentation for game development is available at [https://gamebot-production.herokuapp.com/docs](https://gamebot-production.herokuapp.com/docs).
 
 # Current Game List
 ## 1. Cards Against Humanity

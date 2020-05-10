@@ -1,4 +1,7 @@
-const Discord = require('discord.js');
+const dotenv = require('dotenv')
+dotenv.config()
+
+const Discord = require('./discord_mod.js');
 const options = require('./config/options')
 const manager = new Discord.ShardingManager('./bot.js', { token: options.token })
 
@@ -11,11 +14,10 @@ const express = require('express')
 const app = express()
 
 // Handle all GET requests
-app.use(express.static(__dirname + '/public'))
+app.use('/', express.static(__dirname + '/public'))
 
-app.get('/thanks', (request, response) => {
-  response.sendFile(__dirname + '/public/thanks.html');
-})
+app.use('/docs', express.static(__dirname + '/docs/gamebot/1.2.0'))
+
 
 app.get('*', (request, response) => {
     response.sendFile(__dirname + '/public/index.html');
@@ -152,6 +154,3 @@ app.on('error', function(err) {
   }
   //handle normal errors
 });
-
-
-
