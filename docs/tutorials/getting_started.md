@@ -32,14 +32,21 @@ Once you have your account, you’ll need to make an environment variables file 
 ```bash
 DISCORD_BOT_TOKEN=YOUR_TOKEN_HERE
 OWNER_ID=YOUR_DISCORD_ID_HERE
+LOGGING_CHANNEL=YOUR_CHANNEL_ID_HERE
 PREFIX=&
+
+BASE_URL=localhost:5000
 ```
 
 Replace `YOUR_TOKEN_HERE` with the token you got from the Discord Developer Portal in the linked guide above. Your token should look something like `NzAwMjY2KDM4MDxdADMDNzZz.X0pgcjA.zDtrqfmQa5J-abcdefGh123Ijklmn`. 
 
 Also, replace `YOUR_DISCORD_ID_HERE` with your Discord ID. If you don’t know how to get your ID, [see this article](https://support.discordapp.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-). 
 
-#### 
+Next, change `YOUR_CHANNEL_ID_HERE` to be the ID of the Discord channel you want to send logs to. It must be a server text channel, not a DM or voice channel. Make sure the bot is able to send messages to this channel. If you need help getting this ID, see the linked article in the previous step. 
+
+You can change the prefix if you like.
+
+#### Get it running
 
 Now in your command line, you should install dependencies and run the bot. 
 
