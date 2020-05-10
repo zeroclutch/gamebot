@@ -27,5 +27,8 @@ assets/temp/
 # data files
 data.json
 
-# Configuration Directors
+# Configuration files
+*.jsdoc.json
+
+# Configuration directories
 .vscode/

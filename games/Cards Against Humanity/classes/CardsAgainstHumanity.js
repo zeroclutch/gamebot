@@ -319,7 +319,7 @@ module.exports = class CardsAgainstHumanity extends Game {
                     else this.availableSets = this.availableSets.concat(packs)
                 }
             })
-        })
+        }).catch(console.error)
 
         whiteCards.forEach((cards, metadata) => {
              if(!metadata.official) return
@@ -339,7 +339,7 @@ module.exports = class CardsAgainstHumanity extends Game {
                     cardBackList.push(CARD_BACKS[item].friendlyName)
                 }
             })
-        })
+        }).catch(console.error)
         return cardBackList
     }
 
