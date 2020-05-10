@@ -2,7 +2,7 @@ Interested in developing a game, or hosting your own version of Gamebot? Here's 
 
 #### Requirements
 
-Gamebot run's on Node.js. You’ll need to install Node.js if you want to run the bot. The latest version of Gamebot is compatible with version 10.x of Node.js. You should use [nvm](https://github.com/nvm-sh/nvm/blob/master/README.md) to manage multiple versions of Node. 
+Gamebot runs on Node.js. You’ll need to install Node.js if you want to run the bot. The latest version of Gamebot is compatible with version 10.x of Node.js. You should use [nvm](https://github.com/nvm-sh/nvm/blob/master/README.md) to manage multiple versions of Node. 
 
 [**Node.js v10.18.0**](https://nodejs.org/en/blog/release/v10.18.0/) - Recommended for Gamebot
 
