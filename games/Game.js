@@ -585,8 +585,9 @@ const Game = class Game {
             }
             this.msg.channel.sendMsgEmbed(`${member.user} was added to the game!`)
         }).catch(err => {
-            if(err.message != 'Cannot send messages to this user') {
-                console.error(err)
+            console.error(err)
+            if(err.message == 'Cannot send messages to this user') {
+                return
             }
 
             if(member.id == this.gameMaster.id) {
