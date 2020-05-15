@@ -1,4 +1,4 @@
-const Game = require('../../Game')
+const Game = require(`../../Game`)
 const options = require('../../../config/options')
 const metadata = require('../metadata.json')
 

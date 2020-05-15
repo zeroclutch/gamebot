@@ -1,9 +1,9 @@
 module.exports = {
-  prefix: process.env.PREFIX,
+  prefix: process.env.DISCORD_BOT_PREFIX,
   token: process.env.DISCORD_BOT_TOKEN,
   ownerID: process.env.OWNER_ID,
   activity: {
-    game: 'Type ' + process.env.PREFIX + 'help',
+    game: 'Type ' + process.env.DISCORD_BOT_PREFIX + 'help',
     type: 'PLAYING'
   },
   loggingChannel: process.env.LOGGING_CHANNEL,

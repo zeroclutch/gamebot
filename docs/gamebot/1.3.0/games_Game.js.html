@@ -1,4 +1,45 @@
-const options = require('../config/options')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>games/Game.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Tutorials</li><li class="nav-item"><a href="tutorial-creating_a_game.html">Creating a Game</a></li><li class="nav-item"><a href="tutorial-getting_started.html">Getting Started</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Game.html">Game</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#addPlayer">addPlayer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#clearCollectors">clearCollectors</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#configureOptions">configureOptions</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#end">end</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#forceStop">forceStop</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#generateOptions">generateOptions</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#init">init</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#join">join</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#messageListener">messageListener</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#onMessage">onMessage</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#play">play</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#removePlayer">removePlayer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#renderOptionInfo">renderOptionInfo</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-member">M</span><span class="nav-item-name"><a href="global.html#Discord">Discord</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">games/Game.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const options = require('../config/options')
 const Discord = require('../discord_mod')
 
 /**
@@ -103,7 +144,7 @@ const Game = class Game {
 
         /**
          * A list of Discord collectors that is cleared when `this.clearCollectors(this.collectors)` is called. Whenever a `MessageCollector` or `ReactionCollector` is created, push it to `this.collectors()`.
-         * @type {Array.<Discord.Collector>}
+         * @type {Array.&lt;Discord.Collector>}
          * @see {@link https://discord.js.org/#/docs/main/11.5.1/class/Collector|Discord.Collector}
          * @deprecated
          */
@@ -139,8 +180,8 @@ const Game = class Game {
          * * `radio`
          * * `free`
          * * `number`
-         * @property {String|Number|Array.<String|Number>} default The default value for this option.
-         * @property {Array.<String>} [choices] An array of choices the user can pick from. Required for checkboxes and radio types.
+         * @property {String|Number|Array.&lt;String|Number>} default The default value for this option.
+         * @property {Array.&lt;String>} [choices] An array of choices the user can pick from. Required for checkboxes and radio types.
          * @property {String} [note] A note displayed during the selection screen
          * @property {Function(Discord.Message)} [filter] A filter function that validates the user's input message, and only accepts the input if the function returns true.
          * @see {@link https://discord.js.org/#/docs/main/11.5.1/class/Message|Discord.Message}
@@ -148,7 +189,7 @@ const Game = class Game {
 
         /**
          * The list of user-configurable options for this game. The configured options will be accessible from `this.options[friendlyName]` after the init stage.
-         * @type {Array.<GameOption>}
+         * @type {Array.&lt;GameOption>}
          * @example
          * this.gameOptions = [
          *     {
@@ -170,7 +211,7 @@ const Game = class Game {
          *         type: 'number',
          *         default: 60,
          *         note: 'Enter a new value in seconds, between 30-60.',
-         *         filter: m => parseInt(m.content) >= 30 && parseInt(m.content) <= 60
+         *         filter: m => parseInt(m.content) >= 30 &amp;&amp; parseInt(m.content) &lt;= 60
          *     },
          *     {
          *         friendlyName: 'Clan Tag',
@@ -200,7 +241,7 @@ const Game = class Game {
         // Refresh downtime
         this.msg.client.getTimeToDowntime().then(timeToDowntime => {
             var downtime = Math.ceil(timeToDowntime / 60000)
-            if(timeToDowntime > 0 && timeToDowntime <= 5 * 60000) {
+            if(timeToDowntime > 0 &amp;&amp; timeToDowntime &lt;= 5 * 60000) {
                 const downtime = Math.round(timeToDowntime / 60000)
                 this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Games cannot be started right now. For more information, [see our support server.](${options.serverInvite})`, 'Error!', options.colors.error)
                 this.forceStop()
@@ -249,7 +290,7 @@ const Game = class Game {
         // Add gameMaster
         this.addPlayer(this.gameMaster.id)
 
-        const filter = m => (m.content.startsWith(`${options.prefix}join`) && !this.players.has(m.author.id)) || (m.author.id == this.gameMaster.id && m.content.startsWith(`${options.prefix}start`))
+        const filter = m => (m.content.startsWith(`${options.prefix}join`) &amp;&amp; !this.players.has(m.author.id)) || (m.author.id == this.gameMaster.id &amp;&amp; m.content.startsWith(`${options.prefix}start`))
         const collector = this.channel.createMessageCollector(filter, { max: this.metadata.playerCount.max, time: 120000 })
         this.collectors.push(collector)
         collector.on('collect', m => {
@@ -316,17 +357,17 @@ const Game = class Game {
     /**
      * An option that has been configured by the game leader and has a set value.
      * @typedef ConfiguredOption
-     * @type {String|Number|Array.<String|Number>}
+     * @type {String|Number|Array.&lt;String|Number>}
      */
 
     /**
      * Allow the game leader to set options, and outputs the options to `this.options`.
-     * @returns {Object<String,ConfiguredOption>} The configured options, with their key as the option friendly name, and value as the configured value.
+     * @returns {Object&lt;String,ConfiguredOption>} The configured options, with their key as the option friendly name, and value as the configured value.
      */
     async configureOptions () {
         var isConfigured = false
         var optionMessage
-        for(var i = 0; i < this.gameOptions.length; i++) {
+        for(var i = 0; i &lt; this.gameOptions.length; i++) {
             // configure options
             let option = this.gameOptions[i]
             Object.defineProperty(option, 'value', {
@@ -340,7 +381,7 @@ const Game = class Game {
         do {
             // Display options
             var optionsDisplay = ''
-            for(var i = 0; i < this.gameOptions.length; i++) {
+            for(var i = 0; i &lt; this.gameOptions.length; i++) {
                 // write to options display
                 var option = this.gameOptions[i]
                 optionsDisplay += `**${i + 1}.** ${option.friendlyName}: ${typeof option.value == 'object' ? option.value.join(', ') : option.value }\n`
@@ -357,7 +398,7 @@ const Game = class Game {
                 }
             })
 
-            const filter = m => m.author.id == this.gameMaster.id && ((!isNaN(m.content) && parseInt(m.content) <= this.gameOptions.length && parseInt(m.content) > 0) || m.content.toLowerCase() == options.prefix + 'start')
+            const filter = m => m.author.id == this.gameMaster.id &amp;&amp; ((!isNaN(m.content) &amp;&amp; parseInt(m.content) &lt;= this.gameOptions.length &amp;&amp; parseInt(m.content) > 0) || m.content.toLowerCase() == options.prefix + 'start')
             await this.channel.awaitMessages(filter, {
                 time: 60000,
                 max: 1,
@@ -389,11 +430,11 @@ const Game = class Game {
                         },
                         'number': {
                             footer: 'Enter a new value.',
-                            filter:  m => m.author.id == this.gameMaster.id && !isNaN(m.content)
+                            filter:  m => m.author.id == this.gameMaster.id &amp;&amp; !isNaN(m.content)
                         },
                         'radio': {
                             footer: `Type the option's number to select a new option.`,
-                            filter: m => m.author.id == this.gameMaster.id && !isNaN(m.content) && parseInt(m.content) <= option.choices.length && parseInt(m.content) > 0
+                            filter: m => m.author.id == this.gameMaster.id &amp;&amp; !isNaN(m.content) &amp;&amp; parseInt(m.content) &lt;= option.choices.length &amp;&amp; parseInt(m.content) > 0
                         }
                     }
 
@@ -581,7 +622,7 @@ const Game = class Game {
             })
         }).then(async dmChannel => {
             if(this.settings.isDmNeeded){
-                await dmChannel.sendMsgEmbed(`You have joined a ${this.metadata.name} game in <#${this.msg.channel.id}>.`)
+                await dmChannel.sendMsgEmbed(`You have joined a ${this.metadata.name} game in &lt;#${this.msg.channel.id}>.`)
             }
             this.msg.channel.sendMsgEmbed(`${member.user} was added to the game!`)
         }).catch(err => {
@@ -604,7 +645,7 @@ const Game = class Game {
      * @param {string|Discord.Member} member The member or member id to kick.
      */
     async removePlayer(member) {
-        if(this.stage != 'join' && this.stage != 'init') return
+        if(this.stage != 'join' &amp;&amp; this.stage != 'init') return
         if(typeof member == 'string') {
             member = await this.msg.guild.fetchMember(member).catch(() => {
                 this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027)
@@ -616,7 +657,7 @@ const Game = class Game {
             return
         }
 
-        if(this.players.size <= this.metadata.playerCount.min) {
+        if(this.players.size &lt;= this.metadata.playerCount.min) {
             this.msg.channel.sendMsgEmbed(`The game can't have fewer than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! Player could not be removed.`)
             return
         }
@@ -635,7 +676,7 @@ const Game = class Game {
 
     /**
      * Stop all collectors and reset collector list.
-     * @param {Array.<Discord.Collector>} collectors List of collectors
+     * @param {Array.&lt;Discord.Collector>} collectors List of collectors
      * @deprecated
      */
     async clearCollectors(collectors) {
@@ -679,7 +720,7 @@ const Game = class Game {
                 let activeGames = await this.msg.client.shard.broadcastEval('this.channels.filter(c => c.game).size')
                 if(activeGames.reduce((prev, val) => prev + val) == 0) {
                     let channel = this.msg.client.channels.get(options.loggingChannel)
-                    if(channel) channel.send(`All games finished, <@${options.ownerID}>`)
+                    if(channel) channel.send(`All games finished, &lt;@${options.ownerID}>`)
                 }
             }
         })
@@ -694,4 +735,22 @@ const Game = class Game {
     }
 }
 
-module.exports = Game
+module.exports = Game</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu May 14 2020 22:04:31 GMT-0700 (Pacific Daylight Time) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
