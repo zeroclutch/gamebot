@@ -18,6 +18,10 @@ app.use('/', express.static(__dirname + '/public'))
 
 app.use('/docs', express.static(__dirname + '/docs/gamebot/1.3.0'))
 
+app.get('/thanks', (request, response) => {
+  response.sendFile(__dirname + '/public/thanks.html');
+})
+
 app.get('*', (request, response) => {
     response.sendFile(__dirname + '/public/index.html');
 })
