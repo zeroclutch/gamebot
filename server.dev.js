@@ -15,7 +15,7 @@ const fs = require('fs')
 // Handle all GET requests
 app.use('/', express.static(__dirname + '/public'))
 
-app.use('/docs', express.static(__dirname + '/docs/gamebot/1.2.0'))
+app.use('/docs', express.static(__dirname + '/docs/gamebot/1.3.0'))
 
 app.get('*', (request, response) => {
     response.sendFile(__dirname + '/public/index.html');

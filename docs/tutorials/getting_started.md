@@ -33,7 +33,7 @@ Once you have your account, you’ll need to make an environment variables file 
 DISCORD_BOT_TOKEN=YOUR_TOKEN_HERE
 OWNER_ID=YOUR_DISCORD_ID_HERE
 LOGGING_CHANNEL=YOUR_CHANNEL_ID_HERE
-PREFIX=&
+DISCORD_BOT_PREFIX=&
 
 BASE_URL=localhost:5000
 ```
