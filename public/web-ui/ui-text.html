@@ -4,6 +4,7 @@
         <title>Gamebot - Home</title>
         <link rel="stylesheet" href="/styles/main.css" type="text/css">
         <link rel="icon" href="/images/deepblue.png">
+        <script src="/scripts/submit.js" type="text/javascript"></script>
 	</head>
 	<body>
         <div class="main-content">
@@ -12,10 +13,15 @@
                     <div class="gamebot-icon"></div>
                 </div>
                 <h3>
-                    Welcome to Gamebot.
+                    Hello, {name}! Enter your text below.
                 </h3>
                 <div class="blurb">
-					Gamebot's web console is not yet available. Please visit <a href="https://github.com/zeroclutch/gamebot">our Github</a> for more information.
+                    <div class="ui-message">{message}</div>
+                    <br>
+                    <form class="ui ui-form" onsubmit="submitText(this); return false">
+                        <input class="ui-input ui-text ui-value" type="text" value="" placeholder="Your response here.">
+                        <input type="submit" value="Submit">
+                    </form>
                 </div>
             </div>
         </div>

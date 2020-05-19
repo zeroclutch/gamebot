@@ -109,7 +109,7 @@ Discord.User.prototype.fetchDBInfo = function() {
  * @returns {Boolean}
  */
 Discord.User.prototype.hasItem = async function (itemID) {
-  var isItemUnlocked = false
+  let isItemUnlocked = false
   await this.fetchDBInfo()
   .then(info => {
     if(info && info.unlockedItems && info.unlockedItems.find(item => item == itemID)) {
