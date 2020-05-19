@@ -5,7 +5,7 @@ const Discord = require('./discord_mod.js');
 const options = require('./config/options')
 const manager = new Discord.ShardingManager('./bot.js', { token: options.token })
 
-manager.spawn(2).catch(err => console.error(err))
+manager.spawn(2, 500).catch(err => console.error(err))
 
 const request = require('request')
 const bodyParser = require('body-parser')
@@ -13,8 +13,12 @@ const querystring = require('querystring');
 const express = require('express')
 const app = express()
 
+const WebUIManager = require('./util/WebUIManager')
+const webUIManager = new WebUIManager(app)
+
 // Handle all GET requests
-app.use('/', express.static(__dirname + '/public'))
+
+app.use('/', express.static(__dirname + '/public',{ extensions:['html']}))
 
 app.use('/docs', express.static(__dirname + '/docs/gamebot/1.3.0'))
 
@@ -22,10 +26,9 @@ app.get('/thanks', (request, response) => {
   response.sendFile(__dirname + '/public/thanks.html');
 })
 
-app.get('*', (request, response) => {
-    response.sendFile(__dirname + '/public/index.html');
+app.get('/invite', (req,res) => {
+  res.redirect('https://discord.com/oauth2/authorize?client_id=620307267241377793&scope=bot&permissions=1547041872')
 })
-
 
 // Handle all POST requests
 
@@ -36,6 +39,62 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }))
+
+
+// Handle GAMEPLAY endpoint
+app.get('/game/:ui_id', (req, res) => {
+  // Fetch the webpage from the WebUIManager
+  const UI_ID = req.params.ui_id
+  // Return the webpage
+  webUIManager.getWebpage(UI_ID).then(webpage => {
+    res.send(webpage)
+  }).catch(err => {
+    console.error(err)
+    res.status(404).redirect('/404')
+  })
+})
+
+// Handle GAMEPLAY RESPONSE endpoint
+app.post('/response/:ui_id', (req, res) => {
+  // Fetch the webpage from the WebUIManager
+  const UI_ID = req.params.ui_id
+  const UI = webUIManager.UIs.get(UI_ID)
+
+  // Check if UI ID is registered
+  if(!UI) {
+    res.status(404)
+    res.send(__dirname + '/public/404.html')
+    throw new Error('Response webpage not found.')
+  }
+
+  let data = JSON.stringify({...req.body, id: UI_ID})
+
+  manager.broadcastEval(`if(this.shard.id == ${UI.shard}) {
+    this.webUIClient.receive(${data})
+  }`)
+  .then(value => {
+    // Return the success webpage
+    res.status(302)
+    res.redirect('/success')
+    webUIManager.UIs.delete(UI_ID)
+  })
+  .catch(err => {
+    console.error(err)
+    res.status(404)
+    res.redirect('/404')
+  })
+})
+
+app.post('/createui', (req, res) => {
+  // check for authentication
+  if(req.headers['web-ui-client-token'] != process.env.WEB_UI_CLIENT_TOKEN) {
+    res.status(403)
+    res.redirect('/404')
+    throw new Error('Invalid credentials when creating a new Web UI.')
+  }
+  webUIManager.create(req.body)
+  res.status(200).end('success')
+})
 
 app.post('/voted', async (req, res) => {
   // check for authentication
@@ -71,9 +130,6 @@ app.post('/voted', async (req, res) => {
 
 
 app.post('/donations', (req, res) => {
-  console.log('Received POST /');
-	console.log(req.body);
-	console.log('\n\n');
 
 	// STEP 1: read POST data
 	req.body = req.body || {};
@@ -144,11 +200,11 @@ app.post('/donations', (req, res) => {
 	});
 })
 
-// Listen on port 5000
-app.listen(process.env.PORT || 5000, (err) => {
-  if (err) throw err
-  console.log('Server is running on port ' + (process.env.PORT || 5000))
-})
+// Catch all 404s
+app.get('*', (req, res) => {
+  res.sendFile(__dirname + '/public/404.html')
+});
+
 
 app.on('error', function(err) {
   if (err.code === "ECONNRESET") {
@@ -157,3 +213,10 @@ app.on('error', function(err) {
   }
   //handle normal errors
 });
+
+
+// Listen on port 5000
+app.listen(process.env.PORT || 5000, (err) => {
+  if (err) throw new Error(err)
+  console.log('Server is running on port ' + (process.env.PORT || 5000))
+})

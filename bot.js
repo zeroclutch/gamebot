@@ -17,6 +17,10 @@ const MongoClient = require('mongodb').MongoClient;
 const uri = process.env.MONGO_DB_URI;
 const dbClient = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true })
 
+// configure WebUIClient
+const WebUIClient = require('./util/WebUIClient')
+client.webUIClient = new WebUIClient(client)
+
 // configure database
 client.dbClient = dbClient
 dbClient.connect(err => {
