@@ -225,8 +225,6 @@ module.exports = class Anagrams extends Game {
                  //this.validateWord(m.content, this.word) && !player.words.includes(word)
                 //console.log(player.dmChannel)
                 player.user.createDM().then(channel => {
-                    
-                    console.log('Hi i\'m here')
                     const filter = m => {
                         console.log(m.content)
                         return true

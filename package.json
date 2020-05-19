@@ -15,6 +15,7 @@
     "node": "10.x"
   },
   "dependencies": {
+    "axios": "^0.19.2",
     "body-parser": "^1.19.0",
     "canvas": "^2.5.0",
     "dblapi.js": "^2.3.0",

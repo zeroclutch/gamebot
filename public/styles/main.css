@@ -71,3 +71,16 @@ h3 {
     padding: 20px;
     font-style: italic;
 }
+
+/* WEB UI */
+.ui-message {
+    text-align: center;
+}
+
+.ui-form {
+    text-align: center;
+}
+
+.ui-text {
+    font-size: 14px;
+}
