@@ -31,7 +31,7 @@ app.use(express.urlencoded({ extended: false }))
 
 // Listen on port 5000
 app.listen(process.env.PORT || 5000, (err) => {
-  if (err) throw err
+  if (err) throw new Error(err)
   console.log('Server is running on port ' + (process.env.PORT || 5000))
 })
 
