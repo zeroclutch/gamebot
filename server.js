@@ -20,7 +20,11 @@ const webUIManager = new WebUIManager(app)
 
 app.use('/', express.static(__dirname + '/public',{ extensions:['html']}))
 
-app.use('/docs', express.static(__dirname + '/docs/gamebot/1.2.0'))
+app.use('/docs', express.static(__dirname + '/docs/gamebot/1.3.0'))
+
+app.get('/thanks', (request, response) => {
+  response.sendFile(__dirname + '/public/thanks.html');
+})
 
 app.get('/invite', (req,res) => {
   res.redirect('https://discord.com/oauth2/authorize?client_id=620307267241377793&scope=bot&permissions=1547041872')
