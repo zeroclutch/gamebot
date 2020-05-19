@@ -172,6 +172,7 @@ module.exports = class Anagrams extends Game {
                 if(this.ending) return
 
                 const player = this.players.get(message.author.id)
+                if(!player) return
 
                 if(!this.validateWord(message.content, this.word, player)) return
                 let word = message.content.toUpperCase()
