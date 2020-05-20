@@ -35,7 +35,7 @@ OWNER_ID=YOUR_DISCORD_ID_HERE
 LOGGING_CHANNEL=YOUR_CHANNEL_ID_HERE
 DISCORD_BOT_PREFIX=&
 
-BASE_URL=localhost:5000
+BASE_URL=http://localhost:5000
 ```
 
 Replace `YOUR_TOKEN_HERE` with the token you got from the Discord Developer Portal in the linked guide above. Your token should look something like `NzAwMjY2KDM4MDxdADMDNzZz.X0pgcjA.zDtrqfmQa5J-abcdefGh123Ijklmn`. 
