@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Getting Started - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Tutorials</li><li class="nav-item"><a href="tutorial-creating_a_game.html">Creating a Game</a></li><li class="nav-item"><a href="tutorial-getting_started.html">Getting Started</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Game.html">Game</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#addPlayer">addPlayer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#clearCollectors">clearCollectors</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#configureOptions">configureOptions</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#end">end</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#forceStop">forceStop</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#generateOptions">generateOptions</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#init">init</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#join">join</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#messageListener">messageListener</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#onMessage">onMessage</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#play">play</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#removePlayer">removePlayer</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Game.html#renderOptionInfo">renderOptionInfo</a></span></li><li class="nav-heading"><a href="global.html">Globals</a></li><li class="nav-item"><span class="nav-item-type type-member">M</span><span class="nav-item-name"><a href="global.html#Discord">Discord</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Getting Started</h1>
+    
+
+    <section>
+
+<header>
+    
+</header>
+
+<article>
+    <p>Interested in developing a game, or hosting your own version of Gamebot? Here's how to get your very own copy.</p>
+<h4>Requirements</h4>
+<p>Gamebot runs on Node.js. You’ll need to install Node.js if you want to run the bot. The latest version of Gamebot is compatible with version 10.x of Node.js. You should use <a href="https://github.com/nvm-sh/nvm/blob/master/README.md">nvm</a> to manage multiple versions of Node.</p>
+<p><a href="https://nodejs.org/en/blog/release/v10.18.0/"><strong>Node.js v10.18.0</strong></a> - Recommended for Gamebot</p>
+<p><a href="https://nodejs.org/en/download/">Node.js latest release</a> - Not recommended - will run into errors</p>
+<p>You should also have Git installed to clone the repo, but it's not required.</p>
+<p><a href="https://git-scm.com/downloads"><strong>Git latest release</strong></a></p>
+<h4>Getting the bot code</h4>
+<p>First, you should clone this repository. Then open it using <code>cd gamebot</code>.</p>
+<pre class="prettyprint source lang-http"><code>git clone https://github.com/zeroclutch/gamebot.git
+cd gamebot
+</code></pre>
+<h4>Create your Discord bot</h4>
+<p>After that, you will have to create your own Discord bot account. Use <a href="https://discordpy.readthedocs.io/en/latest/discord.html">this straightforward guide by discord.py</a> to learn how to create a bot. You should also add your new bot to a Discord server.</p>
+<h4>Configure the settings</h4>
+<p>Once you have your account, you’ll need to make an environment variables file so your bot can log in. Create a new file in your working directory and name it <code>.env</code>. Paste this into your <code>.env</code> file:</p>
+<pre class="prettyprint source lang-bash"><code>DISCORD_BOT_TOKEN=YOUR_TOKEN_HERE
+OWNER_ID=YOUR_DISCORD_ID_HERE
+LOGGING_CHANNEL=YOUR_CHANNEL_ID_HERE
+DISCORD_BOT_PREFIX=&
+
+BASE_URL=http://localhost:5000
+</code></pre>
+<p>Replace <code>YOUR_TOKEN_HERE</code> with the token you got from the Discord Developer Portal in the linked guide above. Your token should look something like <code>NzAwMjY2KDM4MDxdADMDNzZz.X0pgcjA.zDtrqfmQa5J-abcdefGh123Ijklmn</code>.</p>
+<p>Also, replace <code>YOUR_DISCORD_ID_HERE</code> with your Discord ID. If you don’t know how to get your ID, <a href="https://support.discordapp.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-">see this article</a>.</p>
+<p>Next, change <code>YOUR_CHANNEL_ID_HERE</code> to be the ID of the Discord channel you want to send logs to. It must be a server text channel, not a DM or voice channel. Make sure the bot is able to send messages to this channel. If you need help getting this ID, see the linked article in the previous step.</p>
+<p>You can change the prefix if you like.</p>
+<h4>Get it running</h4>
+<p>Now in your command line, you should install dependencies and run the bot.</p>
+<pre class="prettyprint source lang-bash"><code>npm install
+npm run dev
+</code></pre>
+<p>Whenever you want to run the bot, use <code>npm run dev</code>.</p>
+</article>
+
+</section>
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Tue May 19 2020 17:53:46 GMT-0700 (Pacific Daylight Time) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

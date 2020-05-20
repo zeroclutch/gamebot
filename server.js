@@ -1,26 +1,31 @@
+// Configure environment variabless
 const dotenv = require('dotenv')
 dotenv.config()
 
+// Initialize Discord bot
 const Discord = require('./discord_mod.js');
 const options = require('./config/options')
 const manager = new Discord.ShardingManager('./bot.js', { token: options.token })
 
 manager.spawn(2, 500).catch(err => console.error(err))
 
+// Add server dependencies
 const request = require('request')
 const bodyParser = require('body-parser')
 const querystring = require('querystring');
 const express = require('express')
 const app = express()
 
+// Create manager for custom WebUIs
 const WebUIManager = require('./util/WebUIManager')
 const webUIManager = new WebUIManager(app)
 
-// Handle all GET requests
+const package = require('./package.json')
 
+// Handle all GET requests
 app.use('/', express.static(__dirname + '/public',{ extensions:['html']}))
 
-app.use('/docs', express.static(__dirname + '/docs/gamebot/1.3.0'))
+app.use('/docs', express.static(__dirname + '/docs/gamebot/' + package.version))
 
 app.get('/thanks', (request, response) => {
   response.sendFile(__dirname + '/public/thanks.html');
