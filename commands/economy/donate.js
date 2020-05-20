@@ -14,7 +14,7 @@ module.exports = {
         const donationLink = new URL('https://www.paypal.com/cgi-bin/webscr')
         const params = donationLink.searchParams
 
-        const url = process.env.BASE_URL || 'https://gamebot.rocks/'
+        const url = process.env.BASE_URL || 'https://gamebot.rocks'
 
         params.append('cmd', '_donations')
         params.append('business', 'BDWKJXN5ABEU4')
@@ -36,7 +36,11 @@ module.exports = {
                     fields: [
                         {
                             name: 'Rewards',
-                            value: `Each dollar you donate will give you 1000${options.creditIcon}.`
+                            value: `Each $1 you donate will give you 1000${options.creditIcon}.`
+                        },
+                        {
+                            name: 'Support',
+                            value: `After donating, you should receive a confirmation DM. If you don't receive this DM and your credits are not added within 2 minutes, [join the support server](${options.serverInvite}) and contact @zero#1234.`
                         }
                     ], 
                     footer: { text: 'All values are in US Dollars.' }
