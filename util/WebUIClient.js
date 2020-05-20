@@ -75,7 +75,7 @@ module.exports = class WebUIClient {
             
             // Create a new UI on the manager
             axios({
-                url: `http://${process.env.BASE_URL}/createui`,
+                url: `${process.env.BASE_URL}/createui`,
                 method: 'post',
                 headers: {
                     'Connection': 'close',
@@ -124,7 +124,7 @@ module.exports = class WebUIClient {
         return new Promise((resolve, reject) => {
             // Create new UI
             this.create(user, options.message, callback, options.variables, options.type, options.duration)
-            .then(UI => resolve(`http://${process.env.BASE_URL}/game/${UI.id}`))
+            .then(UI => resolve(`${process.env.BASE_URL}/game/${UI.id}`))
             .catch(reject)
         })
     }
