@@ -14,7 +14,7 @@ module.exports = {
         const donationLink = new URL('https://www.paypal.com/cgi-bin/webscr')
         const params = donationLink.searchParams
 
-        const url = process.env.BASE_URL || 'https://gamebot-production.herokuapp.com/'
+        const url = process.env.BASE_URL || 'https://gamebot.rocks/'
 
         params.append('cmd', '_donations')
         params.append('business', 'BDWKJXN5ABEU4')
@@ -22,8 +22,8 @@ module.exports = {
         params.append('currency_code', 'USD')
         params.append('source', 'url')
         params.append('bn', 'PayPal_Donation_Gamebot_US')
-        params.append('return', url + 'thanks')
-        params.append('notify_url', url + 'donations')
+        params.append('return', url + '/thanks')
+        params.append('notify_url', url + '/donations')
         params.append('custom', msg.author.id)
 
         msg.author.createDM().then(channel => {
