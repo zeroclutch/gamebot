@@ -7,7 +7,7 @@ const clean = text => {
   try {
     let response = JSON.stringify(text, null, 2)
     text = response
-  } catch {
+  } catch (err) {
     console.info(text)
     text = 'Unable to stringify. Output in console.'
   }

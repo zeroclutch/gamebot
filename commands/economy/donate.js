@@ -42,7 +42,7 @@ module.exports = {
                             name: 'Support',
                             value: `After donating, you should receive a confirmation DM. If you don't receive this DM and your credits are not added within 2 minutes, [join the support server](${options.serverInvite}) and contact @zero#1234.`
                         }
-                    ], 
+                    ],
                     footer: { text: 'All values are in US Dollars.' }
                 }
             })
