@@ -1,0 +1,225 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>Gamebot - Time to draw!</title>
+    <link rel="stylesheet" href="/styles/main.css" type="text/css">
+    <link rel="stylesheet" href="/styles/bulma.min.css" type="text/css">
+    <style>
+        .main-content {
+            overflow:auto;
+            overflow-x: hidden; 
+            padding-bottom: 50px;
+        }
+
+        #drawing-mode-options {
+            background: #f5f2f0;
+            margin-top: 20px;
+        }
+
+        .wrapper {
+            padding-top: 12px;
+        }
+
+        .is-centered {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .is-tall {
+            height: 100%;
+        }
+
+        .info {
+            display: inline-block;
+            width: 25px;
+            background: #ffc;
+        }
+
+        .drawing-color {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        /* Create a custom radio button */
+        .radio {
+            height: 30px;
+            width: 30px;
+            background-color: #eee;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+        }
+        
+        .radio:hover {
+            border: 2px #444444aa solid;
+        }
+
+        .color-holder .drawing-color:checked~.radio {
+            border: 3px #444 solid;
+        }
+    </style>
+    <link rel="icon" href="/images/deepblue.png">
+    <script src="/scripts/submit.js" type="text/javascript"></script>
+    <script src="/scripts/fabric.min.js" type="text/javascript"></script>
+</head>
+
+<body>
+    <div class="main-content">
+            <div class="columns main-wrapper is-mobile">
+                <div id="drawing-mode-options" class="box column is-half is-three-quarters-mobile is-centered">
+                <h4 class="subtitle has-text-centered">
+                    Hello, {name}! Enter your drawing below.
+                </h4>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label">Line Width</label>
+                        </div>
+                        <div class="field-body">
+                            <div class="field is-narrow">
+                                <div class="wrapper is-tall" style="inline-block">
+                                    <input type="range" value="12" min="0" max="60"
+                        id="drawing-line-width">
+                                <span class="tag is-medium is-primary" id="drawing-line-width-value">12</span>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label">Color</label>
+                        </div>
+                        <div class="field-body">
+                            <div class="field is-narrow">
+                                <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#FFF">
+                                    <span class="radio" style="background-color: #FFF"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#C1C1C1">
+                                    <span class="radio" style="background-color: #C1C1C1"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#EF130B">
+                                    <span class="radio" style="background-color: #EF130B"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#FF7100">
+                                    <span class="radio" style="background-color: #FF7100"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#FFE400">
+                                    <span class="radio" style="background-color: #FFE400"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#00CC00">
+                                    <span class="radio" style="background-color: #00CC00"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#00B2FF">
+                                    <span class="radio" style="background-color: #00B2FF"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#231FD3">
+                                    <span class="radio" style="background-color: #231FD3"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#A300BA">
+                                    <span class="radio" style="background-color: #A300BA"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#D37CAA">
+                                    <span class="radio" style="background-color: #D37CAA"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#A0522D">
+                                    <span class="radio" style="background-color: #A0522D"></span>
+                                    </label>
+                                    <br>
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#000">
+                                    <span class="radio" style="background-color: #000"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#4C4C4C">
+                                    <span class="radio" style="background-color: #4C4C4C"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#740B07">
+                                    <span class="radio" style="background-color: #740B07"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#C23800">
+                                    <span class="radio" style="background-color: #C23800"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#E8A200">
+                                    <span class="radio" style="background-color: #E8A200"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#005510">
+                                    <span class="radio" style="background-color: #005510"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#00569E">
+                                    <span class="radio" style="background-color: #00569E"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#0E0865">
+                                    <span class="radio" style="background-color: #0E0865"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#550069">
+                                    <span class="radio" style="background-color: #550069"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#A75574">
+                                    <span class="radio" style="background-color: #A75574"></span>
+                                    </label>
+                                    
+                                    <label class="color-holder">
+                                    <input type="radio" class="drawing-color" name="drawing-color" value="#63300D">
+                                    <span class="radio" style="background-color: #63300D"></span>
+                                    </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button id="drawing-mode" class="button is-primary">Enter editing mode</button>
+                    <button id="clear-canvas" class="button is-danger">Clear</button>
+                    <button id="submit-button" class="button is-success">Submit</button><br>
+                </div>
+            </div>
+    <div class="canvas-container"
+        style="user-select: none; touch-action: none; margin-left: calc(50vw - 250px); margin-top: 10px">
+        <canvas id="c" width="500" height="500"
+            style="border: 1px solid rgb(170, 170, 170); position: relative; touch-action: none; user-select: none;"
+            class="lower-canvas">
+        </canvas>
+    </div>
+    <script type="text/javascript" src="/scripts/drawing.js"></script>
+</body>
+
+</html>
