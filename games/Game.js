@@ -585,11 +585,16 @@ const Game = class Game {
             }
             this.msg.channel.sendMsgEmbed(`${member.user} was added to the game!`)
         }).catch(err => {
-            console.error(err)
-            if(err.message == 'Cannot send messages to this user') {
-                return
+            // Remove errored player
+            if(this.players.has(member.id)) this.players.delete(member.id)
+
+            // Filter out privacy errors
+            if(err.message != 'Cannot send messages to this user') {
+                this.msg.channel.sendMsgEmbed(`An unknown error occurred, and ${member.user} could not be added.`, `Error: Player could not be added.`, options.colors.error)
+                console.error(err)
             }
 
+            // Notify user
             if(member.id == this.gameMaster.id) {
                 this.msg.channel.sendMsgEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error)
                 this.forceStop()
