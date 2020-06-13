@@ -26,3 +26,10 @@ const submitText = (form) => {
         value: document.querySelector('.ui-value').value
     })
 }
+
+const submitImage = (dataURL) => {
+    let image = dataURL.replace(/^data:image\/\w+;base64,/, '')
+    submitData({
+        value: image
+    })
+}

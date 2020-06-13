@@ -207,7 +207,7 @@ client.on('message', async function(msg) {
   
   if(cmd) {
     // test for permissions
-    if(cmd.permissions && cmd.permissions.length > 0 && msg.author.id !== process.env.OWNER_ID && (cmd.permissions.includes('GOD') || !msg.member ||!msg.member.hasPermission(cmd.permissions))) {
+    if(cmd.permissions && cmd.permissions.length > 0 && msg.author.id !== process.env.OWNER_ID && (cmd.permissions.includes('GOD') || !msg.member || !msg.member.hasPermission(cmd.permissions))) {
       msg.channel.sendMsgEmbed('Sorry, you don\'t have the necessary permissions for this command.')
       return
     }
