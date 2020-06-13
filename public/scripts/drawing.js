@@ -36,7 +36,7 @@
           drawingOptionsEl.style.opacity = '1'
       } else {
           drawingModeEl.innerHTML = 'Enter drawing mode'
-          drawingOptionsEl.style.opacity = '0.5'
+          drawingOptionsEl.style.opacity = '0.75'
       }
   }
 
