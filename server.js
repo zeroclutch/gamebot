@@ -7,7 +7,7 @@ const Discord = require('./discord_mod.js');
 const options = require('./config/options')
 const manager = new Discord.ShardingManager('./bot.js', { token: options.token })
 
-manager.spawn(2, 500).catch(err => console.error(err))
+manager.spawn('auto', 500).catch(err => console.error(err))
 
 // Add server dependencies
 const request = require('request')
