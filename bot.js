@@ -87,6 +87,9 @@ client.on('ready', () => {
   client.user.setActivity(options.activity.game, { type: options.activity.type })
   .catch(console.error);
 
+  // Update bot system status
+  client.updateStatus()
+
   // Post DBL stats every 30 minutes
   setInterval(() => {
     if(dbl)
