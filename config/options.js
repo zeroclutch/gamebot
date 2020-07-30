@@ -7,6 +7,7 @@ module.exports = {
     type: 'PLAYING'
   },
   loggingChannel: process.env.LOGGING_CHANNEL,
+  statusChannel: '618344167759675413',
   serverInvite: 'https://discord.gg/7pNEJQC',
   creditIcon: '<:credit:619756127101386762>',
   colors: {

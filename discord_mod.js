@@ -2,6 +2,7 @@
  * Discord Mod. An extension of the discord.js module to streamline usage of this bot.
  */
 const Discord = require('discord.js')
+const options = require('./config/options')
 
 /**
  * Checks if a Discord.GuildMember has a role
@@ -120,6 +121,20 @@ Discord.User.prototype.hasItem = async function (itemID) {
     console.error(err)
   })
   return isItemUnlocked
+}
+
+/**
+ * Updates the current status message.
+ */
+Discord.Client.prototype.updateStatus = async function(itemID) {
+  // try fetching message
+  let statusChannel = this.channels.get(options.statusChannel)
+  if(statusChannel) {
+    let message = (await statusChannel.fetchMessages({ limit: 1 }).catch(console.error)).first()
+    this.latestStatus = { content: message.content, date: message.createdAt.toLocaleDateString() }
+    return this.latestStatus
+  }
+  return null
 }
 
 module.exports = Discord
