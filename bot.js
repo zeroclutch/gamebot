@@ -243,6 +243,18 @@ client.on('message', async function(msg) {
   }
 })
 
+client.on('error', err => {
+  console.error('Client on shard ' + client.shard.id + ' encountered an error:', err)
+})
+
+client.on('shardError', err => {
+  console.error('A websocket connection encountered an error:', err)
+})
+
+process.on('unhandledRejection', err => {
+  console.error(err.stack, 'error')
+})
+
 client.on('consoleLog', async message => {
   if(!client.readyAt) return
   const loggingChannel = client.channels.get(options.loggingChannel)
