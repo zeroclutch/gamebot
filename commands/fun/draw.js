@@ -32,7 +32,7 @@ module.exports = {
       }]
     }), {
       type: 'drawing',
-      duration: 600
+      duration: 1800
     }).then(url => {
       msg.author.createDM()
       .then(channel => {

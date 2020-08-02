@@ -40,10 +40,10 @@ app.get('/invite', (req,res) => {
 // Handle all POST requests
 
 // Parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ limit: "100mb", extended: true, parameterLimit:50000 }));
 
 // Parse application/json
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: "100mb"}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }))
 
