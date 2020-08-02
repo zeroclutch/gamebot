@@ -3,18 +3,18 @@
 
 <head>
     <title>Gamebot - Time to draw!</title>
-    <link rel="stylesheet" href="/styles/main.css" type="text/css">
     <link rel="stylesheet" href="/styles/bulma.min.css" type="text/css">
+    <link rel="stylesheet" href="/styles/main.css" type="text/css">
     <style>
         .main-content {
-            overflow:auto;
+            overflow: auto;
             overflow-x: hidden; 
             padding-bottom: 50px;
         }
 
         #drawing-mode-options {
             background: #f5f2f0;
-            margin-top: 20px;
+            margin-top: 70px;
         }
 
         .wrapper {
@@ -71,18 +71,25 @@
         }
     </style>
     <link rel="icon" href="/images/deepblue.png">
+    <script type="text/javascript">
+        const killAt = {killAt}
+        const pageType = 'drawing'
+    </script>
     <script src="/scripts/submit.js" type="text/javascript"></script>
     <script src="/scripts/fabric.min.js" type="text/javascript"></script>
 </head>
 
 <body>
     <div class="main-content">
+        <div class="timer-bar">
+            <div class="timer"></div>
+            <h5><span class="time-remaining">Some</span> seconds left!</h5>
+        </div>
             <div class="columns main-wrapper is-mobile">
-                <div id="drawing-mode-options" class="box column is-half is-three-quarters-mobile is-centered">
+                <div id="drawing-mode-options" class="tools-holder is-centered">
                 <h4 class="subtitle has-text-centered">
                     Hello, {name}! Enter your drawing below.
                 </h4>
-                <hr>
                     <div class="field is-horizontal">
                         <div class="field-label is-normal">
                             <label class="label">Line Width</label>

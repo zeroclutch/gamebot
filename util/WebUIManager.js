@@ -27,7 +27,7 @@ module.exports = class WebUIManager {
         // Periodically sweep UIs for expired links
         setInterval(() => {
             this.UIs.forEach(UI => {
-                if(Date.now() > UI.killAt) {
+                if(Date.now() > (UI.killAt + 5000)) {
                     this.UIs.delete(UI.id)
                 }
             })
@@ -53,6 +53,7 @@ module.exports = class WebUIManager {
         try {
             variables = webUI.variables
             variables.push(['{id}', webUI.id])
+            variables.push(['{killAt}', webUI.killAt])
         } catch(err) {
             console.error(err)
             return false

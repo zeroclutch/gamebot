@@ -5,9 +5,11 @@ dotenv.config()
 // Initialize Discord bot
 const Discord = require('./discord_mod.js');
 const options = require('./config/options')
-const manager = new Discord.ShardingManager('./bot.js', { token: options.token })
+const manager = new Discord.ShardingManager('./bot.js', {
+  token: options.token
+})
 
-manager.spawn('auto', 500).catch(err => console.error(err))
+manager.spawn('auto', 5000).catch(err => console.error(err))
 
 // Add server dependencies
 const request = require('request')
@@ -195,7 +197,7 @@ app.post('/donations', (req, res) => {
         
 			} else if (body.substring(0, 7) === 'INVALID') {
 				// IPN invalid, log for manual investigation
-        console.error('A payment did not go through at ' + Date.now() + '.')
+        console.error('A payment did not go through at ' + Date.now() + ' for user ' + userID)
         console.error(req.body)
         if(req.body.custom) {
           manager.shards.first().eval(`this.users.get('${req.body.custom}').createDM().then(channel => channel.sendMsgEmbed('There was an error processing your purchase. Please message @zero#1234 or join the Gamebot support server to have this issue resolved.', 'Error!')).catch(err => console.error(err))`)
