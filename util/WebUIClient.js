@@ -20,7 +20,7 @@ module.exports = class WebUIClient {
         // Periodically sweep UIs for expired links
         setInterval(() => {
             this.UIs.forEach(UI => {
-                if(Date.now() > UI.killAt) {
+                if(Date.now() > (UI.killAt + 5000)) {
                     this.UIs.delete(UI.id)
                 }
             })
@@ -60,7 +60,7 @@ module.exports = class WebUIClient {
      * @param {Number} duration How long to keep the webpage alive, in seconds
      * @param {handlePlayerWebResponse} callback The callback function that handles the data from the Web UI
      */
-    create(user, message='Enter your response here', callback, variables=[['{name}', user.nickname || user.username], ['{message}',message]], type='text', duration=300) {
+    create(user, message='Enter your response here', callback, variables=[['{name}', user.nickname || user.username], ['{message}', message]], type='text', duration=300) {
         return new Promise(async (resolve, reject)=> {
             const id = WebUIManager.generateUIID(user.id)
 
