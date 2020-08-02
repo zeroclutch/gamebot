@@ -20,6 +20,7 @@
     background-color: #fff;
     text-align: center;
     padding: 20px 0;
+    z-index: 10;
 }
 
 .timer {
