@@ -1,0 +1,12 @@
+{
+    "id": "wis",
+    "name": "Wisecracks",
+    "aliases": "",
+    "playerCount": {
+        "min": 3,
+        "max": 10
+    },
+    "genre": "Tabletop",
+    "about": "Classic Connect 4, but with a whole lot more.",
+    "rules": "Players take turns dropping one colored disc into a game board, which falls to the bottom. Whoever gets four in a row diagonally, horizontally, or vertically, wins!"
+}
