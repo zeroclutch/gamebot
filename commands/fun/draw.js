@@ -10,6 +10,10 @@ module.exports = {
   dmCommand: false,
   args: false,
   run: function (msg, args) {
+    msg.channel.sendMsgEmbed('Drawing is not available now, see the support server for more details.')
+    return
+
+
     // Check permissions
     if(!msg.channel.permissionsFor(msg.member).has('ATTACH_FILES')) {
       msg.channel.sendMsgEmbed(`You are missing the "Attach Files" permission. Try using this command in a channel that allows images.`, 'You could not use this command.', options.colors.error)
