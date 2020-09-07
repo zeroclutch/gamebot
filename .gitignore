@@ -33,3 +33,7 @@ data.json
 # Configuration directories
 .vscode/
 *.icloud
+
+# Deployment files 
+.deploy/
+certs/
