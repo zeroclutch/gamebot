@@ -8,11 +8,11 @@ const fs = require('fs')
 module.exports = class PromptList {
     constructor(files) {
         // Read files
-        let content = fs.readFileSync(file, 'utf8')
+        let content = files.map(file => file = fs.readFileSync(file, 'utf8'))
         // Split text
         this.prompts = []
-        content.split('\n').forEach(prompt => {
-            this.words.push(prompt.replace('"BLANK"', '____'))
+        content.join('\n').split('\n').forEach(prompt => {
+            this.prompts.push(prompt.replace('BLANK', '____'))
         })
     }
 
