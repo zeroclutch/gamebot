@@ -6,7 +6,7 @@
         "min": 3,
         "max": 10
     },
-    "genre": "Tabletop",
-    "about": "Classic Connect 4, but with a whole lot more.",
-    "rules": "Players take turns dropping one colored disc into a game board, which falls to the bottom. Whoever gets four in a row diagonally, horizontally, or vertically, wins!"
+    "genre": "Party",
+    "about": "Make the wittiest responses to the silliest prompts",
+    "rules": "Two players are randomly chosen to face off, and have to submit answers to a given prompt. The rest of the players vote on their favorite, and the winner gets a point. First to a configurable number of points wins."
 }

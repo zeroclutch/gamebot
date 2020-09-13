@@ -12,7 +12,7 @@ module.exports = class PromptList {
         // Split text
         this.prompts = []
         content.join('\n').split('\n').forEach(prompt => {
-            this.prompts.push(prompt.replace('BLANK', '____'))
+            this.prompts.push(prompt.replace(/BLANK/gm, '____'))
         })
     }
 
