@@ -169,7 +169,7 @@ module.exports = class Wisecracks extends Game {
     hasWinner () {
         let arr = this.players.array()
         for(let i = 0; i < this.players.size; i++) {
-            if(arr[i] >= this.options['Points to Win']) {
+            if(arr[i] >= parseInt(this.options['Points to Win'])) {
                 return arr[i]
             }
         }
@@ -216,7 +216,7 @@ module.exports = class Wisecracks extends Game {
                     m => !votes.includes(m.author.id)
                     && m.author.id !== players[0].user.id && m.author.id !== players[1].user.id 
                     && this.players.find(player => player.user.id == m.author.id)
-                    && !isNaN(m.content) && (m.content === '1' || m.content === '2'), {time: 120000, max: this.players.size}
+                    && !isNaN(m.content) && (m.content === '1' || m.content === '2'), {time: 120000, max: this.players.size - players.length}
                 )
                 collector.on('collect', message => {
                     if(this.ending) return
@@ -237,11 +237,12 @@ module.exports = class Wisecracks extends Game {
                     } else {
                         winner = 'tie'
                     }
+
                     // Show results
                     this.channel.send({
                         embed: {
                             title: 'The winner is...',
-                            description: winner == 'tie' ? `It was a tie between ${submitted[0].player.user} and ${submitted[1].player.user}!` : `${winner.player.user} for **${submitted.response}**`,
+                            description: winner == 'tie' ? `It was a tie between ${submitted[0].player.user} and ${submitted[1].player.user}!` : `${winner.player.user} for **${winner.response}**`,
                             footer: {
                                 text: 'They earned one point.'
                             },
