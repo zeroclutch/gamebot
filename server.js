@@ -135,7 +135,6 @@ app.post('/voted', async (req, res) => {
   })
 })
 
-
 app.post('/donations', (req, res) => {
 
 	// STEP 1: read POST data
