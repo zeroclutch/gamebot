@@ -4,6 +4,7 @@ const metadata = require('./../metadata.json')
 const { Collection } = require('./../../../discord_mod')
 const { decrypt } = require('./../../../util/cryptography')
 const fs = require('fs')
+const { response } = require('express')
 
 let questionList
 decrypt(process.env.PASS_KEY, fs.readFileSync('./games/Survey Says/assets/data.enc', 'utf8'))
@@ -43,8 +44,8 @@ module.exports = class SurveySays extends Game {
 
     select(arr) {
         let index = Math.floor(Math.random() * arr.length)
-        arr.splice(index, 1)
-        return arr[index]
+        let res = arr.splice(index, 1)
+        return res[0]
     }
 
     async sleep(ms) {
@@ -57,7 +58,9 @@ module.exports = class SurveySays extends Game {
     async play() {
         while(!this.hasWinner() && !this.ending) {
             // Pick random question
-            this.question = this.select(this.questionList)
+            do {
+                this.question = this.select(this.questionList)
+            } while(!this.question || !this.question.question)
 
             let guess = await this.awaitGuesserResponse().catch(console.error)
             let submitted = await this.awaitPlayerResponse().catch(console.error)
@@ -79,7 +82,7 @@ module.exports = class SurveySays extends Game {
         this.guesser = this.players.array()[this.guesserIndex++ % this.players.size]
         const filter = m => {
             if(isNaN(m.content) || m.author.id != this.guesser.user.id) return false
-            let number = parseInt(m.content)
+            let number = parseInt(m.content.replace('%',''))
             return number >= 0 && number <= 100
         }
 
@@ -87,23 +90,26 @@ module.exports = class SurveySays extends Game {
         await this.channel.sendMsgEmbed(`The current guesser is ${this.guesser.user}!\n\nYour question is: **${this.question.question}**`)
 
         // Await response
-        let collected = await this.channel.awaitMessages(filter, {max: 1, time: this.options['Timer']})
+        let collected = await this.channel.awaitMessages(filter, {max: 1, time: this.options['Timer'], errors: ['time']})
         .catch(err => {
             console.error(err)
-            this.msg.channel.sendMsgEmbed('An error occurred.', 'Error!', options.colors.error)
+            this.msg.channel.sendMsgEmbed('You ran out of time. The guess is set to 50%', 'Uh oh...', options.colors.error)
         })
-        return collected ? collected.first() : false
+        return collected ? parseInt(collected.first().content.replace('%','')) : 50
     }
 
     async awaitPlayerResponse() {
         // Send submission list
         let submitted = new Collection()
         let submissionList = await this.channel.send(this.renderSubmissionList(submitted))
+
+        let allPlayersSubmitted = false
+
         // Create message listener on channel
         const filter = m => (m.content.toLowerCase() == 'more' || m.content.toLowerCase() == 'less') && this.players.has(m.author.id) && !submitted.has(m.author.id) && m.author.id !== this.guesser.user.id
 
         return new Promise((resolve, reject) => {
-            const collector = this.channel.createMessageCollector(filter, {max: this.players.size - 1, time: this.options['Timer']})
+            const collector = this.channel.createMessageCollector(filter, {max: 99, time: this.options['Timer']})
 
             collector.on('collect', m => {
                 if(this.ending) return
@@ -112,6 +118,11 @@ module.exports = class SurveySays extends Game {
                 submitted.set(m.author.id, m.content.toLowerCase())
                 // Update submission message
                 submissionList.edit(this.renderSubmissionList(submitted))
+
+                if(submitted.size == this.players.size - 1) {
+                    allPlayersSubmitted = true;
+                    resolve(submitted)
+                }
             })
             // Resolve listener once collector ends
             collector.on('end', collected => {
@@ -119,6 +130,7 @@ module.exports = class SurveySays extends Game {
                     resolve(false)
                     return
                 }
+                if(allPlayersSubmitted) return
                 this.channel.sendMsgEmbed('Drumroll please...')
                 resolve(submitted)
             })
@@ -132,9 +144,9 @@ module.exports = class SurveySays extends Game {
         }
         await this.channel.send({
             embed: {
-                description: this.renderLeaderboard(),
+                description: `The actual number was \`${Math.floor(this.question.value * 10) / 10}%\`!\n\n${this.renderLeaderboard()}`,
                 color: options.colors.info,
-                image: 'attachment://image.png'
+                image: { url: 'attachment://image.png' }
             },
             files: [{
                attachment: `games/Survey Says/assets/${answer}.png`,
