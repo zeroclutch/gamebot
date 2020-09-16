@@ -63,7 +63,7 @@ module.exports = class SurveySays extends Game {
             } while(!this.question || !this.question.question)
 
             let guess = await this.awaitGuesserResponse().catch(console.error)
-            let submitted = await this.awaitPlayerResponse().catch(console.error)
+            let submitted = await this.awaitPlayerResponse(guess).catch(console.error)
             await this.sleep(3000)
             await this.awardPoints(guess, submitted)
         }
@@ -98,10 +98,10 @@ module.exports = class SurveySays extends Game {
         return collected ? parseInt(collected.first().content.replace('%','')) : 50
     }
 
-    async awaitPlayerResponse() {
+    async awaitPlayerResponse(guess) {
         // Send submission list
         let submitted = new Collection()
-        let submissionList = await this.channel.send(this.renderSubmissionList(submitted))
+        let submissionList = await this.channel.send(this.renderSubmissionList(submitted, guess))
 
         let allPlayersSubmitted = false
 
@@ -117,7 +117,7 @@ module.exports = class SurveySays extends Game {
                 // Update submitted list
                 submitted.set(m.author.id, m.content.toLowerCase())
                 // Update submission message
-                submissionList.edit(this.renderSubmissionList(submitted))
+                submissionList.edit(this.renderSubmissionList(submitted, guess))
 
                 if(submitted.size == this.players.size - 1) {
                     allPlayersSubmitted = true;
@@ -164,7 +164,7 @@ module.exports = class SurveySays extends Game {
 
     }
 
-    renderSubmissionList(submitted) {
+    renderSubmissionList(submitted, guess) {
         let submissionList = ''
         const icons = {
             more: '🔺',
@@ -177,6 +177,7 @@ module.exports = class SurveySays extends Game {
         })
         return {
             embed: {
+                title: `Current guess: ${guess}% - ${this.question.question}`,
                 description: submissionList + 'Type `more` if you thing the actual number is higher, or `less` if you think that it is lower.',
                 color: options.colors.info,
             }
@@ -189,10 +190,11 @@ module.exports = class SurveySays extends Game {
      */
     hasWinner() {
         let winners = []
-        for(let i = 0; i < this.players.size; i++) {
-            let player = this.players.array()
+        let players = this.players.array()
+        for(let i = 0; i < players.length; i++) {
+            let player = players[i]
             if(player.score >= this.options['Points to Win']) {
-                winners.push(player.user.id)
+                winners.push(player.user)
             }
         }
         return winners.length > 0
@@ -200,13 +202,14 @@ module.exports = class SurveySays extends Game {
 
     getEndPhrase() {
         let winners = []
-        for(let i = 0; i < this.players.size; i++) {
-            let player = this.players.array()
+        let players = this.players.array()
+        for(let i = 0; i < players.length; i++) {
+            let player = players[i]
             if(player.score >= this.options['Points to Win']) {
                 winners.push(player.user)
             }
         }
-        return `The winner${winners.length > 1 ? 's are' : ' is'} ${winners.join(', ')}! To play games with the community, [join our server](${options.serverInvite})!`
+        return `The winner${winners.length > 1 ? 's are' : ' is'} ${winners.join(', ')}!\n\nTo play games with the community, [join our server](${options.serverInvite})!`
 
     }
 

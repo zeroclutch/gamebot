@@ -102,7 +102,8 @@ module.exports = class Wisecracks extends Game {
             }).then(url => {
                 // Set timer 120 seconds
                 setTimeout(() => {
-                    resolve(undefined)
+                    if(this.ending) reject()
+                    resolve()
                 }, duration * 1000)
 
                 player.user.createDM()
@@ -157,7 +158,7 @@ module.exports = class Wisecracks extends Game {
                 description: leaderboard,
                 color: options.colors.info,
                 footer: {
-                    text: `First to ${this.options['Points to win']} wins!`
+                    text: `First to ${this.options['Points to Win']} wins!`
                 }
             }
         }
@@ -169,7 +170,7 @@ module.exports = class Wisecracks extends Game {
     hasWinner () {
         let arr = this.players.array()
         for(let i = 0; i < this.players.size; i++) {
-            if(arr[i] >= parseInt(this.options['Points to Win'])) {
+            if(arr[i].score >= parseInt(this.options['Points to Win'])) {
                 return arr[i]
             }
         }
@@ -196,14 +197,15 @@ module.exports = class Wisecracks extends Game {
         // Allow players to submit their Wisecracks™
         let submitted = []
         players.forEach(async player => {
-            let response = await this.getWisecracks(player)
+            let response = await this.getWisecracks(player).catch(() => false)
+            if(this.ending) return
             submitted.push({response, player, score: 0})
             if(submitted.length == players.length) {
                 // Vote on Wisecracks
                 this.channel.send({
                     embed: {
                         title: this.prompt.raw,
-                        description: `${submitted.map((submission, i) => `**[${i + 1}]** ${submission.player.user}: ${submission.response || '**No response.**'}`).join('\n')}\n\nEveryone else, vote for your favorite answer!`,
+                        description: `${submitted.map((submission, i) => `**[${i + 1}]** ${submission.response || '**No response.**'}`).join('\n')}\n\nEveryone else, vote for your favorite answer!`,
                         footer: {
                             text: 'Type the number of the response to vote.'
                         },
