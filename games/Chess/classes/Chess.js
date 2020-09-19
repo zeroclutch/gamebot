@@ -154,7 +154,7 @@ module.exports = class Chess extends Game {
                         ctx.drawImage(check, x, y, 64, 64)
                     }
 
-                    let piece = await loadImage(`./games/Chess/assets/pieces/${this.options['Piece Style']}/${square.piece.side.name}_${square.piece.type}.png`)
+                    let piece = await loadImage(`./games/Chess/assets/pieces/${this.options['Piece Style'].toLowerCase()}/${square.piece.side.name}_${square.piece.type}.png`)
                     ctx.drawImage(piece, x, y, 64, 64)
                 }
             }
