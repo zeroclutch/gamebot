@@ -57,6 +57,10 @@ module.exports = class SurveySays extends Game {
      */
     async play() {
         while(!this.hasWinner() && !this.ending) {
+            this.channel.send('The next round will begin in 5 seconds.')
+            this.updatePlayers()
+            await this.sleep(5000)
+
             // Pick random question
             do {
                 this.question = this.select(this.questionList)
@@ -92,7 +96,6 @@ module.exports = class SurveySays extends Game {
         // Await response
         let collected = await this.channel.awaitMessages(filter, {max: 1, time: this.options['Timer'], errors: ['time']})
         .catch(err => {
-            console.error(err)
             this.msg.channel.sendMsgEmbed('You ran out of time. The guess is set to 50%', 'Uh oh...', options.colors.error)
         })
         return collected ? parseInt(collected.first().content.replace('%','')) : 50
@@ -113,9 +116,9 @@ module.exports = class SurveySays extends Game {
 
             collector.on('collect', m => {
                 if(this.ending) return
-                m.delete()
                 // Update submitted list
                 submitted.set(m.author.id, m.content.toLowerCase())
+                m.delete()
                 // Update submission message
                 submissionList.edit(this.renderSubmissionList(submitted, guess))
 
@@ -130,8 +133,8 @@ module.exports = class SurveySays extends Game {
                     resolve(false)
                     return
                 }
-                if(allPlayersSubmitted) return
-                this.channel.sendMsgEmbed('Drumroll please...')
+                if(allPlayersSubmitted) 
+                    this.channel.sendMsgEmbed('Drumroll please...')
                 resolve(submitted)
             })
         })
@@ -139,12 +142,16 @@ module.exports = class SurveySays extends Game {
 
     async awardPoints(guess, submitted) {
         let answer = guess < this.question.value ? 'more' : 'less'
+        let actualNumber = Math.floor(this.question.value * 10) / 10
+        if(Math.abs(guess - actualNumber) <= 10) {
+            this.guesser.score++
+        }
         for(let [id, response] of submitted) {
             if(response == answer) this.players.get(id).score++
         }
         await this.channel.send({
             embed: {
-                description: `The actual number was \`${Math.floor(this.question.value * 10) / 10}%\`!\n\n${this.renderLeaderboard()}`,
+                description: `The actual number was \`${actualNumber}%\`!\n\n${this.renderLeaderboard()}`,
                 color: options.colors.info,
                 image: { url: 'attachment://image.png' }
             },

@@ -2,8 +2,8 @@
     "id": "sus",
     "name": "Survey Says",
     "playerCount": {
-        "min": 2,
-        "max": 16
+        "min": 3,
+        "max": 18
     },
     "genre": "Party",
     "about": "The wacky game that tells you just how weird people are.",
