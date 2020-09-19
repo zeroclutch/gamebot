@@ -222,7 +222,10 @@ module.exports = class Chess extends Game {
     }
 
     analyzeBoard(side) {
-        if(this.status.isStalemate || this.status.isRepetition) this.end(undefined, `The game is a draw.\nTo play games with the community, [join our server](${options.serverInvite})!`)
+        if(this.status.isStalemate || this.status.isRepetition) {
+            this.end(undefined, `The game is a draw.\nTo play games with the community, [join our server](${options.serverInvite})!`)
+            this.over = true
+        }
         if(this.status.isCheckmate) {
             this.displayBoard(side).then(() => {
                 let winner = this.players.find(player => player.side == side)
