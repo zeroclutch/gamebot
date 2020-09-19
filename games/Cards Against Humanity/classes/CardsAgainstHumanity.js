@@ -24,6 +24,7 @@ const CARD_PACKS = {
     'prd_pack': 'period',
     'www_pack': 'www',
     'sci_pack': 'science',
+    'hoc_pack': 'HOCAH',
     'hol_pset': ['xmas2012', 'xmas2013']
 }
 
