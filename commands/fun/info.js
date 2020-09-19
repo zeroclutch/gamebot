@@ -35,6 +35,10 @@ module.exports = {
                         {
                             name: 'Genre',
                             value: game.genre
+                        },
+                        {
+                            name: 'Player Count',
+                            value: `${game.playerCount.min}-${game.playerCount.max} players`
                         }
                     ],
                     footer: {

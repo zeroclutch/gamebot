@@ -78,6 +78,19 @@ const Game = class Game {
         this.players = new Discord.Collection()
 
         /**
+         * An array of players that are queued to be added, populated using the `this.addPlayer()` command
+         * @type {Array}
+         */
+        this.playersToAdd = []
+
+        /**
+         * An array of players that are queued to be added, populated using the `this.removePlayer()` command
+         * @type {Array}
+         * 
+         */
+        this.playersToKick = []
+
+        /**
          * Helper field that is only true when `this.forceStop()` is called. This should be used to prevent the game from continuing when unexpectedly ended.
          * @type {Boolean}
          * @example
@@ -126,7 +139,9 @@ const Game = class Game {
          * @static
          */
         this.settings = {
-            isDmNeeded: false
+            isDmNeeded: false,
+            updatePlayersAnytime: true,
+            defaultUpdatePlayerMessage: `✅ The player list will be updated at the start of the next round.`
         }
 
         /**
@@ -221,6 +236,9 @@ const Game = class Game {
                     await this.configureOptions()
                 }
 
+                // Prevent players from joining and leaving freely during the game
+                this.settings.updatePlayersAnytime = false
+
                 // Initialize specific game
                 await this.gameInit()
 
@@ -242,23 +260,25 @@ const Game = class Game {
             embed: {
                 title: `${this.msg.author.tag} is starting a ${this.metadata.name} game!`,
                 description: `Type \`${options.prefix}join\` to join in the next **120 seconds**.\n\n${this.leader}, type \`${options.prefix}start\` to begin once everyone has joined.`,
-                color: 4886754
+                color: options.colors.info
             }
         })
 
         // Add gameMaster
-        this.addPlayer(this.gameMaster.id)
+        await this.addPlayer(this.gameMaster.id, null)
+        this.updatePlayers()
 
         const filter = m => (m.content.startsWith(`${options.prefix}join`) && !this.players.has(m.author.id)) || (m.author.id == this.gameMaster.id && m.content.startsWith(`${options.prefix}start`))
         const collector = this.channel.createMessageCollector(filter, { max: this.metadata.playerCount.max, time: 120000 })
         this.collectors.push(collector)
-        collector.on('collect', m => {
+        collector.on('collect', async m => {
             if(this.ending) return
             if(m.content.startsWith(`${options.prefix}start`)) {
                 collector.stop()
                 return
             }
-            this.addPlayer(m.author.id)
+            await this.addPlayer(m.author.id, null)
+            this.updatePlayers()
             m.delete()
         })
 
@@ -504,35 +524,59 @@ const Game = class Game {
     async onMessage(message) {
         // Only listen to messages sent in the game channel
         if(message.channel.id !== this.channel.id) return
-        
+
+        // leader command
+        if(message.content.startsWith(`${options.prefix}leader`)) {
+            message.channel.sendMsgEmbed(`The game leader is ${this.leader}. They can add players by typing \`${options.prefix}add @user\`, kick players by typing \`${options.prefix}kick @user\`, and end the game using \`${options.prefix}end\`.`)
+        }
+
+        // game command
+        if(message.content.startsWith(`${options.prefix}game`)) {
+            message.channel.sendMsgEmbed(`Game leader: ${this.leader}\nDMs required: ${this.settings.isDmNeeded}\n`, `${this.metadata.name} - ${this.players.size} player${this.players.size == 1 ? '' : 's'}`)
+        }
+
         // leader commands
         if(message.author.id == this.gameMaster.id) {
             // add command
             if(message.content.startsWith(`${options.prefix}add`)) {
                 let member = message.content.substring(options.prefix.length + 3, message.content.length).replace(/\D/g, '')
-                this.addPlayer(member)
+                if(this.settings.updatePlayersAnytime) {
+                    await this.addPlayer(member, null)
+                    this.updatePlayers()
+                } else {
+                    await this.addPlayer(member)
+                }
             }
 
             // kick command
             if(message.content.startsWith(`${options.prefix}kick`)) {
-                var user = message.content.substring(options.prefix.length + 4, message.content.length).replace(/\D/g, '')
-                this.removePlayer(user)
+                let member = message.content.substring(options.prefix.length + 4, message.content.length).replace(/\D/g, '')
+                if(this.settings.updatePlayersAnytime) {
+                    await this.removePlayer(member, null)
+                    this.updatePlayers()
+                } else {
+                    await this.removePlayer(member)
+                }
             }
         } else {
             // leave command
             if(message.content.startsWith(`${options.prefix}leave`)) {
-                // check if the player count will stay within the min and max
-                this.removePlayer(user)
+                let member = message.member
+                if(this.settings.updatePlayersAnytime) {
+                    await this.removePlayer(member, null)
+                    this.updatePlayers()
+                } else {
+                    await this.removePlayer(member)
+                }
             }
         }
 
         // bot owner commands
         if(message.author.id == process.env.OWNER_ID) {
             if(message.content.startsWith(`${options.prefix}evalg`)) {
-                var msg = message
                 var response = '';
                 try {
-                    response = await eval('(()=>{'+message.content.substring(options.prefix.length + 6,message.content.length)+'})()')
+                    response = await eval('(async ()=>{'+message.content.substring(options.prefix.length + 6,message.content.length)+'})()')
                     message.channel.send("```css\neval completed```\nResponse Time: `" + (Date.now()-message.createdTimestamp) + "ms`\nresponse:```json\n" + JSON.stringify(response) + "```\nType: `" + typeof(response) + "`");
                 } catch (err) {
                     message.channel.send("```diff\n- eval failed -```\nResponse Time: `" + (Date.now()-message.createdTimestamp) + "ms`\nerror:```json\n" + err + "```");
@@ -542,93 +586,135 @@ const Game = class Game {
     }
 
     /**
-     * Add a player to the game.
-     * @param {Discord.Member|String} member The member or id of the member to add,
+     * Add a player to the queue to be added to the game.
+     * @param {Discord.Member|string} member The member or id of the member to add
+     * @param {string} message The message to send if the user is successfully queued. Set to "null" for no message to be sent.
      */
-    async addPlayer(member) {
+    async addPlayer(member, message) {
         if(typeof member == 'string') {
-            member = await this.msg.guild.fetchMember(member).catch(() => {
-                this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027)
+            member = await this.msg.guild.fetchMember(member).catch(async () => {
+                await this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027)
+                return false
             })
-        }
-        
-        if(this.players.size >= this.metadata.playerCount.max) {  
-            this.msg.channel.sendMsgEmbed(`The game can't have more than ${this.metadata.playerCount.max} player${this.metadata.playerCount.max == 1 ? '' : 's'}! Player could not be added.`)
-            return
+            if(member === false) return
         }
 
         if(!member || this.players.has(member.id) || member.bot) {
-            this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027)
+            await this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027)
             return
         }
-            
-        member.user.createDM().then(dmChannel => {
-            return new Promise(resolve => {
-                var player = { user: member.user, dmChannel}
-                for(let key in this.defaultPlayer) {
-                    if(this.defaultPlayer[key] == 'String') {
-                        player[key] = ''
-                    } else if (this.defaultPlayer[key] == 'Array') {
-                        player[key] = []
-                    } else if (this.defaultPlayer[key] == 'Object') {
-                        player[key] = {}
-                    } else {
-                        player[key] = this.defaultPlayer[key]
-                    }
-                }
-                this.players.set(member.id, player)
-                resolve(dmChannel)
-            })
-        }).then(async dmChannel => {
-            if(this.settings.isDmNeeded){
-                await dmChannel.sendMsgEmbed(`You have joined a ${this.metadata.name} game in <#${this.msg.channel.id}>.`)
-            }
-            this.msg.channel.sendMsgEmbed(`${member.user} was added to the game!`)
-        }).catch(err => {
-            // Remove errored player
-            if(this.players.has(member.id)) this.players.delete(member.id)
 
-            // Filter out privacy errors
-            if(err.message != 'Cannot send messages to this user') {
-                this.msg.channel.sendMsgEmbed(`An unknown error occurred, and ${member.user} could not be added.`, `Error: Player could not be added.`, options.colors.error)
-                console.error(err)
-            }
+        let futureSize = this.players.size + this.playersToAdd.length - this.playersToKick.length
+        if(futureSize >= this.metadata.playerCount.max) {
+            this.channel.sendMsgEmbed(`The game can't have fewer than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! ${member.user} could not be removed.`)
+            return
+        }
 
-            // Notify user
-            if(member.id == this.gameMaster.id) {
-                this.msg.channel.sendMsgEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error)
-                this.forceStop()
-            } else {
-                this.msg.channel.sendMsgEmbed(`${member.user} must change their privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: Player could not be added.`, options.colors.error)
-            }
-        })
+        if(message !== null) {
+            await this.channel.sendMsgEmbed(message || this.settings.defaultUpdatePlayerMessage)
+        }
+        
+        this.playersToAdd.push(member)
     }
 
     /**
-     * Remove a player from the game.
+     * Add a player to the queue to be removed from the game.
      * @param {string|Discord.Member} member The member or member id to kick.
+     * @param {string} message The message to send if the user is successfully queued. Set to "null" for no message to be sent.
      */
-    async removePlayer(member) {
-        if(this.stage != 'join' && this.stage != 'init') return
+    async removePlayer(member, message) {
         if(typeof member == 'string') {
-            member = await this.msg.guild.fetchMember(member).catch(() => {
-                this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027)
+            member = await this.msg.guild.fetchMember(member).catch(async () => {
+                await this.channel.sendMsgEmbed('Invalid user.', 'Error!', options.colors.error)
+                return false
+            })
+            if(member === false) return
+        }
+
+        if(this.leader.id == member.id) {
+            await this.channel.send({
+                embed: {
+                    title: 'Error!',
+                    description: 'The leader cannot leave the game.',
+                    color: options.colors.error
+                }
             })
         }
         
         if(!this.players.has(member.id) || !member || member.bot) {
-            this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027)
+            await this.channel.sendMsgEmbed('Invalid user.', 'Error!', options.colors.error)
             return
         }
 
-        if(this.players.size <= this.metadata.playerCount.min) {
-            this.msg.channel.sendMsgEmbed(`The game can't have fewer than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! Player could not be removed.`)
+        let futureSize = this.players.size + this.playersToAdd.length - this.playersToKick.length
+        if(futureSize <= this.metadata.playerCount.min) {
+            this.channel.sendMsgEmbed(`The game can't have fewer than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! ${member.user} could not be removed.`)
             return
         }
 
-        this.msg.channel.sendMsgEmbed(`${member.user} was removed from the game!`)
-        this.players.delete(member.id)
+        if(message !== null) {
+            await this.channel.sendMsgEmbed(message || this.settings.defaultUpdatePlayerMessage)
+        }
+        
+        this.playersToKick.push(member)
     }
+
+    /**
+     * Update players who are queued to join or leave the game.
+     */
+    updatePlayers() {
+        this.playersToKick.forEach(member => {
+            this.msg.channel.sendMsgEmbed(`${member.user} was removed from the game!`)
+            this.players.delete(member.id)
+        })
+        this.playersToKick = []
+
+        this.playersToAdd.forEach(member => {
+            member.user.createDM().then(dmChannel => {
+                return new Promise(resolve => {
+                    var player = { user: member.user, dmChannel }
+                    // Construct default player object
+                    for(let key in this.defaultPlayer) {
+                        if(this.defaultPlayer[key] == 'String') {
+                            player[key] = ''
+                        } else if (this.defaultPlayer[key] == 'Array') {
+                            player[key] = []
+                        } else if (this.defaultPlayer[key] == 'Object') {
+                            player[key] = {}
+                        } else {
+                            player[key] = this.defaultPlayer[key]
+                        }
+                    }
+                    this.players.set(member.id, player)
+                    resolve(dmChannel)
+                })
+            }).then(async dmChannel => {
+                if(this.settings.isDmNeeded){
+                    await dmChannel.sendMsgEmbed(`You have joined a ${this.metadata.name} game in <#${this.msg.channel.id}>.`)
+                }
+                this.msg.channel.sendMsgEmbed(`${member.user} was added to the game!`)
+            }).catch(err => {
+                // Remove errored player
+                if(this.players.has(member.id)) this.players.delete(member.id)
+
+                // Filter out privacy errors
+                if(err.message != 'Cannot send messages to this user') {
+                    this.msg.channel.sendMsgEmbed(`An unknown error occurred, and ${member.user} could not be added.`, `Error: Player could not be added.`, options.colors.error)
+                    console.error(err)
+                }
+
+                // Notify user
+                if(member.id == this.gameMaster.id) {
+                    this.msg.channel.sendMsgEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error)
+                    this.forceStop()
+                } else {
+                    this.msg.channel.sendMsgEmbed(`${member.user} must change their privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: Player could not be added.`, options.colors.error)
+                }
+            })
+        })
+        this.playersToAdd = []
+    }
+    
 
     /**
      * The method called after user configuration. This will be custom for each game.

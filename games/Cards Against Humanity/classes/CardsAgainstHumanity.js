@@ -104,7 +104,6 @@ module.exports = class CardsAgainstHumanity extends Game {
         this.playersToAdd = []
 
         // get settings
-        this.settings = {}
         this.settings.sets = ['Base', 'CAHe1', 'CAHe2', 'CAHe3', 'CAHe4', 'CAHe5', 'CAHe6']
         this.settings.isDmNeeded = true
         // Default options, reconfigured later in this.generateOptions()
@@ -143,101 +142,6 @@ module.exports = class CardsAgainstHumanity extends Game {
         // create and shuffle the deck
         this.cardDeck = new CAHDeck(this.settings.sets)
         this.cardDeck.shuffle()
-    }
-
-    async onMessage (msg) {
-        // only respond to commands in the correct channel
-        if(msg.channel.id != this.msg.channel.id) return
-        // kick command
-        if(msg.content.startsWith(`${options.prefix}kick `) && msg.author.id == this.gameMaster.id && msg.channel.id == this.msg.channel.id) {
-            const user = msg.content.substring(options.prefix.length + 4).replace(/\D/g, '')
-            if(this.playersToKick.find(player => player == user)) {
-                msg.channel.sendMsgEmbed(`<@${user}> is already being removed at the start of the next round.`)
-                return
-            }
-            if(user == this.gameMaster.id) {
-                msg.channel.sendMsgEmbed(`The game leader can\'t be kicked! To end a game, use the command \`${options.prefix}end.\``)
-                return
-            }
-            if((this.players.size + this.playersToAdd.length - this.playersToKick.length) <= this.playerCount.min) {
-                msg.channel.sendMsgEmbed(`The game can't have fewer than ${this.playerCount.min} player${this.playerCount.min == 1 ? '' : 's'}! To end a game, use the command \`${options.prefix}end.\``)
-                return
-            }
-            msg.channel.sendMsgEmbed(`<@${user}> will be removed at the start of the next round.`)
-            this.playersToKick.push(user)
-        }
-
-        // add command
-        if(msg.content.startsWith(`${options.prefix}add`) && msg.author.id == this.gameMaster.id && msg.channel.id == this.msg.channel.id) {
-            const user = msg.content.substring(options.prefix.length + 3).replace(/\D/g, '')
-            if(this.playersToAdd.find(player => player == user)) {
-                msg.channel.sendMsgEmbed(`<@${user}> is already being added at the start of the next round.`)
-                return
-            }
-            
-            if((this.players.size + this.playersToAdd.length - this.playersToKick.length) >= this.playerCount.max) {
-                msg.channel.sendMsgEmbed(`The game can't have more than ${this.playerCount.max} player${this.playerCount.max == 1 ? '' : 's'}! Player could not be added.`)
-                return
-            }
-
-            if(!this.players.has(user)) {
-                var member = msg.guild.members.get(user)
-                if(!member || member.user.bot) {
-                    msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027)
-                    return
-                }
-                if(this.stage != 'init') {
-                    this.playersToAdd.push(member.id)
-                } else {
-                    this.addPlayer(member.id)
-                    this.msg.channel.sendMsgEmbed(`${member.user} was added to the game.`)
-                    return
-                }
-                msg.channel.sendMsgEmbed(`${member.user} will be added at the start of the next round.`)
-            }
-            
-        }
-
-        // leave command
-        if(msg.content.startsWith(`${options.prefix}leave`) && this.players.has(msg.author.id) && msg.channel.id == this.msg.channel.id) {
-            if(this.playersToKick.find(player => player == user)) {
-                msg.channel.sendMsgEmbed(`<@${user}> is already being removed at the start of the next round.`)
-                return
-            }
-            
-            if(msg.author.id == this.gameMaster.id) {
-                msg.channel.sendMsgEmbed(`The game leader can\'t leave! To end a game, use the command ${options.prefix}end.`)
-                return
-            }
-            if(this.players.size + this.playersToAdd.length - this.playersToKick.length <= this.playerCount.min) {
-                msg.channel.sendMsgEmbed(`The game can't have fewer than ${this.playerCount.min} player${this.playerCount.min == 1 ? '' : 's'}! To end a game, ask the game leader to use the command ${options.prefix}end.`)
-                return
-            }
-            msg.channel.sendMsgEmbed(`${msg.author} will be removed at the start of the next round.`)
-            this.playersToKick.push(msg.author.id)
-        }
-
-        // info command
-        if(msg.content.startsWith(`${options.prefix}gameinfo`) && msg.author.id == options.ownerID && msg.channel.id == this.msg.channel.id) {
-            msg.channel.sendMsgEmbed(`
-                stage: \`${this.stage}\`\n
-                players.size: \`${this.players.size}\`\n
-                submittedCards: \`${this.submittedCards.length}\`\n
-                lastMessageID: \`${this.lastMessageID}\`\n
-                czar.id: \`${this.czar.user.id}\`\n
-                active collectors: \`${this.collectors.length}\`\n`)
-        }
-
-        // eval command
-        if(msg.content.startsWith(`${options.prefix}evalg`) && msg.author.id == options.ownerID && msg.channel.id == this.msg.channel.id) {
-            var response = '';
-            try {
-                response = await eval(''+msg.content.replace(`${options.prefix}evalg `, '')+'')
-                msg.channel.send("```css\neval completed```\nResponse Time: `" + (Date.now()-msg.createdTimestamp) + "ms`\nresponse:```json\n" + JSON.stringify(response) + "```\nType: `" + typeof(response) + "`");
-            } catch (err) {
-                msg.channel.send("```diff\n- eval failed -```\nResponse Time: `" + (Date.now()-msg.createdTimestamp) + "ms`\nerror:```json\n" + err + "```");
-            }
-        }
     }
 
     sleep(ms) {
@@ -603,25 +507,7 @@ module.exports = class CardsAgainstHumanity extends Game {
         if(this.stage == 'sleeping' || this.ending) return
         await this.msg.channel.send('The next round will begin in 5 seconds.')
 
-        // add players
-        await this.playersToAdd.forEach(user => {
-            if(this.players.size == this.playerCount.max) {
-                this.msg.channel.send(`${user} could not be added.`, 'Error: Too many players.', 13632027)
-                return
-            }
-            this.addPlayer(user)
-        })
-
-        // kick players
-        await this.playersToKick.forEach(user => {
-            if(this.players.size == this.playerCount.min) {
-                this.msg.channel.send(`${user} could not be removed.`, 'Error: Too few players.', 13632027)
-                return
-            }
-            // remove player data
-            this.players.delete(user)
-            this.msg.channel.sendMsgEmbed(`<@${user}> was removed from the game.`)
-        })
+        this.updatePlayers()
 
         // check if game end
         if(this.ending) {

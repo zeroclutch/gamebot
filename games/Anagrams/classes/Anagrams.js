@@ -39,6 +39,8 @@ module.exports = class Anagrams extends Game {
             words: 'Array',
             score: 0
         }
+
+        this.settings.defaultUpdatePlayerMessage = null
         
         this.words = []
     }
@@ -47,8 +49,7 @@ module.exports = class Anagrams extends Game {
      * Initialize the game with its specific settings.
      */
     gameInit() {
-        // No additional configuration needed.
-        return
+        this.settings.updatePlayersAnytime = true
     }
 
     async sleep(ms) {
@@ -62,12 +63,12 @@ module.exports = class Anagrams extends Game {
      * @return {string} The scrambled string.
      */
     scramble(str) {
-        var arr = str.split(''),
+        let arr = str.split(''),
         n = arr.length;
 
-        for(var i = n - 1; i > 0; i--) {
-            var j = Math.floor(Math.random() * (i + 1));
-            var tmp = arr[i];
+        for(let i = n - 1; i > 0; i--) {
+            let j = Math.floor(Math.random() * (i + 1));
+            let tmp = arr[i];
             arr[i] = arr[j];
             arr[j] = tmp;
         }
@@ -82,6 +83,7 @@ module.exports = class Anagrams extends Game {
     chooseWord(length) {
         const validWords = words.filter(w => w.length == length)
         const index = Math.floor(Math.random()*validWords.length)
+        this.pangram = validWords[index]
         this.word = this.scramble(validWords[index])
         return this.word
     }
@@ -255,7 +257,6 @@ module.exports = class Anagrams extends Game {
         })
     }
 
-
     play() {
         if(this.options['Game Mode'] == 'Frenzy') {
             this.playFrenzy(() => {this.finish()})
@@ -281,13 +282,16 @@ module.exports = class Anagrams extends Game {
         })
         var title
         if(winner.length == 1) {
-            title = `The winner is ${winner[0].user.tag}!`
+            title = `The winner is ${winner[0].user.tag}! `
         } else {
             title = 'The winners are '
             winner.forEach(winningPlayer => {
                 title += winningPlayer.user.tag + ', '
             })
         }
+
+        // Add pangram
+        fields.push({ name: 'Pangram', value: `The pangram was ${this.pangram}.` })
 
         this.channel.send({
             embed: {

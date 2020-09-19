@@ -54,6 +54,9 @@ module.exports = class ConnectFour extends Game {
             [0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0],
         ]
+
+        
+        this.settings.defaultUpdatePlayerMessage = null
     }
 
     /**

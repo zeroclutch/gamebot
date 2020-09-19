@@ -17,7 +17,7 @@ module.exports = class Wisecracks extends Game {
         this.gameOptions = [
             {
                 friendlyName: 'Hide inappropriate prompts',
-                type: 'checkbox',
+                type: 'radio',
                 default: 'False',
                 choices: ['True', 'False'],
                 note: `Only show text prompts that aren't profane or lewd.`
@@ -266,6 +266,7 @@ module.exports = class Wisecracks extends Game {
                     } else {
                         this.channel.send(this.displayLeaderboard())
                         this.channel.send('The next round will start in 5 seconds.')
+                        this.updatePlayers()
                         await this.sleep(5000)
                         this.playNextRound()
                     }
