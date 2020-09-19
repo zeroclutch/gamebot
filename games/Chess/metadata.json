@@ -1,0 +1,11 @@
+{
+    "id": "che",
+    "name": "Chess",
+    "playerCount": {
+        "min": 2,
+        "max": 2
+    },
+    "genre": "Board",
+    "about": "Classic Connect 4, but with a whole lot more.",
+    "rules": "Players take turns dropping one colored disc into a game board, which falls to the bottom. Whoever gets four in a row diagonally, horizontally, or vertically, wins!"
+}

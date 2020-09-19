@@ -269,7 +269,7 @@ const Game = class Game {
         this.updatePlayers()
 
         const filter = m => (m.content.startsWith(`${options.prefix}join`) && !this.players.has(m.author.id)) || (m.author.id == this.gameMaster.id && m.content.startsWith(`${options.prefix}start`))
-        const collector = this.channel.createMessageCollector(filter, { max: this.metadata.playerCount.max, time: 120000 })
+        const collector = this.channel.createMessageCollector(filter, { time: 120000 })
         this.collectors.push(collector)
         collector.on('collect', async m => {
             if(this.ending) return
