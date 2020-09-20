@@ -41,8 +41,8 @@ module.exports = {
             **Cost:** ${item.cost}${options.creditIcon}
             **Game:** ${game}`)
             if(item.image) {
-                let image = `./assets/images/cah-shop/${item.image}`
-                embed.attachFile(image)
+                let image = `./assets/images/${item.game}-shop/${item.image}`
+                embed.attachFile({ attachment: image, name: item.image})
                 embed.setImage(`attachment://${item.image}`)
             }
             if(command != 'buy') {

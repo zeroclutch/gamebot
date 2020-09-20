@@ -15,37 +15,8 @@ module.exports = class Chess extends Game {
         
         this.metadata = metadata
 
-        this.gameOptions = [
-            {
-                friendlyName: 'Side',
-                type: 'radio',
-                choices: ['Random', 'Black', 'White'],
-                default: 'Random',
-                note: `The side that the game leader will play on.`
-            },
-            {
-                friendlyName: 'Piece Style',
-                type: 'radio',
-                choices: ['Basic'],
-                default: 'Basic',
-                filter: m => !isNaN(m.content) && (parseInt(m.content) <= 15) && (parseInt(m.content) >= 3),
-                note: `Unlock more piece styles in the shop!`
-            },
-            {
-                friendlyName: 'Board Style',
-                type: 'radio',
-                choices: ['Basic'],
-                default: 'Basic',
-                note: `Unlock more board styles in the shop!`
-            },
-            {
-                friendlyName: 'Timer',
-                type: 'free',
-                default: 300,
-                filter: m => !isNaN(parseInt(m.content)) && (parseInt(m.content) <= 1800) && (parseInt(m.content) >= 5),
-                note: 'Enter a value in seconds for the move timer, between 5 and 1800 seconds.'
-            },
-        ]
+        // Generated in this.generateOptions()
+        this.gameOptions = []
 
         this.defaultPlayer = {
             side: 'String'
@@ -60,9 +31,64 @@ module.exports = class Chess extends Game {
         
     }
 
-    generateOptions() {
+    async getShopMapping() {
+        const collection = this.msg.client.database.collection('items')
+        const boards = await collection.find({ type: "Chess Board" }).toArray()
+        const pieces = await collection.find({ type: "Chess Piece Set" }).toArray()
+        return { boards, pieces }
+    }
+
+    async generateStyleLists () {
+        const map = await this.getShopMapping()
+        let pieces = ['Basic']
+        let boards = ['Basic']
+
+        await this.gameMaster.fetchDBInfo().then(info => {
+            // get unlocked items
+            info.unlockedItems.forEach(id => {
+                if(id.endsWith('_piece')) {
+                    pieces.push(map.pieces.find(item => item.itemID === id).friendlyName)
+                } else if(id.endsWith('_board')) {
+                    boards.push(map.boards.find(item => item.itemID === id).friendlyName)
+                }
+            })
+        }).catch(console.error)
+        return { pieces, boards }
+    }
+
+    async generateOptions() {
+        let styles = await this.generateStyleLists()
         // Check unlocked styles
-        // Update this.gameOptions with player's unlocked content
+        this.gameOptions = [
+            {
+                friendlyName: 'Side',
+                type: 'radio',
+                choices: ['Random', 'Black', 'White'],
+                default: 'Random',
+                note: `The side that the game leader will play on.`
+            },
+            {
+                friendlyName: 'Piece Style',
+                type: 'radio',
+                choices: styles.pieces,
+                default: 'Basic',
+                note: `Unlock more piece styles in the shop!`
+            },
+            {
+                friendlyName: 'Board Style',
+                type: 'radio',
+                choices: styles.boards,
+                default: 'Basic',
+                note: `Unlock more board styles in the shop!`
+            },
+            {
+                friendlyName: 'Timer',
+                type: 'free',
+                default: 300,
+                filter: m => !isNaN(parseInt(m.content)) && (parseInt(m.content) <= 1800) && (parseInt(m.content) >= 5),
+                note: 'Enter a value in seconds for the move timer, between 5 and 1800 seconds.'
+            },
+        ]
     }
 
     /**
@@ -137,7 +163,7 @@ module.exports = class Chess extends Game {
             ctx.drawImage(border, 0, 0, canvas.width, canvas.height)
 
             // Draw board
-            let board = await loadImage(`./games/Chess/assets/board/${this.options['Board Style']}.jpg`)
+            let board = await loadImage(`./games/Chess/assets/boards/${this.options['Board Style']}.jpg`)
             ctx.drawImage(board, 32, 32, 512, 512)
 
             // Draw pieces
@@ -187,6 +213,7 @@ module.exports = class Chess extends Game {
             const filter = m => m.content.startsWith(options.prefix) && this.players.has(m.author.id) && m.author.id == this.getPlayer(side).user.id
             let collector = this.channel.createMessageCollector(filter, { time: parseInt(this.options['Timer']) * 1000 })
             collector.on('collect', m => {
+                if(this.ending) return
                 let move = m.content.replace(options.prefix, '')
                 if(this.status.notatedMoves[move]) {
                     this.gameClient.move(move)
@@ -203,6 +230,7 @@ module.exports = class Chess extends Game {
                 }
             })
             collector.on('end', (collected, reason) => {
+                if(this.ending) return
                 // Handle time
                 if(reason == 'submitted') {
                     // Player made their move
@@ -259,6 +287,4 @@ module.exports = class Chess extends Game {
         let winner = this.players.find(player => player.id == id)
         this.end(winner, `${winner.user} has won!\nTo play games with the community, [join our server](${options.serverInvite})!`)
     }
-    
-
 }

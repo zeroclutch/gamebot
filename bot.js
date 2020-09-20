@@ -35,7 +35,7 @@ dbClient.connect(err => {
     writable: false,
     enumerable: true
   });
-
+  
   // configure downtime notifications
   client.getTimeToDowntime = () => {
     return new Promise((resolve, reject) => {
