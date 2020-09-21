@@ -14,6 +14,8 @@ module.exports = {
     const users = (await msg.client.shard.fetchClientValues('users.size')).reduce((prev, val) => prev + val, 0)
     const usersInDB = await msg.client.database.collection('users').stats()
 
+    msg.client.logger.log('Status checked')
+
     // try fetching message
     await msg.client.shard.broadcastEval(`this.updateStatus()`)
 

@@ -21,6 +21,9 @@ const dbClient = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopolog
 const WebUIClient = require('./util/WebUIClient')
 client.webUIClient = new WebUIClient(client)
 
+const Logger = require('./util/Logger')
+client.logger = new Logger()
+
 // configure database
 client.dbClient = dbClient
 dbClient.connect(err => {
@@ -253,6 +256,19 @@ client.on('shardError', err => {
 
 process.on('unhandledRejection', err => {
   console.error(err.stack, 'error')
+})
+
+client.on('guildCreate', guild => {
+  client.logger.log('Joined Guild', {
+    size: guild.memberCount
+  })
+})
+
+client.on('guildDelete', guild => {
+  client.logger.log('Left Guild', {
+    size: guild.memberCount,
+    duration: Date.now() - guild.joinedTimestamp
+  })
 })
 
 client.on('consoleLog', async message => {

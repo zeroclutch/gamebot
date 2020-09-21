@@ -92,6 +92,12 @@ module.exports = {
                         { returnOriginal: false }
                     ).then(result => {
                         msg.channel.sendMsgEmbed(`Item successfully purchased. You now have ${result.value.balance}${options.creditIcon}`)
+                        msg.client.logger.log('Item Purchased', {
+                            itemID: item.itemID,
+                            item: item.friendlyName,
+                            cost: item.cost,
+                            remainingBalance: result.value.balance
+                        })
                     }).catch()
                 } else if(m.content.startsWith(`${options.prefix}cancel`)) {
                     msg.channel.sendMsgEmbed('Item purchase cancelled.')

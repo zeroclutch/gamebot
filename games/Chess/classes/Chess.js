@@ -205,6 +205,10 @@ module.exports = class Chess extends Game {
         .setImage(`attachment://image.png`)
         .setColor({ 'White': '#fffffe', 'Black': '#000001' }[side])
 
+        this.client.logger.log('Generated image', {
+            game: this.metadata.id,
+        })
+
         await this.channel.send(`${this.getPlayer(side).user}, it's your turn to move as ${side.toLowerCase()}!`, embed).catch(console.error)
     }
 

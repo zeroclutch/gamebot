@@ -64,6 +64,13 @@ const Game = class Game {
         this.channel = msg.channel
 
         /**
+         * The Discord client that this game belongs to.
+         * @type {Discord.Client}
+         * @see {@link https://discord.js.org/#/docs/main/11.5.1/class/Client|Discord.Client}
+         */
+        this.client = msg.client
+
+        /**
          * The Discord user  who initialized this game.
          * @type {Discord.User}
          * @see {@link https://discord.js.org/#/docs/main/11.5.1/class/User|Discord.User}
@@ -210,6 +217,11 @@ const Game = class Game {
      */
     async init() {
         this.stage = 'init'
+
+        this.client.logger.log('Game started', {
+            game: this.metadata.game,
+            id: this.metadata.id
+        })
 
         // Check if downtime is going to start
         // Refresh downtime
@@ -744,6 +756,13 @@ const Game = class Game {
     end(winner, endPhrase) {
         this.stage = 'over'
 
+        this.client.logger.log('Game ended', {
+            game: this.metadata.game,
+            id: this.metadata.id,
+            duration: Date.now() - this.msg.createdTimestamp,
+            players: this.players.size,
+        })
+
         if(!endPhrase) {
             if(winner) {
                 endPhrase = `${winner.user} has won!`
@@ -762,7 +781,6 @@ const Game = class Game {
             this.msg.channel.game = undefined
             this.msg.client.removeListener('message', this.messageListener)
         })
-
 
         // If there's downtime and there was the last game, let the owner know that the bot is safe to restart.
         this.msg.client.getTimeToDowntime().then(async timeToDowntime => {
