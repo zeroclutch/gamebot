@@ -328,6 +328,11 @@ module.exports = class CardsAgainstHumanity extends Game {
         .setFooter(this.blackCard.clean)
         .setImage(`attachment://${fileName}`)
         .setColor(4886754)
+
+        this.client.logger.log('Generated image', {
+            game: this.metadata.id,
+        })
+
         this.msg.channel.send(embed).catch(console.error)
         return stream
     }
