@@ -217,8 +217,8 @@ module.exports = class Wisecracks extends Game {
                 let collector = this.channel.createMessageCollector(
                     m => !votes.includes(m.author.id)
                     && m.author.id !== players[0].user.id && m.author.id !== players[1].user.id 
-                    && this.players.find(player => player.user.id == m.author.id)
-                    && !isNaN(m.content) && (m.content === '1' || m.content === '2'), {time: 120000, max: this.players.size - players.length}
+                    && this.players.has(m.author.id)
+                    && !isNaN(m.content) && (m.content === '1' || m.content === '2'), {time: 120000}
                 )
                 collector.on('collect', message => {
                     if(this.ending) return
@@ -227,10 +227,14 @@ module.exports = class Wisecracks extends Game {
                     if(message.content == '1') submitted[0].score++
                     if(message.content == '2') submitted[1].score++
                     message.delete()
+
+                    if(votes.length === this.players.size - 2) {
+                        collector.stop('submitted')
+                    }
                 })
 
-                collector.on('end', async collected => {
-                    if(this.ending) return
+                collector.on('end', async (collected, reason) => {
+                    if(this.ending ) return
                     let winner
                     if(submitted[0].score > submitted[1].score) {
                         winner = submitted[0]
