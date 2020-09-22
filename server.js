@@ -22,6 +22,10 @@ const app = express()
 const WebUIManager = require('./util/WebUIManager')
 const webUIManager = new WebUIManager(app)
 
+// Create logger
+const Logger = require('./util/Logger')
+const logger = new Logger()
+
 const package = require('./package.json')
 
 // Handle all GET requests
@@ -126,6 +130,7 @@ app.post('/voted', async (req, res) => {
     })
   }).catch(console.error)
   `).then(() => {
+    logger.log('User voted')
     res.status(200)
     res.send()
   }).catch(err => {
@@ -194,6 +199,10 @@ app.post('/donations', (req, res) => {
 
         manager.shards.first().eval(`this.users.get('${userID}').createDM().then(channel => channel.sendMsgEmbed('Thank you for your contribution to Gamebot! You spent \$${PAYMENT_AMOUNT} USD and received ${creditsEarned} credits.', 'Success!', 3510190)).catch(err => console.error(err))`)
         
+        logger.log('User donated', {
+          amount: PAYMENT_AMOUNT
+        })
+
 			} else if (body.substring(0, 7) === 'INVALID') {
 				// IPN invalid, log for manual investigation
         console.error('A payment did not go through at ' + Date.now() + ' for user ' + userID)
