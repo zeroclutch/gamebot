@@ -31,6 +31,18 @@ Everyone is given a set of letters, and score points by making words. Whoever ma
 ### *Classic Connect 4, but with a whole lot more.*
 Players take turns dropping one colored disc into a game board, which falls to the bottom. Whoever gets four in a row diagonally, horizontally, or vertically, wins! Try playing with more than 2 people, or playing the Connect 3 or Connect 5 variants.
 
+## 4. Chess
+### *Play the 500-year-old classic on Discord.*
+Be the first to checkmate the opponent's king.  To view the full rules, see [this article on Chess.com](https://www.chess.com/learn-how-to-play-chess). Gamebot has tons of board styles and piece styles to choose from. Customize your game however you like it!
+
+## 5. Survey Says
+### *The wacky game that tells you just how weird people are.*
+We surveyed over 450 people on Reddit. You have to guess what percentage of them answered 'yes' to our questions. Every round, one player guesses a percentage, and everyone else has to figure out whether the real value is higher or lower.
+
+## 6. Wisecracks
+### *Make the wittiest responses to the silliest prompts.*
+Two players are randomly chosen to face off, and have to submit answers to a given prompt. The rest of the players vote on their favorite, and the winner gets a point. First to a configurable number of points wins.
+
 >  **Note:** More games are in development!
 
 # Commands

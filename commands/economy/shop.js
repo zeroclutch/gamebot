@@ -13,6 +13,8 @@ module.exports = {
     run: async function(msg, args) {
         const collection = msg.client.database.collection('items')
         const items = await collection.find('*').toArray()
+        const userInfo =  await msg.author.fetchDBInfo()
+
         if(!args || args.length == 0) {
             // place
             var shopCategories = []
@@ -73,7 +75,11 @@ module.exports = {
                         }
                     })
                     shopItems.filter(item => item.type == itemType).forEach(item => {
-                        description += `${item.cost}${options.creditIcon} | **${item.friendlyName}** | **ID:** \`${item.itemID}\`\n`
+                        if(userInfo.unlockedItems.includes(item.itemID)) {
+                            description += `✅ | **${item.friendlyName}** | **ID:** \`${item.itemID}\`\n`
+                        } else {
+                            description += `${item.cost}${options.creditIcon} | **${item.friendlyName}** | **ID:** \`${item.itemID}\`\n`
+                        }
                     })
                     embed.setDescription(description)
                     embed.setFooter(`To buy an item, use ${options.prefix}item buy <id>. To see more info, use ${options.prefix}item info <id>`)
