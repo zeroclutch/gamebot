@@ -211,6 +211,10 @@ client.on('message', async function(msg) {
     client.help(msg, command);
   }
   
+  msg.client.logger.log('Command used', {
+    name: command.name,
+  })
+  
   if(cmd) {
     // test for permissions
     if(cmd.permissions && cmd.permissions.length > 0 && msg.author.id !== process.env.OWNER_ID && (cmd.permissions.includes('GOD') || !msg.member || !msg.member.hasPermission(cmd.permissions))) {
