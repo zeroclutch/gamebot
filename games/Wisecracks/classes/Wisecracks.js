@@ -234,7 +234,7 @@ module.exports = class Wisecracks extends Game {
                 })
 
                 collector.on('end', async (collected, reason) => {
-                    if(this.ending ) return
+                    if(this.ending) return
                     let winner
                     if(submitted[0].score > submitted[1].score) {
                         winner = submitted[0]
