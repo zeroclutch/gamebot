@@ -10,11 +10,11 @@ module.exports = {
     dmCommand: true,
     args: false,
     run: function(msg, args) {
-        msg.channel.sendMsgEmbed(`\
-        [**Invite** Gamebot to your server](https://discordapp.com/oauth2/authorize?client_id=${msg.client.user.id}&scope=bot&permissions=1547041872)\n\
-        [**Join** the support server](${options.serverInvite})\n\
-        [**Star** Gamebot on Github](https://github.com/zeroclutch/gamebot)\n\
-        **Support** Gamebot on Paypal - Type \`&donate\` for the link!\n\
+        msg.channel.sendMsgEmbed(`
+        [**Invite** Gamebot to your server](https://gamebot.rocks/invite?ref=inviteCommand)
+        [**Join** the support server](${options.serverInvite}?ref=inviteCommand)
+        [**Star** Gamebot on Github](https://github.com/zeroclutch/gamebot)
+        **Support** Gamebot on Paypal - Type \`&donate\` for the link!
         `, 'Important Links')
     }
 }

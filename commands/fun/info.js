@@ -16,10 +16,10 @@ module.exports = {
         const selection = args.join(' ').toLowerCase()
         const game = msg.client.games.findKey((game, meta) => meta.id == selection || meta.name.toLowerCase() == selection)
         if(!game) {
-            msg.channel.sendMsgEmbed('Game not found.', 'Error!', 13632027)
+            msg.channel.sendMsgEmbed('Game not found.', 'Error!', options.colors.error)
             return
         } else {
-            msg.channel.send({
+            const message = {
                 embed: {
                     title: `${game.name} [${game.id}]`,
                     description: game.about,
@@ -38,14 +38,23 @@ module.exports = {
                         },
                         {
                             name: 'Player Count',
-                            value: `${game.playerCount.min}-${game.playerCount.max} players`
+                            value: `${game.playerCount.min}${game.playerCount.max !== game.playerCount.min ? ` - ${game.playerCount.max}`: ''} players`
                         }
                     ],
                     footer: {
                         text: `Type ${options.prefix}play ${game.id} to start a new game!`
                     }
                 }
-            })
+            }
+
+            if(game.unlockables) {
+                message.embed.fields.push({
+                    name: 'Unlockable Content',
+                    value: `This game has extra content you can unlock! Type \`${options.prefix}shop ${game.id}\` to see what's available.`
+                })
+            }
+            
+            msg.channel.send(message)
         }
     }
   }

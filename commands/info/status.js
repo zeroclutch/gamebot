@@ -18,7 +18,7 @@ module.exports = {
     await msg.client.shard.broadcastEval(`this.updateStatus()`)
 
     const message = (await msg.client.shard.broadcastEval(`this.latestStatus`)).filter(m => m && m.content && m.date)[0]
-    const statusUpdate = message ? `\`${message.date}\`: ${message.content}\n\n*See more updates in the [support server](${options.serverInvite}).*` : 'No status update available.'
+    const statusUpdate = message ? `\`${message.date}\`: ${message.content}\n\n*See more updates in the [support server](${options.serverInvite}?ref=statusCommand).*` : 'No status update available.'
     
     msg.client.shard.broadcastEval('this.channels.filter(c => c.game).size').then(games => {
       const onlineShards = games.length

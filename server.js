@@ -47,14 +47,14 @@ app.get('/guilds', async (req, res) => {
 
 app.get('/discord', (req,res) => {
   logger.log('Discord joined', {
-    ref: req.params.ref
+    ref: req.query.ref
   })
-  res.redirect(options.serverInvite)
+  res.redirect('https://discord.gg/7pNEJQC')
 })
 
 app.get('/invite', (req,res) => {
   logger.log('Invite used', {
-    ref: req.params.ref
+    ref: req.query.ref
   })
   res.redirect('https://discord.com/oauth2/authorize?client_id=620307267241377793&scope=bot&permissions=1547041872')
 })
@@ -202,7 +202,7 @@ app.post('/donations', (req, res) => {
 				// IPN message values depend upon the type of notification sent.
         // check for refund
         if(creditsEarned < 0) {
-          manager.shards.first().eval(`this.users.get('${userID}').createDM().then(channel => channel.sendMsgEmbed('You were refunded \$${PAYMENT_AMOUNT} USD from Gamebot.', 'Refunded!', 3510190)).catch(err => console.error(err))`)
+          manager.shards.first().eval(`this.users.get('${userID}').createDM().then(channel => channel.sendMsgEmbed('You were refunded \$${PAYMENT_AMOUNT} USD from Gamebot.', 'Refunded!', ${options.colors.economy})).catch(err => console.error(err))`)
           return
         }
 
@@ -214,7 +214,7 @@ app.post('/donations', (req, res) => {
           $inc: { balance: ${creditsEarned} }\
         })`)
 
-        manager.shards.first().eval(`this.users.get('${userID}').createDM().then(channel => channel.sendMsgEmbed('Thank you for your contribution to Gamebot! You spent \$${PAYMENT_AMOUNT} USD and received ${creditsEarned} credits.', 'Success!', 3510190)).catch(err => console.error(err))`)
+        manager.shards.first().eval(`this.users.get('${userID}').createDM().then(channel => channel.sendMsgEmbed('Thank you for your contribution to Gamebot! You spent \$${PAYMENT_AMOUNT} USD and received ${creditsEarned} credits.', 'Success!', ${options.colors.economy})).catch(err => console.error(err))`)
         
         logger.log('User donated', {
           amount: PAYMENT_AMOUNT

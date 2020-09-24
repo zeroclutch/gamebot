@@ -150,7 +150,7 @@ client.help = function(msg, command) {
       var embed = new Discord.RichEmbed()
       embed.setTitle('Help - List of Commands for Gamebot')
       embed.setThumbnail(client.user.avatarURL)
-      embed.setColor(3510190)
+      embed.setColor(options.colors.economy)
       categories.forEach(category => {
         var commandList = ''
         client.commands.forEach(cmd => {

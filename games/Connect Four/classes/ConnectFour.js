@@ -218,7 +218,7 @@ module.exports = class ConnectFour extends Game {
 
     finish(id) {
         let winner = this.players.find(player => player.id == id)
-        this.end(winner, `${winner.user} has won! ${this.renderBoard()}\nTo play games with the community, [join our server](${options.serverInvite})!`)
+        this.end(winner, `${winner.user} has won! ${this.renderBoard()}\nTo play games with the community, [join our server](${options.serverInvite}?ref=gameEnd)!`)
     }
     
 
