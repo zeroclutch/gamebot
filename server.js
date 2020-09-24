@@ -37,7 +37,25 @@ app.get('/thanks', (request, response) => {
   response.sendFile(__dirname + '/public/thanks.html');
 })
 
+app.get('/guilds', async (req, res) => {
+  let guilds = await manager.fetchClientValues('guilds.size')
+  res.send({
+    guilds: guilds.reduce((prev, val) => prev + val, 0),
+    shards: manager.totalShards
+  })
+})
+
+app.get('/discord', (req,res) => {
+  logger.log('Discord joined', {
+    ref: req.params.ref
+  })
+  res.redirect(options.serverInvite)
+})
+
 app.get('/invite', (req,res) => {
+  logger.log('Invite used', {
+    ref: req.params.ref
+  })
   res.redirect('https://discord.com/oauth2/authorize?client_id=620307267241377793&scope=bot&permissions=1547041872')
 })
 
@@ -50,7 +68,6 @@ app.use(bodyParser.urlencoded({ limit: "100mb", extended: true, parameterLimit:5
 app.use(bodyParser.json({limit: "100mb"}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }))
-
 
 // Handle GAMEPLAY endpoint
 app.get('/game/:ui_id', (req, res) => {
@@ -219,7 +236,6 @@ app.post('/donations', (req, res) => {
 app.get('*', (req, res) => {
   res.sendFile(__dirname + '/public/404.html')
 });
-
 
 app.on('error', function(err) {
   if (err.code === "ECONNRESET") {
