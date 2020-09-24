@@ -1,6 +1,6 @@
 {
   "name": "gamebot",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Add multiplayer games to Discord with Gamebot!",
   "main": "server.js",
   "scripts": {

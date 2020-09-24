@@ -43,7 +43,7 @@ module.exports = {
                 // make a new embed 
                 var embed = new Discord.RichEmbed()
                 embed.setTitle(`${msg.author.tag}'s Items - ${itemTypes.length} Categor${itemTypes.length == 1 ? 'y' : 'ies'}`)
-                embed.setColor(3510190)
+                embed.setColor(options.colors.economy)
 
                 itemTypes.forEach(async (itemType, index) => {
                     const count = inventoryItems.filter(item => item.type == itemType).length
@@ -60,7 +60,7 @@ module.exports = {
                 // make a new embed 
                 var embed = new Discord.RichEmbed()
                 embed.setTitle(`${msg.author.tag}'s items - Category: ${categoryItems[0].type}`)
-                embed.setColor(3510190)
+                embed.setColor(options.colors.economy)
                 var description = ''
                 categoryItems.forEach(item => {
                     description += `${item.cost}${options.creditIcon} | **${item.friendlyName}** | **ID:** \`${item.itemID}\`\n`

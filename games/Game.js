@@ -229,11 +229,11 @@ const Game = class Game {
             var downtime = Math.ceil(timeToDowntime / 60000)
             if(timeToDowntime > 0 && timeToDowntime <= 5 * 60000) {
                 const downtime = Math.round(timeToDowntime / 60000)
-                this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Games cannot be started right now. For more information, [see our support server.](${options.serverInvite})`, 'Error!', options.colors.error)
+                this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Games cannot be started right now. For more information, [see our support server.](${options.serverInvite}?ref=downtimeError)`, 'Error!', options.colors.error)
                 this.forceStop()
                 return
             } else if(timeToDowntime > 0) {
-                this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Any active games will be automatically ended. For more information, [see our support server.](${options.serverInvite})`, 'Warning!', options.colors.warning)
+                this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Any active games will be automatically ended. For more information, [see our support server.](${options.serverInvite}?ref=downtimeWarning)`, 'Warning!', options.colors.warning)
             }
 
             // Create listener for commands
@@ -273,6 +273,14 @@ const Game = class Game {
                 title: `${this.msg.author.tag} is starting a ${this.metadata.name} game!`,
                 description: `Type \`${options.prefix}join\` to join in the next **120 seconds**.\n\n${this.leader}, type \`${options.prefix}start\` to begin once everyone has joined.`,
                 color: options.colors.info
+            }
+        })
+
+        await this.channel.send({
+            embed: {
+                title: `This game contains unlockable content!`,
+                description: `Type \`${options.prefix}shop ${this.metadata.id}\` to see the available items.`,
+                color: options.colors.economy
             }
         })
 
@@ -514,7 +522,7 @@ const Game = class Game {
                     optionMessage.edit({
                         embed: {
                             title: 'Error!',
-                            description: `An unknown error occurred when loading into the game. The game is now starting. Please report this to Gamebot support in our [${options.serverInvite}](support server).`,
+                            description: `An unknown error occurred when loading into the game. The game is now starting. Please report this to Gamebot support in our [support server](${options.serverInvite}?ref=gameLoadInError).`,
                             color: options.colors.error
                         }
                     })
@@ -770,7 +778,7 @@ const Game = class Game {
                 endPhrase = ''
             }
 
-            endPhrase += `\nTo play games with the community, [join our server](${options.serverInvite})!`
+            endPhrase += `\nTo play games with the community, [join our server](${options.serverInvite}?ref=gameEnd)!`
         }
 
         // Send a message in the game channel (this.msg.channel) that the game is over.

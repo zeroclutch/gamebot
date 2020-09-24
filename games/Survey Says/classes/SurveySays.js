@@ -216,7 +216,7 @@ module.exports = class SurveySays extends Game {
                 winners.push(player.user)
             }
         }
-        return `The winner${winners.length > 1 ? 's are' : ' is'} ${winners.join(', ')}!\n\nTo play games with the community, [join our server](${options.serverInvite})!`
+        return `The winner${winners.length > 1 ? 's are' : ' is'} ${winners.join(', ')}!\n\nTo play games with the community, [join our server](${options.serverInvite}?ref=gameEnd)!`
 
     }
 

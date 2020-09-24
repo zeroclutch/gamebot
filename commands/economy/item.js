@@ -20,13 +20,13 @@ module.exports = {
         var item = await collection.find(filter).toArray()
         item = item[0]
         if(!item) {
-            msg.channel.sendMsgEmbed(`Type \`${options.prefix}shop <game>\` to see available shop items. You can enter the item ID or the item name to specify an item.`, 'Item not found!', 13632027)
+            msg.channel.sendMsgEmbed(`Type \`${options.prefix}shop <game>\` to see available shop items. You can enter the item ID or the item name to specify an item.`, 'Item not found!', options.colors.economy)
             return
         }
 
         // check if user has item
         if(await msg.author.hasItem(itemID) && command == 'buy') {
-            msg.channel.sendMsgEmbed(`You already own this item!`, 'Error!', 13632027)
+            msg.channel.sendMsgEmbed(`You already own this item!`, 'Error!', options.colors.error)
             return
         }
 
@@ -35,7 +35,7 @@ module.exports = {
             var embed = new Discord.RichEmbed()
             let game = msg.client.games.findKey((game, meta) => meta.id == item.game).name
             embed.setTitle(`Info for ${item.friendlyName} - \`${item.itemID}\``)
-            embed.setColor(3510190)
+            embed.setColor(options.colors.economy)
             embed.setDescription(`
             **Description:** ${item.description}
             **Cost:** ${item.cost}${options.creditIcon}
@@ -50,7 +50,7 @@ module.exports = {
             }
             await msg.channel.send(embed)
         } else {
-            msg.channel.sendMsgEmbed(`Type \`${options.prefix}help item\` to see how to use this command.`, 'Command not recognized!', 13632027)
+            msg.channel.sendMsgEmbed(`Type \`${options.prefix}help item\` to see how to use this command.`, 'Command not recognized!', options.colors.error)
             return
         }
         
@@ -63,17 +63,17 @@ module.exports = {
             })
 
             if(balance < item.cost) {
-                msg.channel.sendMsgEmbed(`You can't afford this item! You currently have ${balance}${options.creditIcon}.`, 'Unable to purchase.', 13632027)
+                msg.channel.sendMsgEmbed(`You can't afford this item! You currently have ${balance}${options.creditIcon}.`, 'Unable to purchase.', options.colors.error)
                 return
             }
 
-            await msg.channel.sendMsgEmbed(`You currently have ${balance}${options.creditIcon}\n\nType \`${options.prefix}confirm\` or \`${options.prefix}cancel\``, `Are you sure you want to buy **${item.friendlyName}** for ${item.cost}${options.creditIcon}?`)
+            await msg.channel.sendMsgEmbed(`You currently have ${balance}${options.creditIcon}\n\nType \`${options.prefix}confirm\` or \`${options.prefix}cancel\``, `Are you sure you want to buy **${item.friendlyName}** for ${item.cost}${options.creditIcon}?`, options.colors.economy)
             
             // create confirm collector
             const filter = m => m.author.id == msg.author.id && (m.content.startsWith(`${options.prefix}confirm`) || m.content.startsWith(`${options.prefix}cancel`))
             msg.channel.awaitMessages(filter, {max: 1, time: 60000}).then(async collected => {
                 if(collected.size == 0) {
-                    msg.channel.sendMsgEmbed(`To buy this item, please use the command \`${options.prefix}item buy ${item.itemID}\` again.`, 'Time ran out!', 13632027)
+                    msg.channel.sendMsgEmbed(`To buy this item, please use the command \`${options.prefix}item buy ${item.itemID}\` again.`, 'Time ran out!', options.colors.error)
                     return
                 }
                 const m = collected.first()
@@ -91,7 +91,7 @@ module.exports = {
                         },
                         { returnOriginal: false }
                     ).then(result => {
-                        msg.channel.sendMsgEmbed(`Item successfully purchased. You now have ${result.value.balance}${options.creditIcon}`)
+                        msg.channel.sendMsgEmbed(`Item successfully purchased. You now have ${result.value.balance}${options.creditIcon}`, options.colors.economy)
                         msg.client.logger.log('Item Purchased', {
                             itemID: item.itemID,
                             item: item.friendlyName,
@@ -100,7 +100,7 @@ module.exports = {
                         })
                     }).catch()
                 } else if(m.content.startsWith(`${options.prefix}cancel`)) {
-                    msg.channel.sendMsgEmbed('Item purchase cancelled.')
+                    msg.channel.sendMsgEmbed('Item purchase cancelled.', undefined, options.colors.economy)
                 }
             }).catch(console.error)
         }

@@ -255,7 +255,7 @@ module.exports = class Chess extends Game {
 
     analyzeBoard(side) {
         if(this.status.isStalemate || this.status.isRepetition) {
-            this.end(undefined, `The game is a draw.\nTo play games with the community, [join our server](${options.serverInvite})!`)
+            this.end(undefined, `The game is a draw.\nTo play games with the community, [join our server](${options.serverInvite}?ref=gameEnd)!`)
             this.over = true
         }
         if(this.status.isCheckmate) {
@@ -289,6 +289,6 @@ module.exports = class Chess extends Game {
 
     finish(id) {
         let winner = this.players.find(player => player.id == id)
-        this.end(winner, `${winner.user} has won!\nTo play games with the community, [join our server](${options.serverInvite})!`)
+        this.end(winner, `${winner.user} has won!\nTo play games with the community, [join our server](${options.serverInvite}?ref=gameEnd)!`)
     }
 }

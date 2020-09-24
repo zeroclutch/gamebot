@@ -26,20 +26,20 @@ module.exports = {
             }
 
             if(shopCategories.length == 0) {
-                msg.channel.sendMsgEmbed(`There are no shop items available.`, 'Error!', 13632027)
+                msg.channel.sendMsgEmbed(`There are no shop items available.`, 'Error!', options.colors.error)
                 return
             }
 
             // make a new embed 
             var embed = new Discord.RichEmbed()
             embed.setTitle(`Shop Items - ${shopCategories.length} Categor${shopCategories.length == 1 ? 'y' : 'ies'}`)
-            embed.setColor(3510190)
+            embed.setColor(options.colors.economy)
             shopCategories.forEach(async (itemType, index) => {
                 let game = msg.client.games.findKey((game, meta) => meta.id == itemType).name
                 let count = items.filter(item => item.game == itemType).length
                 embed.addField(`Category: ${game || itemType} - ${count} item${count == 1 ? '' : 's'}`, `Type \`${options.prefix}shop ${itemType}\` to view all items.`)
             })
-            embed.setFooter(`To see the available items in a category, type ${options.prefix}shop <category name>.`)
+            embed.setFooter(`To see the available items in a category, type ${options.prefix}shop <category name>. To view your balance, type ${options.prefix}balance.`)
             await msg.channel.send({ embed }).catch(console.error)
         } else {
             let selection = args[0].toLowerCase()
@@ -59,7 +59,7 @@ module.exports = {
                     // make a new embed for each itemType
                     var embed = new Discord.RichEmbed()
                     embed.setTitle(`Category: ${itemType}`)
-                    embed.setColor(3510190)
+                    embed.setColor(options.colors.economy)
                     var description = ''
                     shopItems.sort((a, b) => {
                         if(a.cost > b.cost) {
@@ -91,7 +91,7 @@ module.exports = {
                     await msg.channel.send(message, embed)
                 })
             } else {
-                msg.channel.sendMsgEmbed(`Please enter a valid shop page, for example \`${options.prefix}shop cah\`.`, 'Error!', 13632027)
+                msg.channel.sendMsgEmbed(`Please enter a valid shop page, for example \`${options.prefix}shop cah\`.`, 'Error!', options.colors.error)
             }
         }
     }
