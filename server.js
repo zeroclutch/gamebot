@@ -34,7 +34,7 @@ app.use('/', express.static(__dirname + '/public',{ extensions:['html']}))
 app.get('/docs', (request, response) => {
   response.redirect('/docs/version/' + package.version)
   logger.log('Docs viewed', {
-    ref: req.query.ref
+    ref: request.query.ref
   })
 })
 
