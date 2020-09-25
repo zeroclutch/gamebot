@@ -31,7 +31,14 @@ const package = require('./package.json')
 // Handle all GET requests
 app.use('/', express.static(__dirname + '/public',{ extensions:['html']}))
 
-app.use('/docs', express.static(__dirname + '/docs/gamebot/' + package.version))
+app.get('/docs', (request, response) => {
+  response.redirect('/docs/version/' + package.version)
+  logger.log('Docs viewed', {
+    ref: req.query.ref
+  })
+})
+
+app.use('/docs/version/', express.static(__dirname + '/docs/gamebot/'))
 
 app.get('/thanks', (request, response) => {
   response.sendFile(__dirname + '/public/thanks.html');
