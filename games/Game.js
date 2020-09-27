@@ -26,6 +26,7 @@ const Game = class Game {
          * @property {String} name            The name of the game.
          * @property {String} about           A short description about the game.
          * @property {String} rules           This game's rules and instructions.
+         * @property {Boolean} unlockables    Whether or not the game has unlockables in the shop.
          * @property {Object} playerCount     The number of players that can join this game.
          * @property {number} playerCount.min The minimum required number of players.
          * @property {number} playerCount.max The maximum required number of players.
@@ -276,13 +277,15 @@ const Game = class Game {
             }
         })
 
-        await this.channel.send({
-            embed: {
-                title: `This game contains unlockable content!`,
-                description: `Type \`${options.prefix}shop ${this.metadata.id}\` to see the available items.`,
-                color: options.colors.economy
-            }
-        })
+        if(this.metadata.unlockables) {
+            await this.channel.send({
+                embed: {
+                    title: `This game contains unlockable content!`,
+                    description: `Type \`${options.prefix}shop ${this.metadata.id}\` to see the available items.`,
+                    color: options.colors.economy
+                }
+            })
+        }
 
         // Add gameMaster
         await this.addPlayer(this.gameMaster.id, null)
@@ -789,6 +792,16 @@ const Game = class Game {
             this.msg.channel.game = undefined
             this.msg.client.removeListener('message', this.messageListener)
         })
+
+        if(this.metadata.unlockables) {
+            this.channel.send({
+                embed: {
+                    title: `This game contains unlockable content!`,
+                    description: `Type \`${options.prefix}shop ${this.metadata.id}\` to see the available items.`,
+                    color: options.colors.economy
+                }
+            })
+        }
 
         // If there's downtime and there was the last game, let the owner know that the bot is safe to restart.
         this.msg.client.getTimeToDowntime().then(async timeToDowntime => {
