@@ -125,6 +125,7 @@ module.exports = class SurveySays extends Game {
                 if(submitted.size == this.players.size - 1) {
                     allPlayersSubmitted = true;
                     resolve(submitted)
+                    collector.stop('submitted')
                 }
             })
             // Resolve listener once collector ends
