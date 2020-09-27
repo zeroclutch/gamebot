@@ -283,7 +283,6 @@ module.exports = class Chess extends Game {
             await this.awaitMove(team)
             this.analyzeBoard(team)
             move++
-            
         } while(!this.over)
     }
 
