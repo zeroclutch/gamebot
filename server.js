@@ -182,7 +182,7 @@ app.post('/donations', (req, res) => {
 	console.log('Posting back to paypal');
 	console.log(postreq);
 	console.log('\n\n');
-	var options = {
+	var reqOptions = {
 		url: 'https://ipnpb.paypal.com/cgi-bin/webscr',
 		method: 'POST',
 		headers: {
@@ -195,7 +195,7 @@ app.post('/donations', (req, res) => {
 		agent: false
 	};
 
-	request(options, function callback(error, response, body) {
+	request(reqOptions, function callback(error, response, body) {
 		if (!error && response.statusCode === 200) {
 			// inspect IPN validation result and act accordingly
 			if (body.substring(0, 8) === 'VERIFIED') {
