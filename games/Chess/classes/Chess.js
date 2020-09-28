@@ -5,6 +5,7 @@ const metadata = require('../metadata.json')
 const chess = require('chess')
 const { createCanvas, loadImage } = require('canvas')
 const Discord = require('../../../discord_mod')
+const LichessAPI = require('./../classes/LichessAPI')
 
 /**
  * The base class for Chess games.
@@ -26,6 +27,10 @@ module.exports = class Chess extends Game {
             this.onMessage(msg)
             this.giveChessHelp(msg)
         }
+
+        this.moves = []
+
+        this.lichessClient = new LichessAPI()
         
         this.over = false
         
@@ -217,10 +222,11 @@ module.exports = class Chess extends Game {
             const filter = m => m.content.startsWith(options.prefix) && this.players.has(m.author.id) && m.author.id == this.getPlayer(side).user.id
             let collector = this.channel.createMessageCollector(filter, { time: parseInt(this.options['Timer']) * 1000 })
             collector.on('collect', m => {
-                if(this.ending) return
+                if(this.ending || this.over) return
                 let move = m.content.replace(options.prefix, '')
                 if(this.status.notatedMoves[move]) {
                     this.gameClient.move(move)
+                    this.moves.push(move)
                     collector.stop('submitted')
                     resolve(true)
                 } else {
@@ -234,7 +240,7 @@ module.exports = class Chess extends Game {
                 }
             })
             collector.on('end', (collected, reason) => {
-                if(this.ending) return
+                if(this.ending || this.over) return
                 // Handle time
                 if(reason == 'submitted') {
                     // Player made their move
@@ -253,14 +259,56 @@ module.exports = class Chess extends Game {
         })
     }
 
+    getPGN(winner) {
+        if(winner) winner = winner.toLowerCase()
+        if(winner === 'white')      winner = '1-0'
+        else if(winner === 'black') winner = '0-1'
+        else winner = '1/2-1/2'
+        let today = new Date(Date.now())
+
+        // Formats a date to have a leading 0
+        const _f = val => {
+            val = `${val}`
+            return (val.length == 1 ? '0' : '') + val
+        }
+        let pgn = `pgn=[Event "Gamebot Online Match"]
+        [Site "Discord"]
+        [Date "${_f(today.getUTCFullYear())}.${_f(today.getUTCMonth() + 1)}.${_f(today.getUTCDate() + 1)}"]
+        [Result "${winner}"]
+        [White "${this.getPlayer('White').user.tag}"]
+        [Black "${this.getPlayer('Black').user.tag}"]\n\n`
+        for(let i = 0; i < this.moves.length; i+=1) {
+            if(i % 2 === 0) {
+                pgn += (i / 2 + 1) + '. '
+            }
+            pgn += this.moves[i] + ' '
+        }
+        pgn += winner
+        console.log(pgn)
+        return pgn
+    }
+
+    importGameToLichess(winner) {
+        this.lichessClient.importGame(this.getPGN(winner)).then(res => this.channel.send({
+            embed: {
+                title: 'View the computer analysis and game recap.',
+                description: `The moves and computer analysis are available at ${res.data.url}.`,
+                color: options.colors.info
+            }
+        }))
+    }
+
     analyzeBoard(side) {
         if(this.status.isStalemate || this.status.isRepetition) {
+            this.importGameToLichess('draw')
             this.end(undefined, `The game is a draw.\nTo play games with the community, [join our server](${options.serverInvite}?ref=gameEnd)!`)
             this.over = true
         }
+
         if(this.status.isCheckmate) {
+            let winner = this.players.find(player => player.side == side)
+            this.importGameToLichess(side)
             this.displayBoard(side).then(() => {
-                let winner = this.players.find(player => player.side == side)
                 this.end(winner)
                 this.over = true
             })
