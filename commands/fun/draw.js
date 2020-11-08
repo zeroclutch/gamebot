@@ -6,15 +6,15 @@ module.exports = {
   aliases: [],
   description: 'Lets you send a drawing in chat!',
   category: 'fun',
-  permissions: ['ATTACH_FILES'],
+  permissions: [],
   dmCommand: false,
   args: false,
   run: function (msg, args) {
     // Check permissions
-    if(!msg.channel.permissionsFor(msg.member).has('ATTACH_FILES')) {
+    /*if(!msg.channel.permissionsFor(msg.member).has('ATTACH_FILES')) {
       msg.channel.sendMsgEmbed(`You are missing the "Attach Files" permission. Try using this command in a channel that allows images.`, 'You could not use this command.', options.colors.error)
       return
-    }
+    }*/
     msg.client.webUIClient.createWebUI(msg.member, data => msg.channel.send({
       embed: {
         color: 5301186,
