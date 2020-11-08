@@ -19,13 +19,25 @@ nav .logo {
     margin-right: 50px;
 }
 
-nav .navbar-item{
+nav .navbar-item {
+    vertical-align: middle;
+    line-height: 80px;
+}
+
+nav .navbar-item a {
     color: white;
+    cursor: pointer;
 }
 
 section.hero {
     padding: 20px 40px;
     min-height: 675px;
+    background: linear-gradient(103.15deg, #33CEFF 9.79%, rgba(121, 234, 193, 0.921875) 78.74%);
+}
+
+section.hero.hero-small {
+    padding: 20px 40px;
+    min-height: 320px;
     background: linear-gradient(103.15deg, #33CEFF 9.79%, rgba(121, 234, 193, 0.921875) 78.74%);
 }
 
