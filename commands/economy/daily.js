@@ -31,19 +31,19 @@ module.exports = {
             // check if user can claim credits
             // daily hasn't been claimed and check if lastVoted was in last 12 hours
             if (info.lastClaim < Date.now() - RESET_LENGTH) {
-                // tell them to vote on discordbots.org and vote, then type daily. Have brief explanation of vote streak.
+                // tell them to vote on top.gg and vote, then type daily. Have brief explanation of vote streak.
                 const msExpire = info.lastClaim + DAY_LENGTH + RESET_LENGTH - Date.now()
                 const hoursExpire = Math.floor(msExpire / HOUR_LENGTH)
                 const minutesExpire = Math.round((msExpire / HOUR_LENGTH- hoursExpire) * 60)
 
-                // if streak has expired, reset it.
-                if(msExpire < 0) {
+                // if streak has expired, reset it. Disabled while top.gg is down.
+                /*if(msExpire < 0) {
                     info.voteStreak = 0
                     await collection.updateOne(
                         { userID: msg.author.id },
                         { $set: { voteStreak: 0 } }
                     )
-                }
+                }*/
 
                 msg.channel.send({
                     embed: {
@@ -55,7 +55,7 @@ module.exports = {
                         }],
                         color: options.colors.economy,
                         footer: {
-                            text: info.voteStreak > 0 ? `Your streak expires in ${hoursExpire} hours and ${minutesExpire} minutes.` : 'Extend your vote streak and get bonus rewards each day you vote!'
+                            text: info.voteStreak > 0 ? `Your streak does not expire for now. See the support server for info.` : 'Extend your vote streak and get bonus rewards each day you vote! Your streak does not expire for now. See the support server for info.'
                         }
                     }
                 })
