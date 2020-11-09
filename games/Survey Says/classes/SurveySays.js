@@ -82,7 +82,6 @@ module.exports = class SurveySays extends Game {
     }
 
     async awaitGuesserResponse() {
-        if(this.ending) return
         // Select a new guesser
         this.guesser = this.players.array()[this.guesserIndex++ % this.players.size]
         const filter = m => {
@@ -97,10 +96,8 @@ module.exports = class SurveySays extends Game {
         // Await response
         let collected = await this.channel.awaitMessages(filter, {max: 1, time: this.options['Timer'], errors: ['time']})
         .catch(err => {
-            if(this.ending) return
             this.msg.channel.sendMsgEmbed('You ran out of time. The guess is set to 50%', 'Uh oh...', options.colors.error)
         })
-        if(this.ending) return
         return collected ? parseInt(collected.first().content.replace('%','')) : 50
     }
 
