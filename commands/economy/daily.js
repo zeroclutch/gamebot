@@ -36,6 +36,7 @@ module.exports = {
                 const hoursExpire = Math.floor(msExpire / HOUR_LENGTH)
                 const minutesExpire = Math.round((msExpire / HOUR_LENGTH- hoursExpire) * 60)
 
+                /*
                 // if streak has expired, reset it.
                 if(msExpire < 0) {
                     info.voteStreak = 0
@@ -43,7 +44,7 @@ module.exports = {
                         { userID: msg.author.id },
                         { $set: { voteStreak: 0 } }
                     )
-                }
+                }*/
 
                 msg.channel.send({
                     embed: {
