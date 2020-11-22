@@ -6,11 +6,32 @@
     font-family: Inter, 'Helvetica Neue', Helvetica, sans-serif;
 }
 
-.main-content {
+.is-clipped {
     overflow-x: hidden;
 }
 
+.navbar-burger {
+    position: absolute;
+    left: calc(100% - 50px);
+    color:white;
+}
+
+.navbar-burger:hover {
+    color:white;
+}
+
+.navbar-burger.is-active {
+    z-index: 5;
+    position: fixed;
+    background-color: white;
+    color: #40444C;
+    left: calc(100% - 200px - 50px);
+    top: 0;
+    border-radius: 0 0 0 4px;
+}
+
 nav .logo {
+    color: white;
     background-image: url(/images/white.png);
     background-size: contain;
     height: 64px;
@@ -19,13 +40,49 @@ nav .logo {
     margin-right: 50px;
 }
 
+.navbar-menu.navMenu {
+    color: white;
+}
+
+.navbar-menu.navMenu.is-active {
+    z-index: 5;
+    position: fixed;
+    top: 0;
+    left: calc(100% - 200px);
+    height: 100vh;
+    width: 200px;
+    color: #40444C;
+    box-shadow: none;
+}
+
+.navMenu.overlay {
+    display: none;
+}
+
+.navMenu.overlay.is-active {
+    display:block;
+    z-index: 2;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    background-color: rgba(66, 70, 77, 0.171);
+}
+
 nav .navbar-item {
+    color: inherit;
     vertical-align: middle;
     line-height: 80px;
 }
 
+nav .navbar-menu.navMenu.is-active .navbar-item {
+    vertical-align: middle;
+    line-height: 36px;
+}
+
 nav .navbar-item a {
-    color: white;
+    color: inherit;
     cursor: pointer;
 }
 
@@ -58,10 +115,12 @@ section.hero .faded-text {
 .button-holder {
     margin: 20px 0;
     filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
+    -webkit-filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
 }
 
 .button-holder:hover {
     filter: drop-shadow(0px 6px 6px rgba(0, 0, 0, 0.25));
+    -webkit-filter: drop-shadow(0px 6px 6px rgba(0, 0, 0, 0.25));
 }
 
 .button-holder > a > span {
@@ -69,14 +128,12 @@ section.hero .faded-text {
     font-weight: bold;
 }
 
-.discord-holder > * {
-    filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
-
-}
-
 .discord-holder {
+    transition: transform 200ms;
     position: absolute;
     z-index: 3;
+    filter: drop-shadow(0px 6px 6px rgba(0, 0, 0, 0.25));
+    -webkit-filter: drop-shadow(0px 6px 6px rgba(0, 0, 0, 0.25));
 }
 
 .discord-holder.is-second-holder {
@@ -201,7 +258,7 @@ section.hero .faded-text {
 
 ul.game-list {
     list-style: none;
-    font-size: 32px;
+    font-size: 24px;
     padding: 30px;
 }
 
@@ -238,6 +295,14 @@ footer {
     color: #fafafa;
     text-align: center;
     padding: 50px;
+}
+
+
+/* Narrow Desktop */
+@media screen and (max-width: 1088px), print {
+    svg, img {
+        width: calc(100px + 20vw);
+    }
 }
 
 /* Tablet */

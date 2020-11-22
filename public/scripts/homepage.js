@@ -1,8 +1,8 @@
 (() => {
 window.addEventListener('scroll', () => {
     Array.from(document.getElementsByClassName('parallax')).forEach(el => {
-        let modifier = Math.floor(-window.scrollY / 5) + 'px'
-        el.style.marginTop = modifier
+        let modifier = Math.floor(-window.scrollY / 3) + 'px'
+        el.style.transform = `translateY(${modifier})`
     })
 })
 
