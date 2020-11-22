@@ -33,10 +33,24 @@
         <div class="main-content">
             <section class="hero hero-small">
                 <nav class="navbar columns">
-                    <div class="column is-1"></div>
-                    <div class="navbar-item"><div class="logo nav-element"></div></div>
-                    <div class="navbar-item"><a href="/">Home</a></div>
-                    <div class="navbar-item"><a href="/commands">Commands</a></div>
+                        <div class="column is-1"></div>
+                        <div class="navbar-brand">
+                            <div class="navbar-item"><div class="logo nav-element"></div></div>
+                            <a role="button" class="navbar-burger" data-target="navMenu" aria-label="menu" aria-expanded="false">
+                                <span aria-hidden="true"></span>
+                                <span aria-hidden="true"></span>
+                                <span aria-hidden="true"></span>
+                            </a>
+                        </div>
+                        
+                        <div class="overlay navMenu"></div>
+                        <div class="navbar-menu navMenu">
+                            <div class="navbar-start">
+                                <div class="navbar-item"><a href="/">Home</a></div>
+                                <div class="navbar-item"><a href="/commands">Commands</a></div>
+                            </div>
+                            <div class="navbar-end"></div>
+                        </div>
                 </nav>
                 <div class="columns">
                     <div class="column is-1 is-0-tablet is- spacer"></div>
@@ -147,7 +161,8 @@
             </section>
         </div>
         <footer>
-                <div class="copyright">Copyright © 2020 zeroclutch</div>
-            </footer>
+             <div class="copyright">Copyright © 2020 zeroclutch</div>
+        </footer>
+        <script src="/scripts/menubar.js"></script>
 	</body>
 </html>
