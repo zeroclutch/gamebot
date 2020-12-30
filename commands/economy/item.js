@@ -41,9 +41,7 @@ module.exports = {
             **Cost:** ${item.cost}${options.creditIcon}
             **Game:** ${game}`)
             if(item.image) {
-                let image = `./assets/images/${item.game}-shop/${item.image}`
-                embed.attachFile({ attachment: image, name: item.image})
-                embed.setImage(`attachment://${item.image}`)
+                embed.setImage(`${process.env.BASE_URL}/shop-items/${item.image}`)
             }
             if(command != 'buy') {
                 embed.setFooter(`To buy this item, type ${options.prefix}item buy ${item.itemID}`)

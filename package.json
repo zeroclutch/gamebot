@@ -20,6 +20,7 @@
     "canvas": "^2.5.0",
     "chess": "^0.4.3",
     "dblapi.js": "^2.3.0",
+    "discord-oauth2": "^2.6.0",
     "discord.js": "^11.5.1",
     "dotenv": "^8.0.0",
     "express": "^4.17.1",
@@ -27,6 +28,7 @@
     "mixpanel": "^0.13.0",
     "mongodb": "^3.3.2",
     "paypal-rest-sdk": "^1.8.1",
+    "qs": "^6.9.4",
     "querystring": "^0.2.0",
     "request": "^2.88.2",
     "text2png": "^2.1.0"
