@@ -15,7 +15,7 @@ module.exports = {
       msg.channel.sendMsgEmbed(`You are missing the "Attach Files" permission. Try using this command in a channel that allows images.`, 'You could not use this command.', options.colors.error)
       return
     }*/
-    msg.client.webUIClient.createWebUI(msg.member, data => msg.channel.send({
+    msg.client.webUIClient.createWebUI(msg.member || msg.author, data => msg.channel.send({
       embed: {
         color: 5301186,
         author: {
