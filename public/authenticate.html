@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Authenticating...</title>
+        <script>
+        document.addEventListener('DOMContentLoaded', (e) => {
+            const fragment = new URLSearchParams(window.location.hash.slice(1));
+            const accessToken = fragment.get('access_token');
+            const tokenType = fragment.get('token_type');
+            const maxAge = fragment.get('expires_in');
+            let cookie = `session-token=${encodeURIComponent(accessToken)}; max-age=${maxAge}`//;domain=${window.location.host}`
+            document.cookie = cookie;
+            window.location = '/shop'
+        })
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

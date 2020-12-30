@@ -18,15 +18,45 @@ const querystring = require('querystring');
 const express = require('express')
 const app = express()
 
+// Add requests
+const axios = require('axios')
+const qs = require('qs');
+
 // Create manager for custom WebUIs
 const WebUIManager = require('./util/WebUIManager')
 const webUIManager = new WebUIManager(app)
+
+const DatabaseClient = require('./util/DatabaseClient')
+const dbClient = new DatabaseClient('server')
+dbClient.initialize()
+
+// Create shop manager
+const ShopGenerator = require('./util/ShopGenerator')
+const shopGenerator = new ShopGenerator({
+  shopRefreshDelay: 60000
+})
+shopGenerator.initialize()
+
+// 
+const OAuth2Client = require('./util/OAuth2Client')
+const oauth2 = new OAuth2Client()
+oauth2.initialize()
 
 // Create logger
 const Logger = require('./util/Logger')
 const logger = new Logger()
 
-const package = require('./package.json')
+const package = require('./package.json');
+const { autocrop } = require('jimp');
+
+// Update guild count
+let cachedGuilds = '??'
+updateGuilds = async () => {
+  let guilds = await manager.fetchClientValues('guilds.size')
+  if(guilds) cachedGuilds = guilds.reduce((prev, val) => prev + val, 0)
+}
+
+setInterval(updateGuilds, 60000)
 
 // Handle all GET requests
 app.use('/', express.static(__dirname + '/public',{ extensions:['html']}))
@@ -45,9 +75,8 @@ app.get('/thanks', (request, response) => {
 })
 
 app.get('/guilds', async (req, res) => {
-  let guilds = await manager.fetchClientValues('guilds.size')
   res.send({
-    guilds: guilds.reduce((prev, val) => prev + val, 0),
+    guilds: cachedGuilds,
     shards: manager.totalShards
   })
 })
@@ -66,6 +95,21 @@ app.get('/invite', (req,res) => {
   res.redirect('https://discord.com/oauth2/authorize?client_id=620307267241377793&scope=bot&permissions=1547041872')
 })
 
+app.get('/login', (req, res) => {
+  res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(process.env.BASE_URL)}%2Fauthenticate&response_type=token&scope=identify`)
+})
+
+app.get('/shopItems', async (req, res) => {
+  let validated, shopItems
+  if(req.query.userID)
+    validated = await oauth2.validate(req.query.userID, req.header('authorization'))
+  if(validated)
+    shopItems = await shopGenerator.fetchShopItems(req.query.userID).catch(console.error)
+  else
+    shopItems = await shopGenerator.fetchShopItems().catch(console.error)
+  res.send(shopItems)
+})
+
 // Handle all POST requests
 
 // Parse application/x-www-form-urlencoded
@@ -75,6 +119,64 @@ app.use(bodyParser.urlencoded({ limit: "100mb", extended: true, parameterLimit:5
 app.use(bodyParser.json({limit: "100mb"}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }))
+
+// Handle SHOP endpoints
+app.post('/purchase', async (req, res) => {
+  const userID = req.body.userID
+  const itemID = req.body.itemID
+  // validate request
+  if(await oauth2.validate(userID, req.header('authorization'))) {
+    // Checkout
+    // check if user has enough currency
+    let info = await dbClient.fetchDBInfo(userID)
+    let balance = info.balance
+
+    let item = await dbClient.fetchItemInfo(itemID)
+
+    if(balance < item.cost) {
+      res.send({
+        error: 'Not enough credits, purchase could not be completed.'
+      })
+      return
+    }
+
+    if(info.unlockedItems.includes(itemID)) {
+      res.send({
+        error: 'This item is already unlocked, purchase could not be completed.'
+      })
+      return
+    }
+
+    // submit purchase
+    let updatedUser = await dbClient.database.collection('users').findOneAndUpdate(
+        { userID },
+        { 
+            $push: { unlockedItems: item.itemID },
+            $inc: { balance: -item.cost }
+        },
+        { returnOriginal: false }
+    ).catch(err => {
+      console.error(err)
+      res.status(500)
+    })
+
+    const result = {
+      itemID: item.itemID,
+      item: item.friendlyName,
+      cost: item.cost,
+      remainingBalance: updatedUser.value.balance
+  }
+    res.status(200)
+    res.send(result)
+    logger.log('Item Purchased', result)
+  } else {
+    res.status(401)
+    res.send({
+      error: 'Invalid authorization, purchase could not be completed.'
+    })
+  }
+  // 
+})
 
 // Handle GAMEPLAY endpoint
 app.get('/game/:ui_id', (req, res) => {

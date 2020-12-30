@@ -21,7 +21,7 @@
 }
 
 .navbar-burger.is-active {
-    z-index: 5;
+    z-index: 50;
     position: fixed;
     background-color: white;
     color: #40444C;
@@ -45,7 +45,7 @@ nav .logo {
 }
 
 .navbar-menu.navMenu.is-active {
-    z-index: 5;
+    z-index: 50;
     position: fixed;
     top: 0;
     left: calc(100% - 200px);
@@ -61,7 +61,7 @@ nav .logo {
 
 .navMenu.overlay.is-active {
     display:block;
-    z-index: 2;
+    z-index: 49;
     position: fixed;
     top: 0;
     left: 0;
@@ -141,7 +141,7 @@ section.hero .faded-text {
 }
 
 
-.message {
+.discord-message {
     animation: load-in-1 2s linear 1s normal 1;
     -webkit-animation: load-in-1 2s linear 1s normal 1;
     -moz-animation: load-in-1 2s linear 1s normal 1;
