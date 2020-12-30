@@ -217,7 +217,7 @@ const confirmBuy = async itemID => {
     $('#buy-confirm-modal.modal .button.is-success').classList.remove('is-loading')
 
     // if error, display in modal
-    if(response.error || !response.item || !response.remainingBalance) {
+    if(response.error || !response.item || !response.remainingBalance && response.remainingBalance !== 0) {
         closeModals()
         // Populate modal
         $('#purchase-confirm-modal .modal-card-title').innerText = 'Purchase unsuccessful'
