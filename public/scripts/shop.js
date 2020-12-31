@@ -222,6 +222,7 @@ const confirmBuy = async itemID => {
         // Populate modal
         $('#purchase-confirm-modal .modal-card-title').innerText = 'Purchase unsuccessful'
         $('#purchase-confirm-modal .modal-card-body .item-description').innerText = response.error || 'Something went wrong while purchasing, please try again later.'
+        $('#purchase-confirm-modal .button.is-info').innerText = 'OK'
         // Enable modal
         $('#purchase-confirm-modal.modal').classList.add('is-active')
     } else {
