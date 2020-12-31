@@ -3,9 +3,9 @@ const options = require('./../../config/options')
 
 module.exports = {
     name: 'shop',
-    usage: 'shop <game (optional)>',
+    usage: 'shop',
     aliases: [],
-    description: 'Shows the available shop items for a game.',
+    description: 'Shows the available shop items.',
     category: 'economy',
     permissions: [],
     dmCommand: true,

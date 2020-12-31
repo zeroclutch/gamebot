@@ -277,16 +277,6 @@ const Game = class Game {
             }
         })
 
-        if(this.metadata.unlockables) {
-            await this.channel.send({
-                embed: {
-                    title: `This game contains unlockable content!`,
-                    description: `Type \`${options.prefix}shop ${this.metadata.id}\` to see the available items.`,
-                    color: options.colors.economy
-                }
-            })
-        }
-
         // Add gameMaster
         await this.addPlayer(this.gameMaster.id, null)
         this.updatePlayers()
@@ -797,7 +787,7 @@ const Game = class Game {
             this.channel.send({
                 embed: {
                     title: `This game contains unlockable content!`,
-                    description: `Type \`${options.prefix}shop ${this.metadata.id}\` to see the available items.`,
+                    description: `Check out the [Gamebot shop](${process.env.BASE_URL}/shop) for more`,
                     color: options.colors.economy
                 }
             })
