@@ -24,15 +24,14 @@
         <meta property="twitter:image" content="/images/social-graphic.png">
         <meta property="twitter:url" content="https://gamebot.rocks/shop">
 
-        <!-- Google Analytics -->
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-SW0JDK88S7"></script>
         <script>
-            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-            })(window,document,'script','https://www.google-analytics.com/analytics.js','ga')
-            
-            ga('create', 'G-SW0JDK88S7', 'auto')
-            ga('send', 'pageview')
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-SW0JDK88S7');
         </script>
 	</head>
 	<body>
@@ -55,13 +54,13 @@
                 <button class="delete" aria-label="close"></button>
               </header>
                   <section class="modal-card-body">
-                    <p class="item-description">
-                        Gain Gamebot credits easily by:
+                    <p class="item-description content">
+                        <h6 class="title is-5">Gain Gamebot credits easily by:</h6>
                         <ul>
                             <li>Voting for Gamebot daily using the <code>&daily</code> command</li>
                             <li>Donating to Gamebot using the  <code>&donate</code> command</li>
                             <li>Joining the <a href="discord?ref=shop">support server</a> and taking part in events and giveaways</li>
-                        </ul>
+                        </ol>
                     </p>
                   </section>
                 <footer class="modal-card-foot">
@@ -143,7 +142,7 @@
                     <div class="logged-in-wrapper is-hidden">
                         <img class="overlay-profile-picture" alt="Discord Profile Picture" src="https://discord.com/assets/6debd47ed13483642cf09e832ed0bc1b.png"></span>
                         <span class="discord-tag overlay-text"></span>
-                        <span class="gb-balance gb-credits overlay-text"><img class="currency-icon" src="/images/currency/credit.png"><span id="credit-balance">--</span> <a class="add-credits" onclick="currencyInfo()"><img class="currency-icon" src="/images/currency/add-credits.png"></span></a> </span>
+                        <span class="gb-balance gb-credits overlay-text"> <a class="add-credits" onclick="currencyInfo()"><img class="currency-icon" src="/images/currency/credit.png"><span id="credit-balance">--</span><img class="currency-icon" src="/images/currency/add-credits.png"></span></a> </span>
                         <!--span class="gb-balance gb-coins overlay-text"><img class="currency-icon" src="/images/currency/coin.gif"><span id="coin-balance">--</span> <a class="add-credits"><img class="currency-icon" src="/images/currency/add-coins.png"></span></a></span-->
                         <a onclick="logout()" class="button is-danger"><span class="icon"><i class="fas fa-sign-out-alt"></i></span></a>
                     </div>
@@ -255,8 +254,14 @@
                 </div>
             </div>
         </div>
-        <footer>
-             <div class="copyright">Copyright © 2020 zeroclutch</div>
+        <footer class="hero is-dark">
+            <div class="hero-body content has-text-centered">
+              <p>
+                <strong class="has-text-light">Gamebot</strong> by <a href="https://github.com/zeroclutch">zeroclutch</a>, Copyright © 2021. The source code and website is 100% open source on Github under the 
+                <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC SA 4.0 license</a>.
+                <br><a href="/privacy">Privacy</a>.
+              </p>
+            </div>
         </footer>
         <script src="/scripts/menubar.js"></script>
         <script src="/scripts/shop.js"></script>

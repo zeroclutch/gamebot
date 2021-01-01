@@ -164,14 +164,22 @@ const getGame = id => {
     return Object.keys(games).find(key => games[key] === id);
 }
 
+const getItem = id => {
+    return shopItems.find(item => item.itemID == id)
+}
+
 const moreInfo = id => {
-    let item = shopItems.find(item => item.itemID == id)
+    let item = getItem(id)
+    gtag('event', 'view_item', { items: [{ id: item.itemID, name: item.friendlyName, price: item.cost, category: item.type }] });
     $('#more-info-modal.modal .modal-card').innerHTML = getShopModal(item)
     // Enable modal
     $('#more-info-modal.modal').classList.add('is-active')
 }
 
 const currencyInfo = () => {
+    gtag('event', 'screen_view', {
+        screen_name: 'Add Credits'
+      });
     $('#currency-modal.modal').classList.add('is-active')
 }
 
@@ -180,7 +188,7 @@ const selectRandom = (arr) => {
 }
 
 const buy = id => {
-    let item = shopItems.find(item => item.itemID == id)
+    let item = getItem(id)
     // Populate modal
     $('#buy-confirm-modal .modal-card-title').innerText = 'Confirm Purchase'
     $('#buy-confirm-modal .modal-card-body .item-description').innerHTML = `Are you sure you want to buy <b>${item.friendlyName}</b> for <b>${item.cost > 0 ? `${item.cost}<span class="icon"><img class="currency-icon" src="/images/currency/credit.png"></span>` : ''}${item.goldCost > 0 ? `${item.goldCost}<span class="icon"><img class="currency-icon" src="/images/currency/coin.gif"></span>` : ''}</b>?`
@@ -225,8 +233,14 @@ const confirmBuy = async itemID => {
         $('#purchase-confirm-modal .button.is-info').innerText = 'OK'
         // Enable modal
         $('#purchase-confirm-modal.modal').classList.add('is-active')
+        gtag('event', 'exception', {
+            description: response.error,
+            fatal: true
+          });
     } else {
     // if success, display in modal and refresh shop items
+        let item = getItem(itemID)
+        gtag('event', 'purchase', { items: [{ id: item.itemID, name: item.friendlyName, price: item.cost, category: item.type }] });
         closeModals()
         // Populate modal
         $('#purchase-confirm-modal .button.is-info').innerText = selectRandom(['Sweeeet', 'Niiice', 'Siiick', 'Tiiight', 'Cooool'])
