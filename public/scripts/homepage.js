@@ -6,8 +6,6 @@ window.addEventListener('scroll', () => {
     })
 })
 
-mixpanel.track("Page view", {"page": "home"})
-
 fetch('/guilds').then(response => response.json()).then(data => {
     document.getElementById('servers').innerText = data.guilds
     document.getElementById('shards').innerText = data.shards

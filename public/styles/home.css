@@ -290,11 +290,8 @@ div.icon-title {
     font-size: 24px;
 }
 
-footer {
-    background-color: #40444C;
+footer a:hover {
     color: #fafafa;
-    text-align: center;
-    padding: 50px;
 }
 
 

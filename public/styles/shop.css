@@ -32,11 +32,11 @@
     transform: translateY(-50%);
 }
 
-.overlay-login .gb-credits {
+.overlay-login .gb-credits #credit-balance {
     color: #3aa9c1;
 }
 
-.overlay-login .gb-coins {
+.overlay-login .gb-coins #coin-balance {
     color: #eeb436;
 }
 

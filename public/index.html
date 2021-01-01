@@ -23,16 +23,16 @@
         <meta property="twitter:image" content="/images/social-graphic.png">
         <meta property="twitter:url" content="https://gamebot.rocks">
 
-        <!-- Google Analytics -->
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-SW0JDK88S7"></script>
         <script>
-            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-            })(window,document,'script','https://www.google-analytics.com/analytics.js','ga')
-            
-            ga('create', 'G-SW0JDK88S7', 'auto')
-            ga('send', 'pageview')
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-SW0JDK88S7');
         </script>
+        <script data-ad-client="ca-pub-7853619000524771" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 	</head>
 	<body>
         <div class="main-content is-clipped">
@@ -245,11 +245,17 @@
                         <img src="/images/github.svg">
                     </div>
                     <h6 class="icon-title">Open Source</h6>
-                    <div class="icon-desc">100% open source on Github under the CC-BY-NCC license</div>
+                    <div class="icon-desc">100% open source on Github under the CC BY-NC SA 4.0 license</div>
                 </div>
             </section>
-            <footer>
-                <div class="copyright">Copyright © 2020 zeroclutch</div>
+            <footer class="hero is-dark">
+                <div class="hero-body content has-text-centered">
+                  <p>
+                    <strong class="has-text-light">Gamebot</strong> by <a href="https://github.com/zeroclutch">zeroclutch</a>, Copyright © 2021. The source code and website is 100% open source on Github under the 
+                    <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC SA 4.0 license</a>.
+                    <br><a href="/privacy">Privacy</a>.
+                  </p>
+                </div>
             </footer>
         </div>
         <script src="/scripts/homepage.js"></script>

@@ -2,6 +2,16 @@
 <html>
     <head>
         <title>Authenticating...</title>
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-SW0JDK88S7"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-SW0JDK88S7');
+        </script>
+
         <script>
         document.addEventListener('DOMContentLoaded', (e) => {
             const fragment = new URLSearchParams(window.location.hash.slice(1));
@@ -11,6 +21,7 @@
             let cookie = `session-token=${encodeURIComponent(accessToken)}; max-age=${maxAge}`//;domain=${window.location.host}`
             document.cookie = cookie;
             window.location = '/shop'
+            gtag('event', 'login')
         })
         </script>
     </head>
