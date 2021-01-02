@@ -93,6 +93,7 @@ client.on('ready', () => {
   // Update bot system status
   client.updateStatus()
 
+
   // Post DBL stats every 30 minutes
   setInterval(() => {
     if(dbl)
@@ -130,13 +131,19 @@ for(let game of folder) {
   client.games.set(metadata, runFile)
 }
 
+// Add moderators
+const moderators = process.env.MODERATORS
+client.moderators = moderators ? moderators.split(',') : []
+
+
+
 // provide help
 client.help = function(msg, command) {
   const prefix = options.prefix
   // find command in question
   const helpCmd = client.commands.find(cmd => cmd.name === command.args.join(" ")) ||  client.commands.find(cmd => cmd.aliases.includes(command.args.join(" ")))
   // find help for a specific command
-  if(helpCmd && (helpCmd.category !== 'dev' || msg.author.id == process.env.OWNER_ID)) {
+  if(helpCmd && (helpCmd.category !== 'dev' || msg.author.id == process.env.OWNER_ID)  && (helpCmd.category !== 'mod' || client.moderators.includes(msg.author.id))) {
     msg.channel.sendMsgEmbed(`**__HELP:__**
                     \nCommand: \`${prefix}${helpCmd.name}\`
                     \nDescription: ${helpCmd.description}
@@ -150,7 +157,7 @@ client.help = function(msg, command) {
       for(var item of client.commands) {
         var key = item[0],
             value = item[1]
-        if(!categories.includes(value.category) && (value.category != 'dev' || msg.author.id == process.env.OWNER_ID)) {
+        if(!categories.includes(value.category) && (value.category != 'dev' || msg.author.id == process.env.OWNER_ID) && (value.category !== 'mod' || client.moderators.includes(msg.author.id))) {
           categories.push(value.category)
         }
       }
@@ -211,15 +218,24 @@ client.on('message', async function(msg) {
     client.help(msg, command);
   }
   
-  msg.client.logger.log('Command used', {
+  client.logger.log('Command used', {
     name: command.name,
   })
   
   if(cmd) {
     // test for permissions
-    if(cmd.permissions && cmd.permissions.length > 0 && msg.author.id !== process.env.OWNER_ID && (cmd.permissions.includes('GOD') || !msg.member || !msg.member.hasPermission(cmd.permissions))) {
-      msg.channel.sendMsgEmbed('Sorry, you don\'t have the necessary permissions for this command.')
-      return
+    if(cmd.permissions && cmd.permissions.length > 0){
+      // Fetch member
+      let member = await msg.guild.fetchMember(msg.author)
+      if(
+        ((msg.author.id !== process.env.OWNER_ID && cmd.permissions.includes('GOD')) ||
+        (!client.moderators.includes(msg.author.id) && cmd.permissions.includes('MOD')))
+        ||
+        (msg.channel.type == 'text' && !cmd.permissions.filter(permission => permission !== 'GOD' && permission !== 'MOD').every(permission => msg.channel.permissionsFor(member || msg.author).has(permission)))
+        ) {
+          msg.channel.sendMsgEmbed(`Sorry, you don't have the necessary permissions for this command.\n\nRequired permissions: \`${cmd.permissions.join(', ')}\``)
+        return
+      }
     }
 
     // start typing if message requires load time
