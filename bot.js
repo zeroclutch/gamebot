@@ -12,37 +12,26 @@ const options = require('./config/options')
 // Discord Bot List dependencies
 const DBL = require('dblapi.js');
 
-// database dependencies
-const MongoClient = require('mongodb').MongoClient;
-const uri = process.env.MONGO_DB_URI;
-const dbClient = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true })
-
-// configure WebUIClient
-const WebUIClient = require('./util/WebUIClient')
-client.webUIClient = new WebUIClient(client)
-
-const Logger = require('./util/Logger')
-client.logger = new Logger()
-
-// configure database
-client.dbClient = dbClient
-dbClient.connect(err => {
-  if(err) {
-    console.error(err)
-    return
-  }
-  console.log('Connected to server');
-  const database = dbClient.db(process.env.MONGO_DB_NAME)
-  Object.defineProperty(client, 'database', {
-    value: database,
+const DatabaseClient = require('./util/DatabaseClient')
+const dbClient = new DatabaseClient('shard ' + client.shard.id)
+dbClient.initialize()
+.then(() => {
+  Object.defineProperty(client, 'dbClient', {
+    value: dbClient,
     writable: false,
     enumerable: true
-  });
+  })
+
+  Object.defineProperty(client, 'database', {
+    value: dbClient.database,
+    writable: false,
+    enumerable: true
+  })
   
   // configure downtime notifications
   client.getTimeToDowntime = () => {
     return new Promise((resolve, reject) => {
-      database.collection('status').findOne( { type: 'downtime' }).then((data, err) => {
+      client.database.collection('status').findOne( { type: 'downtime' }).then((data, err) => {
         if(err || !data) {
           reject(console.error(err))
           return
@@ -53,6 +42,12 @@ dbClient.connect(err => {
   }
 })
 
+// configure WebUIClient
+const WebUIClient = require('./util/WebUIClient')
+client.webUIClient = new WebUIClient(client)
+
+const Logger = require('./util/Logger')
+client.logger = new Logger()
 
 client.setMaxListeners(40)
 
