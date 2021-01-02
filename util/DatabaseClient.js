@@ -56,7 +56,12 @@ module.exports = class DatabaseClient {
         amountDonated: 0.001,
         unlockedGames: [],
         unlockedItems: [],
-        created: Date.now()
+        created: Date.now(),
+        coins: 0,
+        wins: [],
+        achievements: [],
+        quests: [],
+        lastQuest: -1000000000000
       }
 
       this.database.collection('users').findOne({

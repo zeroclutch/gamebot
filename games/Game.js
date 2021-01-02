@@ -787,7 +787,7 @@ const Game = class Game {
             this.channel.send({
                 embed: {
                     title: `This game contains unlockable content!`,
-                    description: `Check out the [Gamebot shop](${process.env.BASE_URL}/shop) for more`,
+                    description: `Check out the [Gamebot shop for more](${process.env.BASE_URL}/shop)!`,
                     color: options.colors.economy
                 }
             })

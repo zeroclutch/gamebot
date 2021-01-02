@@ -56,30 +56,7 @@ Discord.DMChannel.prototype.sendMsgEmbed = Discord.TextChannel.prototype.sendMsg
  */
 Discord.User.prototype.createDBInfo = function() {
   return new Promise((resolve, reject) => {
-    if(!this.client.database || !this.client.database.collection('users')) {
-      reject('Error: Database not found.')
-      return
-    }
-
-    const defaultInfo = {
-      userID: this.id,
-      balance: 0,
-      lastClaim: -1000000000000,
-      voteStreak: 0,
-      amountDonated: 0.001,
-      unlockedGames: [],
-      unlockedItems: [],
-      created: Date.now()
-    }
-
-    this.client.database.collection('users').findOne({ userID: this.id }).then(async user => {
-      if(!user) {
-        await this.client.database.collection('users').insertOne(defaultInfo)
-        resolve(defaultInfo)
-      } else {
-        resolve(user)
-      }
-    }).catch(error => console.error)
+    this.client.dbClient.createDBInfo(this.id).then(resolve).catch(reject)
   })
 }
 
@@ -95,13 +72,8 @@ Discord.User.prototype.createDBInfo = function() {
  * @returns {Promise<UserData>}
  */
 Discord.User.prototype.fetchDBInfo = function() {
-  return new Promise(async (resolve, reject) => {
-    if(!this.client.database || !this.client.database.collection('users')) {
-      reject('Error: Database not found.')
-      return
-    }
-    await this.createDBInfo()
-    await this.client.database.collection('users').findOne({ userID: this.id }).then(resolve)
+  return new Promise((resolve, reject) => {
+    this.client.dbClient.fetchDBInfo(this.id).then(resolve).catch(reject)
   })
 }
 
@@ -109,18 +81,10 @@ Discord.User.prototype.fetchDBInfo = function() {
  * Sees if a user has an item in their inventory.
  * @returns {Boolean}
  */
-Discord.User.prototype.hasItem = async function (itemID) {
-  let isItemUnlocked = false
-  await this.fetchDBInfo()
-  .then(info => {
-    if(info && info.unlockedItems && info.unlockedItems.find(item => item == itemID)) {
-      isItemUnlocked = true
-    }
+Discord.User.prototype.hasItem = function (itemID) {
+  return new Promise((resolve, reject) => {
+    this.client.dbClient.hasItem(this.id, itemID).then(resolve).catch(reject)
   })
-  .catch(err => {
-    console.error(err)
-  })
-  return isItemUnlocked
 }
 
 /**
