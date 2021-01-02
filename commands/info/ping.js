@@ -10,7 +10,7 @@ module.exports = {
     run: function(msg, args) {
         const time = Date.now()
         const response = time - msg.createdTimestamp
-        const resMessage = `Pong!\nServer latency: \`${response}ms\``
+        const resMessage = `Pong!\nServer latency: \`${Math.max(response, 1)}ms\``
         msg.channel.send(resMessage).then(m => m.edit(resMessage + `\nAPI latency: \`${m.createdTimestamp - time}ms\``))
     }
   }
