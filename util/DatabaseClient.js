@@ -132,4 +132,22 @@ module.exports = class DatabaseClient {
     })
   }
 
+  /**
+   * Updates a shop item
+   * @param item {string} The ID of the item
+   * @param props {object} a key-value pairing of the properties to update
+   * @example
+   * dbClient.updateShopItem('gord_board', {cost: 120000, description, 'A board that is not overpriced!'} )
+   */
+  async updateShopItem(item, update) {
+    return new Promise(async (resolve, reject) => {
+      const collection = this.database.collection('items')
+      
+      await collection.findOne({
+        itemID: item
+      }).then(resolve)
+      .catch(reject)
+    })
+  }
+
 }

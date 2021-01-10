@@ -357,6 +357,11 @@ const getCookie = name => {
     }
 }
 
+let developerStatus = getCookie('developer-status')
+if(developerStatus) {
+    gtag = (...arguments) => { console.log(arguments) };
+}
+
 const logout = () => {
     deleteCookie('session-token')
     window.location.reload()
@@ -380,7 +385,7 @@ document.addEventListener('DOMContentLoaded', async e => {
         // Get userID
         userID = response.id
     }
-
+    
     // Update shop
     updateShop()
 

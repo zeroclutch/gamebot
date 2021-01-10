@@ -6,8 +6,10 @@ window.addEventListener('scroll', () => {
     })
 })
 
-fetch('/guilds').then(response => response.json()).then(data => {
-    document.getElementById('servers').innerText = data.guilds
-    document.getElementById('shards').innerText = data.shards
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/guilds').then(response => response.json()).then(data => {
+        document.getElementById('servers').innerText = data.guilds
+        document.getElementById('shards').innerText = data.shards
+    })
 })
 })()

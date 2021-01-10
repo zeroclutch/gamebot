@@ -571,6 +571,14 @@ const Game = class Game {
                     await this.removePlayer(member)
                 }
             }
+
+            // setleader command
+            if(message.content.startsWith(`${options.prefix}setleader`)) {
+                let member = message.content.substring(options.prefix.length + 4, message.content.length).replace(/\D/g, '')
+                if(this.settings.updatePlayersAnytime) {
+                    await this.setLeader(member)
+                }
+            }
         } else {
             // leave command
             if(message.content.startsWith(`${options.prefix}leave`)) {
@@ -585,7 +593,7 @@ const Game = class Game {
         }
 
         // bot owner commands
-        if(message.author.id == process.env.OWNER_ID) {
+        if(message.author.id === process.env.OWNER_ID) {
             if(message.content.startsWith(`${options.prefix}evalg`)) {
                 var response = '';
                 try {
@@ -599,6 +607,33 @@ const Game = class Game {
     }
 
     /**
+     * Sets or changes the game leader during the game.
+     * @param {Discord.Member|string} member The member or id of the member to add
+     * @param {string} message The message to send if the user is successfully queued. Set to "null" for no message to be sent.
+     */
+    async setLeader(member) {
+        if(typeof member == 'string') {
+            member = await this.msg.guild.fetchMember(member).catch(async () => {
+                await this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
+                return false
+            })
+            if(member === false) return
+        }
+
+        if(!member || this.leader.id == member.id || !this.players.has(member.id)) {
+            await this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
+            return
+        }
+
+        this.gameMaster = this.players.get(member.id)
+
+        if(message !== null) {
+            await this.channel.sendMsgEmbed(message || this.settings.defaultUpdatePlayerMessage).catch(console.error)
+        }
+
+    }
+
+    /**
      * Add a player to the queue to be added to the game.
      * @param {Discord.Member|string} member The member or id of the member to add
      * @param {string} message The message to send if the user is successfully queued. Set to "null" for no message to be sent.
@@ -606,25 +641,25 @@ const Game = class Game {
     async addPlayer(member, message) {
         if(typeof member == 'string') {
             member = await this.msg.guild.fetchMember(member).catch(async () => {
-                await this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027)
+                await this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
                 return false
             })
             if(member === false) return
         }
 
         if(!member || this.players.has(member.id) || member.bot) {
-            await this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027)
+            await this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
             return
         }
 
         let futureSize = this.players.size + this.playersToAdd.length - this.playersToKick.length
         if(futureSize >= this.metadata.playerCount.max) {
-            this.channel.sendMsgEmbed(`The game can't have fewer than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! ${member.user} could not be removed.`)
+            this.channel.sendMsgEmbed(`The game can't have more than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! ${member.user} could not be added.`).catch(console.error)
             return
         }
 
         if(message !== null) {
-            await this.channel.sendMsgEmbed(message || this.settings.defaultUpdatePlayerMessage)
+            await this.channel.sendMsgEmbed(message || this.settings.defaultUpdatePlayerMessage).catch(console.error)
         }
         
         this.playersToAdd.push(member)
@@ -638,7 +673,7 @@ const Game = class Game {
     async removePlayer(member, message) {
         if(typeof member == 'string') {
             member = await this.msg.guild.fetchMember(member).catch(async () => {
-                await this.channel.sendMsgEmbed('Invalid user.', 'Error!', options.colors.error)
+                await this.channel.sendMsgEmbed('Invalid user.', 'Error!', options.colors.error).catch(console.error)
                 return false
             })
             if(member === false) return
@@ -651,22 +686,22 @@ const Game = class Game {
                     description: 'The leader cannot leave the game.',
                     color: options.colors.error
                 }
-            })
+            }).catch(console.error)
         }
         
         if(!this.players.has(member.id) || !member || member.bot) {
-            await this.channel.sendMsgEmbed('Invalid user.', 'Error!', options.colors.error)
+            await this.channel.sendMsgEmbed('Invalid user.', 'Error!', options.colors.error).catch(console.error)
             return
         }
 
         let futureSize = this.players.size + this.playersToAdd.length - this.playersToKick.length
         if(futureSize <= this.metadata.playerCount.min) {
-            this.channel.sendMsgEmbed(`The game can't have fewer than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! ${member.user} could not be removed.`)
+            this.channel.sendMsgEmbed(`The game can't have fewer than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! ${member.user} could not be removed.`).catch(console.error)
             return
         }
 
         if(message !== null) {
-            await this.channel.sendMsgEmbed(message || this.settings.defaultUpdatePlayerMessage)
+            await this.channel.sendMsgEmbed(message || this.settings.defaultUpdatePlayerMessage).catch(console.error)
         }
         
         this.playersToKick.push(member)
@@ -677,7 +712,7 @@ const Game = class Game {
      */
     updatePlayers() {
         this.playersToKick.forEach(member => {
-            this.msg.channel.sendMsgEmbed(`${member.user} was removed from the game!`)
+            this.msg.channel.sendMsgEmbed(`${member.user} was removed from the game!`).catch(console.error)
             this.players.delete(member.id)
         })
         this.playersToKick = []
@@ -703,25 +738,25 @@ const Game = class Game {
                 })
             }).then(async dmChannel => {
                 if(this.settings.isDmNeeded){
-                    await dmChannel.sendMsgEmbed(`You have joined a ${this.metadata.name} game in <#${this.msg.channel.id}>.`)
+                    await dmChannel.sendMsgEmbed(`You have joined a ${this.metadata.name} game in <#${this.msg.channel.id}>.`).catch(console.error)
                 }
-                this.msg.channel.sendMsgEmbed(`${member.user} was added to the game!`)
+                this.msg.channel.sendMsgEmbed(`${member.user} was added to the game!`).catch(console.error)
             }).catch(err => {
                 // Remove errored player
                 if(this.players.has(member.id)) this.players.delete(member.id)
 
                 // Filter out privacy errors
                 if(err.message != 'Cannot send messages to this user') {
-                    this.msg.channel.sendMsgEmbed(`An unknown error occurred, and ${member.user} could not be added.`, `Error: Player could not be added.`, options.colors.error)
+                    this.msg.channel.sendMsgEmbed(`An unknown error occurred, and ${member.user} could not be added.`, `Error: Player could not be added.`, options.colors.error).catch(console.error)
                     console.error(err)
                 }
 
                 // Notify user
                 if(member.id == this.gameMaster.id) {
-                    this.msg.channel.sendMsgEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error)
+                    this.msg.channel.sendMsgEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error).catch(console.error)
                     this.forceStop()
                 } else {
-                    this.msg.channel.sendMsgEmbed(`${member.user} must change their privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: Player could not be added.`, options.colors.error)
+                    this.msg.channel.sendMsgEmbed(`${member.user} must change their privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: Player could not be added.`, options.colors.error).catch(console.error)
                 }
             })
         })
@@ -776,12 +811,12 @@ const Game = class Game {
 
         // Send a message in the game channel (this.msg.channel) that the game is over.
         this.msg.channel.sendMsgEmbed(endPhrase, 'Game over!', options.colors.economy).then(msg => {
-            this.clearCollectors(this.collectors)
+            this.clearCollectors(this.collectors).catch(console.error)
             // Remove all event listeners created during this game.
             this.msg.channel.gamePlaying = false
             this.msg.channel.game = undefined
             this.msg.client.removeListener('message', this.messageListener)
-        })
+        }).catch(console.error)
 
         if(this.metadata.unlockables) {
             this.channel.send({
@@ -790,7 +825,7 @@ const Game = class Game {
                     description: `Check out the [Gamebot shop for more](${process.env.BASE_URL}/shop)!`,
                     color: options.colors.economy
                 }
-            })
+            }).catch(console.error)
         }
 
         // If there's downtime and there was the last game, let the owner know that the bot is safe to restart.
@@ -802,7 +837,7 @@ const Game = class Game {
                     if(channel) channel.send(`All games finished, <@${options.ownerID}>`)
                 }
             }
-        })
+        }).catch(console.error)
     }
 
     /**
