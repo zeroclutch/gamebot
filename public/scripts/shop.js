@@ -380,7 +380,7 @@ document.addEventListener('DOMContentLoaded', async e => {
         // Get userID
         userID = response.id
     }
-
+    
     // Update shop
     updateShop()
 

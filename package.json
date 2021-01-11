@@ -1,13 +1,14 @@
 {
   "name": "gamebot",
-  "version": "2.1.2",
+  "version": "2.2.0",
   "description": "Add multiplayer games to Discord with Gamebot!",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "debug": "node --nolazy --inspect-brk=9229 server.js",
     "dev": "node server.dev.js",
-    "generate-docs": "jsdoc -c .jsdoc.json"
+    "generate-docs": "jsdoc -c .jsdoc.json",
+    "test": "node server.js --title=test"
   },
   "author": "zeroclutch",
   "license": "MIT",
@@ -15,7 +16,7 @@
     "node": "10.x"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "canvas": "^2.5.0",
     "chess": "^0.4.3",
@@ -31,9 +32,12 @@
     "qs": "^6.9.4",
     "querystring": "^0.2.0",
     "request": "^2.88.2",
+    "reversi": "^3.0.0",
     "text2png": "^2.1.0"
   },
   "devDependencies": {
+    "colors": "^1.4.0",
+    "jest": "^26.6.3",
     "minami": "^1.2.3"
   },
   "repository": {

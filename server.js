@@ -5,8 +5,11 @@ dotenv.config()
 // Initialize Discord bot
 const Discord = require('./discord_mod.js');
 const options = require('./config/options')
+const testMode = process.argv.includes('--title=test') 
 const manager = new Discord.ShardingManager('./bot.js', {
-  token: options.token
+  token: options.token,
+  execArgv: testMode ? ['--title=test'] : [],
+  respawn: testMode ? false : true
 })
 
 manager.spawn('auto', 5000).catch(err => console.error(err))

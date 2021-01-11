@@ -318,7 +318,11 @@ module.exports = class CardsAgainstHumanity extends Game {
         ctx.fillText('Gamebot for Discord', 50, 270)
         
         const fileName = Math.round(Math.random()*1000000) + '.png'
-        const stream = canvas.createPNGStream()
+        const stream = canvas.createJPEGStream({
+            quality: 1,
+            chromaSubsampling: false,
+            progressive: true
+        })
         const embed = new Discord.RichEmbed()
         .setTitle('This round\'s black card')
         .attachFile({

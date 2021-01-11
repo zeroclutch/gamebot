@@ -19,13 +19,21 @@ module.exports = class Chess extends Game {
         // Generated in this.generateOptions()
         this.gameOptions = []
 
+        this.side = 'White'
+        this.lastTurnStartedAt = -1
+
         this.defaultPlayer = {
             side: 'String'
         }
 
         this.messageListener = msg => {
+            // Only listen to messages sent in the game channel
+            if(msg.channel.id !== this.channel.id) return
+
             this.onMessage(msg)
             this.giveChessHelp(msg)
+            this.getTimer(msg)
+            this.getResignation(msg)
         }
 
         this.moves = []
@@ -107,9 +115,17 @@ module.exports = class Chess extends Game {
         if(msg.content.toLowerCase().startsWith(`${options.prefix}movehelp`)) {
             let stream
             try {
-                stream = await this.renderBoard('White')
+                stream = await this.renderBoard(this.side)
             } catch (err) {
                 // Game hasn't fully initialized
+                msg.channel.send({
+                    embed: {
+                        title: 'Error!',
+                        description: 'Please wait for the game to begin before using this command.',
+                        color: options.colors.error
+                    }
+                })
+                return
             }
             let embed = new Discord.RichEmbed()
             .attachFile({
@@ -141,6 +157,43 @@ module.exports = class Chess extends Game {
         }
     }
 
+
+    getTimer(msg) {
+        if(msg.content.toLowerCase().startsWith(`${options.prefix}timer`)) {
+            if(this.lastTurnStartedAt > -1) {
+                msg.channel.send({
+                    embed: {
+                        description: `${this.getPlayer(this.side).user} has ${Math.floor((Date.now() - this.lastTurnStartedAt) / 1000)} seconds left.`,
+                        color: options.colors.info
+                    }
+                })
+            } else {
+                msg.channel.send({
+                    embed: {
+                        title: 'Error!',
+                        description: 'Please wait for the game to begin before using this command.',
+                        color: options.colors.error
+                    }
+                })
+            }
+        }
+    }
+
+
+    getResignation(msg) {
+        if(msg.content.toLowerCase().startsWith(`${options.prefix}resign`) && this.players.has(msg.author.id)) {
+            let winner = this.players.find(player => player.id !== msg.author.id) 
+            if(this.moves.length > 2) {
+                this.importGameToLichess(winner.side)
+            }
+
+            this.displayBoard(winner.side).then(() => {
+                this.end(winner)
+                this.over = true
+            })
+        }
+    }
+
     setSides() {
         // Use preset side for leader
         let side = this.options['Side']
@@ -160,12 +213,15 @@ module.exports = class Chess extends Game {
         side = side.toLowerCase()
         // Render board using canvas
         return new Promise(async (resolve, reject) => {
-            const canvas = createCanvas(576, 576)
+            const canvas = createCanvas(288, 288)
             const ctx = canvas.getContext('2d')
 
             // Draw border
             let border = await loadImage(`./games/Chess/assets/border/${side}-border.jpg`)
             ctx.drawImage(border, 0, 0, canvas.width, canvas.height)
+
+            // Draw everything at half scale to reduce image size
+            ctx.scale(0.5, 0.5)
 
             // Draw board
             let board = await loadImage(`./games/Chess/assets/boards/${this.options['Board Style']}.jpg`)
@@ -189,7 +245,11 @@ module.exports = class Chess extends Game {
                     ctx.drawImage(piece, x, y, 64, 64)
                 }
             }
-            resolve(canvas.createPNGStream())
+            resolve(canvas.createJPEGStream({
+                quality: 1,
+                chromaSubsampling: false,
+                progressive: true
+              }))
         })
 
     }
@@ -206,7 +266,10 @@ module.exports = class Chess extends Game {
             name: 'image.png'
         })
         .setDescription(`You have ${this.options['Timer']} seconds to make a move.`)
-        .setFooter(`To make a move, enter the bot prefix, followed by a valid move in algebraic notation. Type ${options.prefix}movehelp for help.`)
+        .addField('ℹ️', 'To make a move, enter the bot prefix followed by a valid move in algebraic notation.', true)
+        .addField('⏰', `Type ${options.prefix}timer to see the move time remaining.`, true)
+        .addField('🏳', `Type ${options.prefix}resign to give up.`, true)
+        .setFooter(`Type ${options.prefix}movehelp for help.`)
         .setImage(`attachment://image.png`)
         .setColor({ 'White': '#fffffe', 'Black': '#000001' }[side])
 
@@ -219,8 +282,11 @@ module.exports = class Chess extends Game {
 
     awaitMove(side) {
         return new Promise((resolve, reject) => {
+            this.lastTurnStartedAt = Date.now() + parseInt(this.options['Timer']) * 1000
+
             const filter = m => m.content.startsWith(options.prefix) && this.players.has(m.author.id) && m.author.id == this.getPlayer(side).user.id
             let collector = this.channel.createMessageCollector(filter, { time: parseInt(this.options['Timer']) * 1000 })
+            
             collector.on('collect', m => {
                 if(this.ending || this.over) return
                 let move = m.content.replace(options.prefix, '')
@@ -273,7 +339,7 @@ module.exports = class Chess extends Game {
         }
         let pgn = `pgn=[Event "Gamebot Online Match"]
         [Site "Discord"]
-        [Date "${_f(today.getUTCFullYear())}.${_f(today.getUTCMonth() + 1)}.${_f(today.getUTCDate() + 1)}"]
+        [Date "${_f(today.getUTCFullYear())}.${_f(today.getUTCMonth() + 1)}.${_f(today.getUTCDate())}"]
         [Result "${winner}"]
         [White "${this.getPlayer('White').user.tag}"]
         [Black "${this.getPlayer('Black').user.tag}"]\n\n`
@@ -322,16 +388,16 @@ module.exports = class Chess extends Game {
     async play() {
         this.setSides()
         let move = 0;
-        let teams = ['White', 'Black']
-        do {
-            let team = teams[move % 2]
+        let sides = ['White', 'Black']
+        while(!this.over) {
+            this.side = sides[move % 2]
             // Display the board
-            await this.displayBoard(team)
+            await this.displayBoard(this.side)
             // Move white
-            await this.awaitMove(team)
-            this.analyzeBoard(team)
+            await this.awaitMove(this.side)
+            this.analyzeBoard(this.side)
             move++
-        } while(!this.over)
+        } 
     }
 
     finish(id) {
