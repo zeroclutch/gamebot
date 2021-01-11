@@ -36,7 +36,7 @@
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-SW0JDK88S7"></script>
         <script>
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
+        function gtag() {dataLayer.push(arguments);}
         gtag('js', new Date());
 
         gtag('config', 'G-SW0JDK88S7');
@@ -75,7 +75,7 @@
                         
                         <div class="button-container">
                             <div class="button-holder">
-                                <a class="button is-large is-white" href="/invite?ref=homepage">
+                                <a class="button is-large is-white" onclick="gtag('event', 'add_to_guild', {'event_category': 'guild_update','event_label': 'Homepage'})" href="/invite?ref=homepage">
                                     <span class="icon is-medium">
                                         <i class="fab fa-discord"></i>
                                     </span>
@@ -83,7 +83,7 @@
                                 </a>
                             </div>
                             <div class="button-holder">
-                                <a class="button is-large is-dark" href="/discord?ref=homepage">
+                                <a class="button is-large is-dark" onclick="gtag('event', 'join_community', {'event_category': 'community_update','event_label': 'Homepage'})" href="/discord?ref=homepage">
                                     <span class="icon is-medium">
                                         <i class="fas fa-users"></i>
                                     </span>

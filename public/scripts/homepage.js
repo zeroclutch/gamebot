@@ -6,8 +6,25 @@ window.addEventListener('scroll', () => {
     })
 })
 
-fetch('/guilds').then(response => response.json()).then(data => {
-    document.getElementById('servers').innerText = data.guilds
-    document.getElementById('shards').innerText = data.shards
+const getCookie = name => {
+    let row = document.cookie.split('; ').find(row => row.startsWith(name))
+
+    if (row) {
+        return row.split('=')[1]
+    } else {
+        return false
+    }
+}
+
+let developerStatus = getCookie('developer-status')
+if(developerStatus) {
+    gtag = (...arguments) => { console.log(arguments) };
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/guilds').then(response => response.json()).then(data => {
+        document.getElementById('servers').innerText = data.guilds
+        document.getElementById('shards').innerText = data.shards
+    })
 })
 })()
