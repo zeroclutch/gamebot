@@ -88,6 +88,10 @@ client.on('ready', () => {
   // Update bot system status
   client.updateStatus()
 
+  // Check if we are testing
+  if(process.execArgv.includes('--title=test') && client.channels.has(process.env.TEST_CHANNEL)) {
+    require('./test/index.test.js')(client)
+  }
 
   // Post DBL stats every 30 minutes
   setInterval(() => {
