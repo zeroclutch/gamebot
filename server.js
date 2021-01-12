@@ -49,8 +49,7 @@ oauth2.initialize()
 const Logger = require('./util/Logger')
 const logger = new Logger()
 
-const package = require('./package.json');
-const { autocrop } = require('jimp');
+const package = require('./package.json')
 
 // Update guild count
 let cachedGuilds = '??'
