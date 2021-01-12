@@ -50,7 +50,6 @@ const Logger = require('./util/Logger')
 const logger = new Logger()
 
 const package = require('./package.json');
-const { autocrop } = require('jimp');
 
 // Update guild count
 let cachedGuilds = '??'
