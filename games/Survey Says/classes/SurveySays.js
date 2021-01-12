@@ -1,16 +1,16 @@
-const Game = require('./../../Game')
-const options = require('./../../../config/options')
-const metadata = require('./../metadata.json')
-const { Collection } = require('./../../../discord_mod')
-const { decrypt } = require('./../../../util/cryptography')
-const fs = require('fs')
-const { response } = require('express')
+import Game from './../../Game'
+import options from './../../../config/options'
+import metadata from './../metadata.json'
+import { Collection } from './../../../discord_mod'
+import { decrypt } from './../../../util/cryptography'
+import fs from 'fs'
+import { response } from 'express'
 
 let questionList
 decrypt(process.env.PASS_KEY, fs.readFileSync('./games/Survey Says/assets/data.enc', 'utf8'))
 .then(data => questionList = JSON.parse(data))
 
-module.exports = class SurveySays extends Game {
+export default class SurveySays extends Game {
     constructor(msg, settings) {
         super(msg, settings)
         

@@ -1,5 +1,5 @@
-const { Collection } = require('../discord_mod')
-const fs = require('fs')
+import { Collection } from '../discord_mod'
+import fs from 'fs'
 
 /**
  * A manager for creating and using WebUIs within games
@@ -7,7 +7,7 @@ const fs = require('fs')
  * It will be a property of each client 
  * @class
  */
-module.exports = class WebUIManager {
+export default class WebUIManager {
     /**
      * @typedef WebUI
      */

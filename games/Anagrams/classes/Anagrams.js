@@ -1,7 +1,7 @@
-const Game = require('../../Game')
-const options = require('../../../config/options')
-const metadata = require('../metadata.json')
-const fs = require('fs')
+import Game from '../../Game'
+import options from '../../../config/options'
+import metadata from '../metadata.json'
+import fs from 'fs'
 
 var words = fs.readFileSync('./gameData/WordGames/Collins_Scrabble_Dictionary.txt', { encoding: 'utf-8' }, err => {
     console.error(err)
@@ -14,7 +14,7 @@ words.splice(0,1)
 
 words.forEach(word => wordRegistry[word] = true)
 
-module.exports = class Anagrams extends Game {
+export default class Anagrams extends Game {
     constructor(msg, settings) {
         super(msg, settings)
         this.metadata = metadata

@@ -1,6 +1,6 @@
-const Discord = require('../../discord_mod.js')
+import Discord from '../../discord_mod.js'
 
-module.exports = class DummyAccount {
+export default class DummyAccount {
     /**
      * 
      * @param {string} token The token of this bot

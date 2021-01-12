@@ -1,1 +1,1 @@
-module.exports = require('./classes/SurveySays.js')
+export default require('./classes/SurveySays.js')

@@ -1,5 +1,5 @@
-const options = require('./../../config/options')
-module.exports = {
+import options from './../../config/options'
+export default {
     name: 'balance',
     usage: 'balance',
     aliases: ['bal'],

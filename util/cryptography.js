@@ -1,9 +1,9 @@
-const crypto = require('crypto')
+import crypto from 'crypto'
 
 /**
  * Utility module to decode sensitive/hidden data for use, such as quiz answers
  */
-module.exports = {
+export default {
     decrypt: (password=process.env.PASS_KEY, data, encoding='hex') => {
       return new Promise((resolve, reject) => {
         const algorithm = 'aes-192-cbc'

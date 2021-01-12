@@ -1,15 +1,15 @@
 // Global dependencies
-const options = require('../../../config/options')
-const Discord = require('../../../discord_mod')
-const metadata = require('../metadata.json')
-const fs = require('fs')
+import options from '../../../config/options'
+import Discord from '../../../discord_mod'
+import metadata from '../metadata.json'
+import fs from 'fs'
 
 // CAH dependencies
-const Game = require('../../Game')
+import Game from '../../Game'
 const { createCanvas, registerFont, loadImage } = require('canvas')
-const { whiteCards } = require('../assets/cards')
-const CAHDeck = require('./CAHDeck')
-const BlackCard = require('./BlackCard')
+import { whiteCards } from '../assets/cards'
+import CAHDeck from './CAHDeck'
+import BlackCard from './BlackCard'
 
 const CARD_PACKS = {
     '90sn_pack': '90s',
@@ -76,7 +76,7 @@ const CARD_BACKS = {
     },
 }
 
-module.exports = class CardsAgainstHumanity extends Game {
+export default class CardsAgainstHumanity extends Game {
     /**
      * name: the name of the game 
      * playerCount: object with the minimum and maximum number of players

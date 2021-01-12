@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   prefix: process.env.DISCORD_BOT_PREFIX,
   token: process.env.DISCORD_BOT_TOKEN,
   ownerID: process.env.OWNER_ID,

@@ -1,6 +1,6 @@
-const options = require('./../../config/options')
+import options from './../../config/options'
 
-module.exports = {
+export default {
     name: 'invite',
     usage: 'invite',
     aliases: ['botinfo', 'support', 'donate'],

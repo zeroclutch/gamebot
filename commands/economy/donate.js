@@ -1,7 +1,7 @@
-const options = require('./../../config/options')
-const url = require('url');
+import options from './../../config/options'
+import url from 'url';
 
-module.exports = {
+export default {
     name: 'donate',
     usage: 'donate',
     aliases: ['patreon', 'paypal', 'support'],

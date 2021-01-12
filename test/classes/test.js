@@ -4,7 +4,7 @@ let tests = 0,
     successfulTests = 0,
     moment = Date.now()
 
-module.exports = {
+export default {
     test: async (name, f) => {
         tests++
         console.log(`${tests}) ${'Running test suite '.yellow}"${name.blue}"\n`.underline)

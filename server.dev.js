@@ -1,17 +1,17 @@
-const dotenv = require('dotenv')
+import dotenv from 'dotenv'
 dotenv.config()
 
-const Discord = require('./discord_mod.js');
-const options = require('./config/options')
+import Discord from './discord_mod.js';
+import options from './config/options'
 
-const request = require('request')
-const bodyParser = require('body-parser')
-const querystring = require('querystring');
-const express = require('express')
+import request from 'request'
+import bodyParser from 'body-parser'
+import querystring from 'querystring';
+import express from 'express'
 const app = express()
 
-const fs = require('fs')
-const package = require('./package.json')
+import fs from 'fs'
+import package from './package.json'
 
 // Handle all GET requests
 app.use('/', express.static(__dirname + '/public'))

@@ -1,6 +1,6 @@
-const MongoClient = require('mongodb').MongoClient;
+import { MongoClient as MongoClient } from 'mongodb';
 
-module.exports = class DatabaseClient {
+export default class DatabaseClient {
 
   /**
    * Initializes a new instance of a DatabaseClient

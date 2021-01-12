@@ -1,13 +1,13 @@
-const options = require('../config/options')
+import options from '../config/options'
 const $ = options.prefix
 
 const { test, testSync, testResults } = require('./classes/test')
 
-const assert = require('assert')
+import assert from 'assert'
 
 let message, collected
 
-module.exports = async (client, tester) => {
+export default async (client, tester) => {
     
     await test('run invite command', async () => {
         message = (await tester.command($ + 'invite')).first()

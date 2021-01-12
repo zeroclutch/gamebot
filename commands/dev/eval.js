@@ -14,7 +14,7 @@ const clean = text => {
   return text;
 }
 
-module.exports = {
+export default {
   name: 'eval',
   usage: 'eval',
   aliases: ['ev'],

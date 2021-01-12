@@ -1,6 +1,6 @@
 // create Collection<Game> of all the games
 //const Discord = require('../../discord_mod')
-module.exports = {
+export default {
   name: 'end',
   usage: 'end',
   aliases: [],

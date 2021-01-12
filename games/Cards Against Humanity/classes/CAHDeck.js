@@ -1,7 +1,7 @@
 const { whiteCards, blackCards } = require('../assets/cards')
-const BlackCard = require('./BlackCard')
+import BlackCard from './BlackCard'
 
-module.exports = class CAHDeck {
+export default class CAHDeck {
     constructor(sets) {
         // adds all appropriate sets to the collection of cards
         this.sets = sets.length == 0 ? ['Base Set'] : sets

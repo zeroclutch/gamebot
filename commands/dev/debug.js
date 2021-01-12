@@ -1,7 +1,7 @@
 // create Collection<Game> of all the games
-const options = require('./../../config/options')
+import options from './../../config/options'
 
-module.exports = {
+export default {
   name: 'debug',
   usage: 'debug <game>',
   aliases: ['db'],

@@ -1,5 +1,5 @@
-const Discord = require('./../../../discord_mod')
-const fs = require('fs')
+import Discord from './../../../discord_mod'
+import fs from 'fs'
 
 // Get card sets from filesystem
 // Collection<Object metadata, Array.<String card> cards>
@@ -23,4 +23,4 @@ for (const cardSet of cardFolder) {
   }
 }
 
-module.exports = { blackCards, whiteCards }
+export default { blackCards, whiteCards }

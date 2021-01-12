@@ -1,8 +1,8 @@
 /**
  * Discord Mod. An extension of the discord.js module to streamline usage of this bot.
  */
-const Discord = require('discord.js')
-const options = require('./config/options')
+import Discord from 'discord.js'
+import options from './config/options.js'
 
 /**
  * Checks if a Discord.GuildMember has a role
@@ -101,4 +101,4 @@ Discord.Client.prototype.updateStatus = async function(itemID) {
   return null
 }
 
-module.exports = Discord
+export default Discord

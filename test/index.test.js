@@ -1,6 +1,6 @@
-const TestBot = require('./classes/TestBot')
+import TestBot from './classes/TestBot'
 
-module.exports = async client => {
+export default async client => {
     // Initialize
     const tester = new TestBot(process.env.DISCORD_TEST_BOT_TOKEN, client, process.env.TEST_CHANNEL)
     await tester.init()
