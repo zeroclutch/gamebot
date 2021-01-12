@@ -1,6 +1,6 @@
-const DatabaseClient = require("./DatabaseClient");
+import DatabaseClient from "./DatabaseClient";
 
-module.exports = class ShopGenerator {
+export default class ShopGenerator {
     constructor(options) {
         this.client = new DatabaseClient('ShopGenerator')
         this.itemCache = {

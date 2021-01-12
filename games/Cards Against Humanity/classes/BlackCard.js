@@ -1,4 +1,4 @@
-module.exports = class BlackCard {
+export default class BlackCard {
     constructor(text) {
         this.cardText = text
         // get possible card responses based on blanks, minimum 1

@@ -1,6 +1,6 @@
-const options = require('./../../config/options')
+import options from './../../config/options'
 
-module.exports = {
+export default {
     name: 'credit',
     usage: 'credit <user> <amount>',
     aliases: [],

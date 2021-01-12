@@ -1,6 +1,6 @@
 const Game = require(`../../Game`)
-const options = require('../../../config/options')
-const metadata = require('../metadata.json')
+import options from '../../../config/options'
+import metadata from '../metadata.json'
 
 const ICONS = ['⚪️','🔴','🔵', '💚', '💛', '💜', '🖤']
 const FOOTER = ['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟']
@@ -8,7 +8,7 @@ const FOOTER = ['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6�
 /**
  * The base class for Connect 4 games.
  */
-module.exports = class ConnectFour extends Game {
+export default class ConnectFour extends Game {
     constructor(msg, settings) {
         super(msg, settings)
         

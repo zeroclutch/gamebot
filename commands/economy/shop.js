@@ -1,7 +1,7 @@
-const Discord = require('./../../discord_mod')
-const options = require('./../../config/options')
+import Discord from './../../discord_mod'
+import options from './../../config/options'
 
-module.exports = {
+export default {
     name: 'shop',
     usage: 'shop',
     aliases: [],

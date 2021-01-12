@@ -1,6 +1,6 @@
-const axios = require('axios')
-const WebUIManager = require('./WebUIManager')
-const { Collection } = require('../discord_mod')
+import axios from 'axios'
+import WebUIManager from './WebUIManager'
+import { Collection } from '../discord_mod'
 
 /**
  * An API for creating WebUIs, which allow users to enter responses from a webpage
@@ -134,4 +134,4 @@ const WebUIClient = class WebUIClient {
     }
 }
 
-module.exports = WebUIClient
+export default WebUIClient

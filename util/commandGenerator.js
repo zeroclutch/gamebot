@@ -1,5 +1,5 @@
 // Script to generate command list
-const fs = require('fs')
+import fs from 'fs'
 
 const PATH = __dirname + '/../commands'
 

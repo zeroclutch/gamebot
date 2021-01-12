@@ -1,3 +1,3 @@
-const Chess = require('./classes/Chess.js')
+import Chess from './classes/Chess.js'
 
-module.exports = Chess
+export default Chess

@@ -1,6 +1,6 @@
-const axios = require('axios')
+import axios from 'axios'
 
-module.exports = class OAuth2Client {
+export default class OAuth2Client {
     constructor() {
         this.storedHashes = {}
     }

@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: 'storedinfo',
     usage: 'storedinfo <@user>',
     aliases: [],

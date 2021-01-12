@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   name: 'blank',
   usage: 'blank',
   aliases: ['blank'],

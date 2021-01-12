@@ -1,10 +1,10 @@
 // Configure environment variabless
-const dotenv = require('dotenv')
+import dotenv from 'dotenv'
 dotenv.config()
 
 // Initialize Discord bot
-const Discord = require('./discord_mod.js');
-const options = require('./config/options')
+import Discord from './discord_mod.js';
+import options from './config/options.js'
 const testMode = process.argv.includes('--title=test') 
 const manager = new Discord.ShardingManager('./bot.js', {
   token: options.token,
@@ -15,41 +15,41 @@ const manager = new Discord.ShardingManager('./bot.js', {
 manager.spawn('auto', 5000).catch(err => console.error(err))
 
 // Add server dependencies
-const request = require('request')
-const bodyParser = require('body-parser')
-const querystring = require('querystring');
-const express = require('express')
+import request from 'request'
+import bodyParser from 'body-parser'
+import querystring from 'querystring';
+import express from 'express'
 const app = express()
 
 // Add requests
-const axios = require('axios')
-const qs = require('qs');
+import axios from 'axios'
+import qs from 'qs';
 
 // Create manager for custom WebUIs
-const WebUIManager = require('./util/WebUIManager')
+import WebUIManager from './util/WebUIManager.js'
 const webUIManager = new WebUIManager(app)
 
-const DatabaseClient = require('./util/DatabaseClient')
+import DatabaseClient from './util/DatabaseClient.js'
 const dbClient = new DatabaseClient('server')
 dbClient.initialize()
 
 // Create shop manager
-const ShopGenerator = require('./util/ShopGenerator')
+import ShopGenerator from './util/ShopGenerator.js'
 const shopGenerator = new ShopGenerator({
   shopRefreshDelay: 60000
 })
 shopGenerator.initialize()
 
 // 
-const OAuth2Client = require('./util/OAuth2Client')
+import OAuth2Client from './util/OAuth2Client.js'
 const oauth2 = new OAuth2Client()
 oauth2.initialize()
 
 // Create logger
-const Logger = require('./util/Logger')
+import Logger from './util/Logger.js'
 const logger = new Logger()
 
-const package = require('./package.json')
+const pkg = require('./package.json')
 
 // Update guild count
 let cachedGuilds = '??'
@@ -64,7 +64,7 @@ setInterval(updateGuilds, 60000)
 app.use('/', express.static(__dirname + '/public',{ extensions:['html']}))
 
 app.get('/docs', (request, response) => {
-  response.redirect('/docs/version/' + package.version)
+  response.redirect('/docs/version/' + pkg.version)
   logger.log('Docs viewed', {
     ref: request.query.ref
   })

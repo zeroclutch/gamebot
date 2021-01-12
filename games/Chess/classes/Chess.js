@@ -1,16 +1,16 @@
 const Game = require(`../../Game`)
-const options = require('../../../config/options')
-const metadata = require('../metadata.json')
+import options from '../../../config/options'
+import metadata from '../metadata.json'
 
-const chess = require('chess')
+import chess from 'chess'
 const { createCanvas, loadImage } = require('canvas')
-const Discord = require('../../../discord_mod')
-const LichessAPI = require('./../classes/LichessAPI')
+import Discord from '../../../discord_mod'
+import LichessAPI from './../classes/LichessAPI'
 
 /**
  * The base class for Chess games.
  */
-module.exports = class Chess extends Game {
+export default class Chess extends Game {
     constructor(msg, settings) {
         super(msg, settings)
         

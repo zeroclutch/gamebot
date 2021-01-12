@@ -1,18 +1,18 @@
 const Game = require(`../../Game`)
-const options = require('../../../config/options')
-const metadata = require('../metadata.json')
+import options from '../../../config/options'
+import metadata from '../metadata.json'
 
-const othello = require('reversi');
+import othello from 'reversi';
 const OthelloGame = othello.Game;
 const PIECE_TYPES = othello.PIECE_TYPES;
 
 const { createCanvas, loadImage } = require('canvas')
-const Discord = require('../../../discord_mod')
+import Discord from '../../../discord_mod'
 
 /**
  * The base class for Othello games.
  */
-module.exports = class Othello extends Game {
+export default class Othello extends Game {
     constructor(msg, settings) {
         super(msg, settings)
         

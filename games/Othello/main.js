@@ -1,3 +1,3 @@
-const Othello = require('./classes/Othello.js')
+import Othello from './classes/Othello.js'
 
-module.exports = Othello
+export default Othello

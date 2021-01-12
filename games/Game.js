@@ -1,5 +1,5 @@
-const options = require('../config/options')
-const Discord = require('../discord_mod')
+import options from '../config/options'
+import Discord from '../discord_mod.js'
 
 /**
  * The base class for all games, see {@tutorial getting_started} to get started.
@@ -849,4 +849,4 @@ const Game = class Game {
     }
 }
 
-module.exports = Game
+export default Game

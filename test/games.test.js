@@ -1,15 +1,15 @@
-const options = require('../config/options')
+import options from '../config/options'
 const $ = options.prefix
 
 const { test, testSync, testResults } = require('./classes/test')
 
-const assert = require('assert').strict
+import { strict as assert } from 'assert'
 
 let message, collected
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-module.exports = async (client, tester) => {
+export default async (client, tester) => {
     await test('start anagrams game', async () => {
         collected = (await tester.command($ + 'play ana', 2))
         assert.strictEqual(tester.client.user.tag + ' is starting a Anagrams game!', collected.first().embeds[0].title)

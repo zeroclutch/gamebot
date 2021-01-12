@@ -1,14 +1,14 @@
 const Game = require(`../../Game`)
-const PromptList = require('./PromptList')
-const options = require('../../../config/options')
-const metadata = require('../metadata.json')
+import PromptList from './PromptList'
+import options from '../../../config/options'
+import metadata from '../metadata.json'
 
 /**
  * The base class for Wisecracks games.
  * 
  * All content is the property of its respective owners.
  */
-module.exports = class Wisecracks extends Game {
+export default class Wisecracks extends Game {
     constructor(msg, settings) {
         super(msg, settings)
         

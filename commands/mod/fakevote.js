@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: 'fakevote',
     usage: 'fakevote <@user>',
     aliases: [],

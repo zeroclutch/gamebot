@@ -1,4 +1,4 @@
-const options = require('./../../config/options')
+import options from './../../config/options'
 const DAILY_REWARDS = [
     100,
     250,
@@ -13,7 +13,7 @@ const HOUR_LENGTH = (60 * 60 * 1000)
 const RESET_LENGTH = (12 * HOUR_LENGTH)
 const DAY_LENGTH = (24 * HOUR_LENGTH)
 
-module.exports = {
+export default {
     name: 'daily',
     usage: 'daily',
     aliases: ['claim', 'vote'],

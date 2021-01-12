@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: 'wipe',
     usage: 'wipe <@user>',
     aliases: [],

@@ -1,9 +1,9 @@
 // create Collection<Game> of all the games
-const Discord = require('../../discord_mod')
-const options = require('../../config/options')
+import Discord from '../../discord_mod'
+import options from '../../config/options'
 
 
-module.exports = {
+export default {
     name: 'gamelist',
     usage: 'gamelist',
     aliases: ['list', 'gl', 'games'],

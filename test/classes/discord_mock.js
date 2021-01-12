@@ -1,5 +1,5 @@
-const Discord = require('../../discord_mod.js') 
-const fs = require('fs')
+import Discord from '../../discord_mod.js' 
+import fs from 'fs'
 
 /**
  * Code modified from:
@@ -7,7 +7,7 @@ const fs = require('fs')
  * https://github.com/discordjs/discord.js/issues/3576
  * 
  */
-module.exports = {
+export default {
   Discord,
 Client: class Client extends Discord.Client {
   constructor() {

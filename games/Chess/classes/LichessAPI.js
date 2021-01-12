@@ -1,4 +1,4 @@
-const request = require('axios')
+import request from 'axios'
 
 /**
  * An API wrapper that allows for basic interfacing with the Lichess API.
@@ -20,4 +20,4 @@ const LichessAPI = class LichessAPI {
     }
 }
 
-module.exports = LichessAPI
+export defaultichessAPI

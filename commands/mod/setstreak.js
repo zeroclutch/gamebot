@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: 'setstreak',
     usage: 'setstreak <@user> <streak>',
     aliases: [],

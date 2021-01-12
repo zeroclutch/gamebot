@@ -1,7 +1,7 @@
-const options = require('./../../config/options')
-const Discord = require('./../../discord_mod')
+import options from './../../config/options'
+import Discord from './../../discord_mod'
 
-module.exports = {
+export default {
     name: 'giveaway',
     usage: 'giveaway <channel> <time (minutes)> <amount> <reaction> <message>',
     aliases: [],

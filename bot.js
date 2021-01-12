@@ -1,18 +1,18 @@
 require('dotenv').config()
-const Discord = require("./discord_mod.js")
+import Discord from "./discord_mod.js"
 const client = new Discord.Client({
   messageCacheLifetime: 120,
   messageSweepInterval: 10,
   messageCacheMaxSize: 50,
   disabledEvents: ['TYPING_START','MESSAGE_UPDATE', 'PRESENCE_UPDATE', 'GUILD_MEMBER_ADD', 'GUILD_MEMBER_REMOVE']
 })
-const fs = require('fs')
-const options = require('./config/options')
+import fs from 'fs'
+import options from './config/options'
 
 // Discord Bot List dependencies
-const DBL = require('dblapi.js');
+import DBL from 'dblapi.js';
 
-const DatabaseClient = require('./util/DatabaseClient')
+import DatabaseClient from './util/DatabaseClient'
 const dbClient = new DatabaseClient('shard ' + client.shard.id)
 dbClient.initialize()
 .then(() => {
@@ -43,10 +43,10 @@ dbClient.initialize()
 })
 
 // configure WebUIClient
-const WebUIClient = require('./util/WebUIClient')
+import WebUIClient from './util/WebUIClient'
 client.webUIClient = new WebUIClient(client)
 
-const Logger = require('./util/Logger')
+import Logger from './util/Logger'
 client.logger = new Logger()
 
 client.setMaxListeners(40)
