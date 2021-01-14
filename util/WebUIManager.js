@@ -1,4 +1,5 @@
-import { Collection } from '../discord_mod'
+import Discord from 'discord.js';
+const { Collection } = Discord;
 import fs from 'fs'
 
 /**

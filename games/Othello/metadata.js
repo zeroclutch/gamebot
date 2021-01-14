@@ -1,4 +1,4 @@
-{
+export default {
     "id": "oth",
     "name": "Othello",
     "aliases": "Reversi",

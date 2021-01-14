@@ -1,4 +1,4 @@
-import Discord from '../../../discord_mod'
+import Discord from '../../../discord_mod.js'
 import fs from 'fs'
 
 /**

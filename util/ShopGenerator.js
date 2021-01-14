@@ -1,4 +1,4 @@
-import DatabaseClient from "./DatabaseClient";
+import DatabaseClient from "./DatabaseClient.js";
 
 export default class ShopGenerator {
     constructor(options) {

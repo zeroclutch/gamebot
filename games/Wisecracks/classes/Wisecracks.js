@@ -1,7 +1,7 @@
-const Game = require(`../../Game`)
-import PromptList from './PromptList'
-import options from '../../../config/options'
-import metadata from '../metadata.json'
+import Game from '../../Game.js'
+import PromptList from './PromptList.js'
+import options from '../../../config/options.js'
+import metadata from '../metadata.js'
 
 /**
  * The base class for Wisecracks games.

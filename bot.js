@@ -1,4 +1,3 @@
-require('dotenv').config()
 import Discord from "./discord_mod.js"
 const client = new Discord.Client({
   messageCacheLifetime: 120,
@@ -6,13 +5,13 @@ const client = new Discord.Client({
   messageCacheMaxSize: 50,
   disabledEvents: ['TYPING_START','MESSAGE_UPDATE', 'PRESENCE_UPDATE', 'GUILD_MEMBER_ADD', 'GUILD_MEMBER_REMOVE']
 })
-import fs from 'fs'
-import options from './config/options'
+
+import options from './config/options.js'
 
 // Discord Bot List dependencies
 import DBL from 'dblapi.js';
 
-import DatabaseClient from './util/DatabaseClient'
+import DatabaseClient from './util/DatabaseClient.js'
 const dbClient = new DatabaseClient('shard ' + client.shard.id)
 dbClient.initialize()
 .then(() => {
@@ -43,10 +42,10 @@ dbClient.initialize()
 })
 
 // configure WebUIClient
-import WebUIClient from './util/WebUIClient'
+import WebUIClient from './util/WebUIClient.js'
 client.webUIClient = new WebUIClient(client)
 
-import Logger from './util/Logger'
+import Logger from './util/Logger.js'
 client.logger = new Logger()
 
 client.setMaxListeners(40)
@@ -77,9 +76,13 @@ client.dbl = dbl
 // initialization
 client.login(process.env.DISCORD_BOT_TOKEN)
 
-client.on('ready', () => {
+import clientSetup from './scripts/clientSetup.js'
+
+client.on('ready', async () => {
   // Logged in!
   console.log(`Logged in as ${client.user.tag} on shard ${client.shard.id}!`)
+
+  await clientSetup(client)
 
   // Refresh user activity
   client.user.setActivity(options.activity.game, { type: options.activity.type })
@@ -100,90 +103,6 @@ client.on('ready', () => {
   }, 1800000);
 });
 
-// configuration
-client.commands = new Discord.Collection();
-const commandFiles = fs.readdirSync('./commands');
-
-// add commands to list
-for (const commandFolder of commandFiles) {
-  //search through each folder
-  if(!commandFolder.includes('.DS_Store')) {
-    const folder = fs.readdirSync(`./commands/${commandFolder}`)
-    for(const file of folder) {
-      if(file == '.DS_Store') continue
-      const command = require(`./commands/${commandFolder}/${file}`)
-      client.commands.set(command.name, command);
-    }
-  }
-}
-
-
-client.games = new Discord.Collection()
-const folder = fs.readdirSync('./games')
-
-// add game classes to collection
-for(let game of folder) {
-  // ignore Game class
-  if(game == 'Game.js' || game == '.DS_Store') continue
-  let runFile = require(`./games/${game}/main`)
-  let metadata = require(`./games/${game}/metadata.json`)
-  client.games.set(metadata, runFile)
-}
-
-// Add moderators
-const moderators = process.env.MODERATORS
-client.moderators = moderators ? moderators.split(',') : []
-
-
-
-// provide help
-client.help = function(msg, command) {
-  const prefix = options.prefix
-  // find command in question
-  const helpCmd = client.commands.find(cmd => cmd.name === command.args.join(" ")) ||  client.commands.find(cmd => cmd.aliases.includes(command.args.join(" ")))
-  // find help for a specific command
-  if(helpCmd && (helpCmd.category !== 'dev' || msg.author.id == process.env.OWNER_ID)  && (helpCmd.category !== 'mod' || client.moderators.includes(msg.author.id))) {
-    msg.channel.sendMsgEmbed(`**__HELP:__**
-                    \nCommand: \`${prefix}${helpCmd.name}\`
-                    \nDescription: ${helpCmd.description}
-                    \nUsage: \`${prefix}${helpCmd.usage}\`
-                    \nAliases: \`${(helpCmd.aliases.join(", ")||'None')}\``)
-    // find list of commands
-  } else {
-      // sort each command by category
-      // get category list
-      var categories = []
-      for(var item of client.commands) {
-        var key = item[0],
-            value = item[1]
-        if(!categories.includes(value.category) && (value.category != 'dev' || msg.author.id == process.env.OWNER_ID) && (value.category !== 'mod' || client.moderators.includes(msg.author.id))) {
-          categories.push(value.category)
-        }
-      }
-
-      var embed = new Discord.RichEmbed()
-      embed.setTitle('Help - List of Commands for Gamebot')
-      embed.setThumbnail(client.user.avatarURL)
-      embed.setColor(options.colors.economy)
-      categories.forEach(category => {
-        var commandList = ''
-        client.commands.forEach(cmd => {
-          if(cmd.category == category) {
-            commandList += `\`${options.prefix}${cmd.usage}\` - ${cmd.description}\n`
-          }
-        })
-        embed.addField('Category: ' + category.toUpperCase(), commandList)
-      })
-      embed.addField('Category: IN-GAME',
-      '`' + options.prefix + 'kick <@user>` - Kick a user from the game (game leader only).\n`' +
-      options.prefix + 'add <@user>` - Add a user to the game (game leader only).\n`' +
-      options.prefix + 'join` - Join the game. Only available at the start of each game.\n`' +
-      options.prefix + 'leave` - Leave the game you are playing in that channel.\n')
-      msg.channel.send(embed)
-  }
-  return false
-}
-
 // handle commands
 client.on('message', async function(msg) {
   var prefix = options.prefix
@@ -197,7 +116,10 @@ client.on('message', async function(msg) {
     name: message[0],
     args: message.splice(1)
   }
-  const cmd = client.commands.find(cmd => cmd.name === command.name) || client.commands.find(cmd => cmd.aliases.includes(command.name))
+
+  console.log(client.commands.size)
+
+  const cmd = client.commands.find(cmd => cmd.name === command.name) || client.commands.find(cmd => cmd.aliases ? cmd.aliases.includes(command.name) : false)
 
   // if the message is just a tag, reveal prefix
   if((!command.name || command.name.length == 0) && command.args.length == 0) {

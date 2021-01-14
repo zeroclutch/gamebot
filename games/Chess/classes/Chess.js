@@ -1,11 +1,12 @@
-const Game = require(`../../Game`)
-import options from '../../../config/options'
-import metadata from '../metadata.json'
+import Game from `../../Game.js`
+import options from '../../../config/options.js'
+import metadata from '../metadata.js'
 
 import chess from 'chess'
-const { createCanvas, loadImage } = require('canvas')
-import Discord from '../../../discord_mod'
-import LichessAPI from './../classes/LichessAPI'
+import canvas from 'canvas'
+import { createCanvas, loadImage } from canvas
+import Discord from '../../../discord_mod.js'
+import LichessAPI from './../classes/LichessAPI.js'
 
 /**
  * The base class for Chess games.

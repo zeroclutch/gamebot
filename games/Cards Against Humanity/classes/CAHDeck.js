@@ -1,5 +1,5 @@
-const { whiteCards, blackCards } = require('../assets/cards')
-import BlackCard from './BlackCard'
+import  { whiteCards, blackCards } from ('../assets/cards.js')
+import BlackCard from './BlackCard.js'
 
 export default class CAHDeck {
     constructor(sets) {
@@ -49,4 +49,4 @@ export default class CAHDeck {
     }
 }
 
-module.exports.sets = []
+export let sets = []

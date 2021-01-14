@@ -1,12 +1,12 @@
-import Discord from './../../../discord_mod'
+import Discord from './../../../discord_mod.js'
 import fs from 'fs'
 
 // Get card sets from filesystem
 // Collection<Object metadata, Array.<String card> cards>
-var blackCards = new Discord.Collection()
+let _blackCards = new Discord.Collection()
 
 // Collection<Object metadata, Array.<String card> cards>
-var whiteCards = new Discord.Collection()
+let _whiteCards = new Discord.Collection()
 
 // get card sets
 const cardFolder = fs.readdirSync('./gameData/CardsAgainstHumanity')
@@ -18,9 +18,10 @@ for (const cardSet of cardFolder) {
     var metadata = JSON.parse(fs.readFileSync(`./gameData/CardsAgainstHumanity/${cardSet}/metadata.json`, 'utf8'))
     var blackCardList = fs.readFileSync(`./gameData/CardsAgainstHumanity/${cardSet}/black.md.txt`, 'utf8').split('\n')
     var whiteCardList = fs.readFileSync(`./gameData/CardsAgainstHumanity/${cardSet}/white.md.txt`, 'utf8').split('\n')
-    blackCards.set(metadata, blackCardList)
-    whiteCards.set(metadata, whiteCardList)
+    _blackCards.set(metadata, blackCardList)
+    _whiteCards.set(metadata, whiteCardList)
   }
 }
 
-export default { blackCards, whiteCards }
+export const blackCards = _blackCards
+export const whiteCards = _whiteCards

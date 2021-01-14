@@ -1,4 +1,4 @@
-{
+export default {
     "id": "sus",
     "name": "Survey Says",
     "playerCount": {

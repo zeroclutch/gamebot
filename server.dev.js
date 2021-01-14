@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 import Discord from './discord_mod.js';
-import options from './config/options'
+import options from './config/options.js'
 
 import request from 'request'
 import bodyParser from 'body-parser'

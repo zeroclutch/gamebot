@@ -1,5 +1,5 @@
-import Discord from './../../discord_mod'
-import options from './../../config/options'
+import Discord from './../../discord_mod.js'
+import options from './../../config/options.js'
 
 export default {
     name: 'shop',

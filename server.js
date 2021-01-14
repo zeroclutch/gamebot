@@ -1,7 +1,3 @@
-// Configure environment variabless
-import dotenv from 'dotenv'
-dotenv.config()
-
 // Initialize Discord bot
 import Discord from './discord_mod.js';
 import options from './config/options.js'
@@ -49,19 +45,23 @@ oauth2.initialize()
 import Logger from './util/Logger.js'
 const logger = new Logger()
 
-const pkg = require('./package.json')
+import fs from 'fs'
+const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'))
+
 
 // Update guild count
 let cachedGuilds = '??'
-updateGuilds = async () => {
+const updateGuilds = async () => {
   let guilds = await manager.fetchClientValues('guilds.size')
   if(guilds) cachedGuilds = guilds.reduce((prev, val) => prev + val, 0)
 }
 
 setInterval(updateGuilds, 60000)
 
+import path from 'path'
+
 // Handle all GET requests
-app.use('/', express.static(__dirname + '/public',{ extensions:['html']}))
+app.use('/', express.static(path.join(import.meta.url, 'public'),{ extensions:['html']}))
 
 app.get('/docs', (request, response) => {
   response.redirect('/docs/version/' + pkg.version)
@@ -70,7 +70,7 @@ app.get('/docs', (request, response) => {
   })
 })
 
-app.use('/docs/version/', express.static(__dirname + '/docs/gamebot/'))
+app.use('/docs/version/', express.static(path.join(import.meta.url, 'docs', 'gamebot')))
 
 app.get('/thanks', (request, response) => {
   response.sendFile(__dirname + '/public/thanks.html');

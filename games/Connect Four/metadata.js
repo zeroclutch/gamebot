@@ -1,4 +1,4 @@
-{
+export default {
     "id": "c4",
     "name": "Connect 4",
     "aliases": "Connect Four",

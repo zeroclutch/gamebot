@@ -1,4 +1,4 @@
-import options from '../config/options'
+import options from '../config/options.js'
 const $ = options.prefix
 
 const { test, testSync, testResults } = require('./classes/test')
