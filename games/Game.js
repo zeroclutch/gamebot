@@ -1,11 +1,11 @@
-import options from '../config/options'
+import options from '../config/options.js'
 import Discord from '../discord_mod.js'
 
 /**
  * The base class for all games, see {@tutorial getting_started} to get started.
  * @abstract
  */
-const Game = class Game {
+export default class Game {
     /**
      * An object with configurable game settings. This field is currently unused.
      * @typedef GameSettings
@@ -33,10 +33,10 @@ const Game = class Game {
          */
 
         /**
-         * The metadata from the game, typically read from a metadata.json file.
+         * The metadata from the game, typically read from a metadata.js file.
          * @type {GameMetadata}
          * @example
-         * this.metadata = require('./metadata.json')
+         * import this.metadata from './metadata.js'
          * @static
          */
         this.metadata = {
@@ -848,5 +848,3 @@ const Game = class Game {
         this.end()
     }
 }
-
-export default Game

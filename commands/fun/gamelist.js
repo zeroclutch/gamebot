@@ -1,6 +1,6 @@
 // create Collection<Game> of all the games
-import Discord from '../../discord_mod'
-import options from '../../config/options'
+import Discord from '../../discord_mod.js'
+import options from '../../config/options.js'
 
 
 export default {

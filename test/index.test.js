@@ -1,4 +1,4 @@
-import TestBot from './classes/TestBot'
+import TestBot from './classes/TestBot.js'
 
 export default async client => {
     // Initialize

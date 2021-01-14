@@ -1,4 +1,4 @@
-import options from './../../config/options'
+import options from './../../config/options.js'
 
 export default {
   name: 'draw',

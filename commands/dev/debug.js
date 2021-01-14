@@ -1,5 +1,5 @@
 // create Collection<Game> of all the games
-import options from './../../config/options'
+import options from './../../config/options.js'
 
 export default {
   name: 'debug',

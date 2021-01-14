@@ -1,6 +1,6 @@
-import Game from '../../Game'
-import options from '../../../config/options'
-import metadata from '../metadata.json'
+import Game from '../../Game.js'
+import options from '../../../config/options.js'
+import metadata from '../metadata.js'
 import fs from 'fs'
 
 var words = fs.readFileSync('./gameData/WordGames/Collins_Scrabble_Dictionary.txt', { encoding: 'utf-8' }, err => {

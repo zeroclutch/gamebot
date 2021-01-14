@@ -1,4 +1,4 @@
-{
+export default {
     "id": "ana",
     "name": "Anagrams",
     "playerCount": {

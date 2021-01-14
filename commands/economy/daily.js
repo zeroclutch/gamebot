@@ -1,4 +1,4 @@
-import options from './../../config/options'
+import options from './../../config/options.js'
 const DAILY_REWARDS = [
     100,
     250,

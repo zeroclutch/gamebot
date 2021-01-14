@@ -1,4 +1,5 @@
-import { MongoClient as MongoClient } from 'mongodb';
+import mongodb from 'mongodb';
+const { MongoClient: MongoClient } = mongodb;
 
 export default class DatabaseClient {
 

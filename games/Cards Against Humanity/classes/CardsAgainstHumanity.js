@@ -1,15 +1,15 @@
 // Global dependencies
-import options from '../../../config/options'
-import Discord from '../../../discord_mod'
-import metadata from '../metadata.json'
+import options from '../../../config/options.js'
+import Discord from '../../../discord_mod.js'
+import metadata from '../metadata.js'
 import fs from 'fs'
 
 // CAH dependencies
-import Game from '../../Game'
-const { createCanvas, registerFont, loadImage } = require('canvas')
-import { whiteCards } from '../assets/cards'
-import CAHDeck from './CAHDeck'
-import BlackCard from './BlackCard'
+import Game from '../../Game.js'
+import { createCanvas, registerFont, loadImage } from 'canvas'
+import { whiteCards } from '../assets/cards.js'
+import CAHDeck from './CAHDeck.js'
+import BlackCard from './BlackCard.js'
 
 const CARD_PACKS = {
     '90sn_pack': '90s',

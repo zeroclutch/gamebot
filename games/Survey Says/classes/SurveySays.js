@@ -1,10 +1,9 @@
-import Game from './../../Game'
-import options from './../../../config/options'
-import metadata from './../metadata.json'
-import { Collection } from './../../../discord_mod'
-import { decrypt } from './../../../util/cryptography'
+import Game from './../../Game.js'
+import options from './../../../config/options.js'
+import metadata from './../metadata.js'
+import { Collection } from './../../../discord_mod.js'
+import { decrypt } from './../../../util/cryptography.js'
 import fs from 'fs'
-import { response } from 'express'
 
 let questionList
 decrypt(process.env.PASS_KEY, fs.readFileSync('./games/Survey Says/assets/data.enc', 'utf8'))

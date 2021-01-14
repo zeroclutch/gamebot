@@ -1,6 +1,6 @@
 import axios from 'axios'
-import WebUIManager from './WebUIManager'
-import { Collection } from '../discord_mod'
+import WebUIManager from './WebUIManager.js'
+import { Collection } from '../discord_mod.js'
 
 /**
  * An API for creating WebUIs, which allow users to enter responses from a webpage

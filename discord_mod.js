@@ -101,4 +101,6 @@ Discord.Client.prototype.updateStatus = async function(itemID) {
   return null
 }
 
+const Collection = Discord.Collection
+export { Collection } 
 export default Discord

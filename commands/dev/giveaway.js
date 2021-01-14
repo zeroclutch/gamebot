@@ -1,5 +1,5 @@
-import options from './../../config/options'
-import Discord from './../../discord_mod'
+import options from './../../config/options.js'
+import Discord from './../../discord_mod.js'
 
 export default {
     name: 'giveaway',
