@@ -1,10 +1,10 @@
-import Game from `../../Game.js`
+import Game from '../../Game.js'
 import options from '../../../config/options.js'
 import metadata from '../metadata.js'
 
 import chess from 'chess'
 import canvas from 'canvas'
-import { createCanvas, loadImage } from canvas
+const { createCanvas, loadImage } = canvas
 import Discord from '../../../discord_mod.js'
 import LichessAPI from './../classes/LichessAPI.js'
 

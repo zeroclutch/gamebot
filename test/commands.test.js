@@ -1,7 +1,7 @@
 import options from '../config/options.js'
 const $ = options.prefix
 
-const { test, testSync, testResults } = require('./classes/test')
+import { test, testResults } from './classes/test.js'
 
 import assert from 'assert'
 

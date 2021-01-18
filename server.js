@@ -22,27 +22,27 @@ import axios from 'axios'
 import qs from 'qs';
 
 // Create manager for custom WebUIs
-import WebUIManager from './util/WebUIManager.js'
+import WebUIManager from './types/WebUIManager.js'
 const webUIManager = new WebUIManager(app)
 
-import DatabaseClient from './util/DatabaseClient.js'
+import DatabaseClient from './types/DatabaseClient.js'
 const dbClient = new DatabaseClient('server')
 dbClient.initialize()
 
 // Create shop manager
-import ShopGenerator from './util/ShopGenerator.js'
+import ShopGenerator from './types/ShopGenerator.js'
 const shopGenerator = new ShopGenerator({
   shopRefreshDelay: 60000
 })
 shopGenerator.initialize()
 
 // 
-import OAuth2Client from './util/OAuth2Client.js'
+import OAuth2Client from './types/OAuth2Client.js'
 const oauth2 = new OAuth2Client()
 oauth2.initialize()
 
 // Create logger
-import Logger from './util/Logger.js'
+import Logger from './types/Logger.js'
 const logger = new Logger()
 
 import fs from 'fs'
@@ -71,10 +71,6 @@ app.get('/docs', (request, response) => {
 })
 
 app.use('/docs/version/', express.static(path.join(import.meta.url, 'docs', 'gamebot')))
-
-app.get('/thanks', (request, response) => {
-  response.sendFile(__dirname + '/public/thanks.html');
-})
 
 app.get('/guilds', async (req, res) => {
   res.send({
@@ -202,7 +198,7 @@ app.post('/response/:ui_id', (req, res) => {
   // Check if UI ID is registered
   if(!UI) {
     res.status(404)
-    res.send(__dirname + '/public/404.html')
+    res.send(path.join(import.meta.url, 'public', '404'))
     throw new Error('Response webpage not found.')
   }
 

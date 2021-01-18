@@ -7,7 +7,7 @@ const OthelloGame = othello.Game;
 const PIECE_TYPES = othello.PIECE_TYPES;
 
 import canvas from 'canvas'
-import { createCanvas, loadImage } from canvas
+const { createCanvas, loadImage } = canvas
 
 import Discord from '../../../discord_mod.js'
 

@@ -15,7 +15,6 @@ export default {
     // for testing only
     const selection = args.join(' ').toLowerCase()
     const game = msg.client.games.find((game, meta) => meta.id == selection || meta.name.toLowerCase() == selection)
-    console.log(game)
     
     const gameOptions = args.slice(1).join(' ')
 
