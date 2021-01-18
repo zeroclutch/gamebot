@@ -1,3 +1,6 @@
+import Discord from '../../discord_mod.js'
+import options from '../../config/options.js'
+
 export default {
     name: 'help',
     usage: 'help',
@@ -30,9 +33,9 @@ export default {
                 }
             }
 
-            var embed = new Discord.RichEmbed()
+            var embed = new Discord.MessageEmbed()
             embed.setTitle('Help - List of Commands for Gamebot')
-            embed.setThumbnail(msg.client.user.avatarURL)
+            embed.setThumbnail(msg.client.user.avatarURL({dynamic: true}))
             embed.setColor(options.colors.economy)
             categories.forEach(category => {
                 var commandList = ''

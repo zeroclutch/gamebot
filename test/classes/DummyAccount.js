@@ -14,7 +14,7 @@ export default class DummyAccount {
     }
 
     get channel() {
-        return this.client.channels.get(this._channel)
+        return this.client.channels.cache.get(this._channel)
     }
 
     /**
@@ -23,7 +23,7 @@ export default class DummyAccount {
     init() {
         return new Promise(async (resolve, reject) => {
             try {
-                await this.client.login(this.token).catch(reject)
+                await this.login().catch(reject)
             } catch (error) {
                 reject(error)
             }
@@ -37,7 +37,7 @@ export default class DummyAccount {
                 this.client.once('ready', () => {
                     resolve(true)
                 })
-                this.client.login(token)
+                this.client.login(this.token)
             } catch(error) {
                 reject(error)
             }
@@ -51,6 +51,6 @@ export default class DummyAccount {
      * @param {time} time How long to wait before timing out
      */
     async command(command) {
-        this.channel.send(command)
+        await this.channel.send(command)
     }
 }

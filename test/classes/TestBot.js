@@ -19,7 +19,7 @@ export default class TestBot {
     }
 
     get channel() {
-        return this.client.channels.get(this._channel)
+        return this.client.channels.cache.get(this._channel)
     }
 
     get id() {
@@ -32,11 +32,10 @@ export default class TestBot {
     init() {
         return new Promise(async (resolve, reject) => {
             try {
-                await this.client.login(this.token).catch(reject)
-                const clientUser = await this.target.fetchUser(this.client.user.id)
+                await this.login().catch(reject)
+                let clientUser = await this.target.users.fetch(this.client.user.id, true)
 
                 // Pretend tester isn't a bot
-                clientUser.bot = false
                 clientUser.createDM = () => new Promise(resolve => resolve(this.channel))
 
                 // Log into dummy accounts and update bot status
@@ -44,9 +43,8 @@ export default class TestBot {
                     let account = this.accounts[i]
                     await account.login(account.token)
 
-                    let dummyUser = await this.target.fetchUser(this.client.user.id)
+                    let dummyUser = await this.target.users.fetch(account.client.user.id)
                     dummyUser.createDM = () => new Promise(resolve => resolve(this.channel))
-                    dummyUser.bot = false
                 }
                 resolve(true)
             } catch (error) {
@@ -59,17 +57,7 @@ export default class TestBot {
         return new Promise(async (resolve, reject) => {
             try {
                 /** Check if both bots are ready */
-                this.target.once('ready', () => {
-                    if(this.client.status === 1) {
-                        resolve(true)
-                    }
-                })
-                this.client.once('ready', () => {
-                    if(this.target.status === 1) {
-                        resolve(true)
-                    }
-                })
-                this.client.login(token)
+                this.client.login(this.token).then(resolve).catch(reject)
             } catch(error) {
                 reject(error)
             }
@@ -79,6 +67,7 @@ export default class TestBot {
      * 
      * @param {String} command The message to send as a command
      * @param {number} responseCount The number of responses to expect
+     * @param {Discord.Channel} channel The channel to expect responses in
      * @param {time} time How long to wait before timing out
      */
     async command(command, responseCount=1, channel=this.channel, time=10000) {
@@ -93,9 +82,10 @@ export default class TestBot {
      * @param {DummyAccount} account The account to send a command as
      * @param {String} command The message to send as a command
      * @param {number} responseCount The number of responses to expect
+     * @param {Discord.Channel} channel The channel to expect responses in
      * @param {time} time How long to wait before timing out
      */
-    async commandFrom(account, responseCount=1, channel=this.channel, time=10000) {
+    async commandFrom(account, command, responseCount=1, channel=this.channel, time=10000) {
         return new Promise(async (resolve, reject) => {
             await account.command(command).catch(reject)
             this.awaitMessages(channel, responseCount, time).then(resolve).catch(reject)
@@ -109,7 +99,7 @@ export default class TestBot {
      */
     awaitMessages(channel=this.channel, responseCount=1, time=10000) {
         return new Promise(async (resolve, reject) => {
-            channel.awaitMessages(m => m.author.id === this.target.user.id && m.channel.id === channel.id, { maxMatches: responseCount, time, errors: ['time'] })
+            channel.awaitMessages(m => m.author.id === this.target.user.id && m.channel.id === channel.id, { maxProcessed: responseCount, time, errors: ['time'] })
             .then(resolve)
             .catch(err => {
                 if(err.size === 0) {

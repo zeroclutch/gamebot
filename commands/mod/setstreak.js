@@ -15,7 +15,7 @@ export default {
           msg.channel.send(`There was an error with fake voting.`)
           return
         }
-        msg.client.fetchUser(userID, false).then(info => {
+        msg.client.users.fetch(userID, false).then(info => {
             collection.findOneAndUpdate(
             {
               userID

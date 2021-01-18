@@ -128,11 +128,11 @@ export default class Chess extends Game {
                 })
                 return
             }
-            let embed = new Discord.RichEmbed()
-            .attachFile({
+            let embed = new Discord.MessageEmbed()
+            .attachFiles([{
                 attachment: stream,
                 name: 'image.png'
-            })
+            }])
             .addField('Important Note:', `Remember to start all moves with the Gamebot's prefix, ${options.prefix}.`)
             .addField('How do I enter my moves?', `Gamebot uses [algebraic notation](https://en.wikipedia.org/wiki/Algebraic_notation_(chess)) for chess moves. This looks long, but it's really straightforward and common in Chess! It has two main parts:`)
             .addField('First...', `**Choose which piece you want to move.** Each piece is represented by a letter.
@@ -261,11 +261,11 @@ export default class Chess extends Game {
 
     async displayBoard(side) {
         let stream = await this.renderBoard(side)
-        let embed = new Discord.RichEmbed()
-        .attachFile({
+        let embed = new Discord.MessageEmbed()
+        .attachFiles([{
             attachment: stream,
             name: 'image.png'
-        })
+        }])
         .setDescription(`You have ${this.options['Timer']} seconds to make a move.`)
         .addField('ℹ️', 'To make a move, enter the bot prefix followed by a valid move in algebraic notation.', true)
         .addField('⏰', `Type ${options.prefix}timer to see the move time remaining.`, true)

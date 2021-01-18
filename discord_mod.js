@@ -92,9 +92,9 @@ Discord.User.prototype.hasItem = function (itemID) {
  */
 Discord.Client.prototype.updateStatus = async function(itemID) {
   // try fetching message
-  let statusChannel = this.channels.get(options.statusChannel)
+  let statusChannel = this.channels.cache.get(options.statusChannel)
   if(statusChannel) {
-    let message = (await statusChannel.fetchMessages({ limit: 1 }).catch(console.error)).first()
+    let message = (await statusChannel.messages.fetch({ limit: 1 }).catch(console.error)).first()
     this.latestStatus = { content: message.content, date: message.createdAt.toLocaleDateString() }
     return this.latestStatus
   }

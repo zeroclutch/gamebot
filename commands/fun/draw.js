@@ -16,7 +16,7 @@ export default {
         color: 5301186,
         author: {
           name: `${msg.author.tag}'s drawing`,
-          icon_url: msg.author.avatarURL
+          icon_url: msg.author.avatarURL({dynamic: true})
         },
         image: {
           url: 'attachment://file.png'

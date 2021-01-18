@@ -41,7 +41,7 @@ export default {
                 }
 
                 // make a new embed 
-                var embed = new Discord.RichEmbed()
+                var embed = new Discord.MessageEmbed()
                 embed.setTitle(`${msg.author.tag}'s Items - ${itemTypes.length} Categor${itemTypes.length == 1 ? 'y' : 'ies'}`)
                 embed.setColor(options.colors.economy)
 
@@ -58,7 +58,7 @@ export default {
                     return
                 }
                 // make a new embed 
-                var embed = new Discord.RichEmbed()
+                var embed = new Discord.MessageEmbed()
                 embed.setTitle(`${msg.author.tag}'s items - Category: ${categoryItems[0].type}`)
                 embed.setColor(options.colors.economy)
                 var description = ''

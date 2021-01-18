@@ -613,7 +613,7 @@ export default class Game {
      */
     async setLeader(member) {
         if(typeof member == 'string') {
-            member = await this.msg.guild.fetchMember(member).catch(async () => {
+            member = await this.msg.guild.members.fetch(member).catch(async () => {
                 await this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
                 return false
             })
@@ -640,14 +640,14 @@ export default class Game {
      */
     async addPlayer(member, message) {
         if(typeof member == 'string') {
-            member = await this.msg.guild.fetchMember(member).catch(async () => {
+            member = await this.msg.guild.members.fetch(member).catch(async () => {
                 await this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
                 return false
             })
             if(member === false) return
         }
 
-        if(!member || this.players.has(member.id) || member.bot) {
+        if(!member || this.players.has(member.id) || (member.bot && !this.client.isTestingMode)) {
             await this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
             return
         }
@@ -672,7 +672,7 @@ export default class Game {
      */
     async removePlayer(member, message) {
         if(typeof member == 'string') {
-            member = await this.msg.guild.fetchMember(member).catch(async () => {
+            member = await this.msg.guild.members.fetch(member).catch(async () => {
                 await this.channel.sendMsgEmbed('Invalid user.', 'Error!', options.colors.error).catch(console.error)
                 return false
             })
@@ -689,7 +689,7 @@ export default class Game {
             }).catch(console.error)
         }
         
-        if(!this.players.has(member.id) || !member || member.bot) {
+        if(!this.players.has(member.id) || !member || (member.bot && !this.client.isTestingMode)) {
             await this.channel.sendMsgEmbed('Invalid user.', 'Error!', options.colors.error).catch(console.error)
             return
         }
@@ -833,7 +833,7 @@ export default class Game {
             if(timeToDowntime > 0) {
                 let activeGames = await this.msg.client.shard.broadcastEval('this.channels.filter(c => c.game).size')
                 if(activeGames.reduce((prev, val) => prev + val) == 0) {
-                    let channel = this.msg.client.channels.get(options.loggingChannel)
+                    let channel = this.msg.client.channels.cache.get(options.loggingChannel)
                     if(channel) channel.send(`All games finished, <@${options.ownerID}>`)
                 }
             }

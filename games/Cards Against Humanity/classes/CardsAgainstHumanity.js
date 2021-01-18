@@ -324,12 +324,12 @@ export default class CardsAgainstHumanity extends Game {
             chromaSubsampling: false,
             progressive: true
         })
-        const embed = new Discord.RichEmbed()
+        const embed = new Discord.MessageEmbed()
         .setTitle('This round\'s black card')
-        .attachFile({
+        .attachFiles([{
             attachment: stream,
             name: fileName
-        })
+        }])
         .setFooter(this.blackCard.clean)
         .setImage(`attachment://${fileName}`)
         .setColor(4886754)

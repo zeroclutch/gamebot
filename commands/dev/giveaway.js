@@ -12,7 +12,7 @@ export default {
     args: false,
     run: async function(msg, args) {
         // initialize constants
-        const channel = msg.client.channels.get(args[0].replace(/\D/g, ''))
+        const channel = msg.client.channels.cache.get(args[0].replace(/\D/g, ''))
         var time =  parseFloat(args[1])
         const amount = parseInt(args[2])
         const reaction = args[3].replace(/\D/g, '')
