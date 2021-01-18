@@ -1,3 +1,15 @@
+# Branch v3
+
+## Welcome to v3!
+
+This branch is an in-progress update. What does v3 bring?
+
+* Discord.js v12 support
+* Node.js v14 support
+* Refactoring for readability
+* Additional under the hood changes
+
+---
 
 ![](https://cdn.discordapp.com/attachments/618344107290525698/618657323380113419/information.png)
 
