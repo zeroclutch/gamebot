@@ -25,7 +25,7 @@ export default {
                     description: game.about,
                     color: 4886754,
                     thumbnail: {
-                        url: msg.client.user.avatarURL
+                        url: msg.client.user.avatarURL({dynamic: true})
                     },
                     fields: [
                         {

@@ -27,7 +27,7 @@ export default {
                 description: `Type \`${options.prefix}play <game id>\` to start a new game.`,
                 color: options.colors.economy,
                 thumbnail: {
-                    url: msg.client.user.avatarURL
+                    url: msg.client.user.avatarURL({dynamic: true})
                 },
                 fields: games,
                 footer: {

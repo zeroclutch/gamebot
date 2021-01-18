@@ -4,7 +4,7 @@ export const eventName = 'message'
 
 export const handler = async (client, msg) => {
     const prefix = msg.guild.prefix || options.prefix
-    if (!msg.content.startsWith(prefix) || msg.author.bot) return
+    if (!msg.content.startsWith(prefix) || (msg.author.bot && !client.isTestingMode)) return
     if (msg.content.startsWith(`<@!${client.user.id}>`)) msg.content = msg.content.replace(`<@!${client.user.id}> `, prefix).replace(`<@!${client.user.id}>`, prefix)
     if (msg.content.startsWith(`<@${client.user.id}>`)) msg.content = msg.content.replace(`<@${client.user.id}> `, prefix).replace(`<@${client.user.id}>`, prefix)
 
@@ -38,7 +38,7 @@ export const handler = async (client, msg) => {
         // test for permissions
         if (cmd.permissions && cmd.permissions.length > 0) {
             // Fetch member
-            let member = await msg.guild.fetchMember(msg.author)
+            let member = await msg.guild.members.fetch(msg.author)
             if (
                 ((msg.author.id !== process.env.OWNER_ID && cmd.permissions.includes('GOD')) ||
                     (!client.moderators.includes(msg.author.id) && cmd.permissions.includes('MOD'))) ||

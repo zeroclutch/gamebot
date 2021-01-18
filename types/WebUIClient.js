@@ -90,7 +90,7 @@ const WebUIClient = class WebUIClient {
                     user: user.id,
                     variables,
                     type,
-                    shard: this.client.shard.id,
+                    shard: this.client.shard.ids[0],
                     killAt: Date.now() + (duration * 1000)
                 }
             })

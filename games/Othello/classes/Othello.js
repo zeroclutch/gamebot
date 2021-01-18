@@ -129,11 +129,11 @@ export default class Othello extends Game {
 
             let placeableSquares = this.board.getPlaceableSquares(this.side.toUpperCase()).map(s => '`' + options.prefix + columns[s._colIndex] + rows[s._rowIndex] + '`')
 
-            let embed = new Discord.RichEmbed()
-            .attachFile({
+            let embed = new Discord.MessageEmbed()
+            .attachFiles([{
                 attachment: stream,
                 name: 'image.png'
-            })
+            }])
             .addField('Important Note:', `Remember to start all moves with the Gamebot's prefix, ${options.prefix}.`)
             .addField('How do I enter my moves?', `Find the square you want to place your tile in. Look for its column letter, and look for its row number. For example, the top left square is h1, and the bottom right one is a8. Then, type ${options.prefix}<letter><number>, and replace <letter> and <number> with your tile's letter and number.`)
             .addField('Possible moves', `The possible moves right now are: ${placeableSquares.join(',')}`)
@@ -248,11 +248,11 @@ export default class Othello extends Game {
         let pieceCount = this.board.countByPieceType()
         let getPieces = (s) => pieceCount[s] > pieceCount[s == PIECE_TYPES.BLACK ? PIECE_TYPES.WHITE : PIECE_TYPES.BLACK] ? pieceCount[s] + ' ⭐️' : pieceCount[s] 
 
-        let embed = new Discord.RichEmbed()
-        .attachFile({
+        let embed = new Discord.MessageEmbed()
+        .attachFiles([{
             attachment: stream,
             name: 'image.png'
-        })
+        }])
         .setDescription(`You have ${this.options['Timer']} seconds to make a move.`)
         .setFooter(`Type ${options.prefix}movehelp for help.`)
         .setImage(`attachment://image.png`)
