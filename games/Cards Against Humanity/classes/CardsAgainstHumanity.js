@@ -6,7 +6,8 @@ import fs from 'fs'
 
 // CAH dependencies
 import Game from '../../Game.js'
-import { createCanvas, registerFont, loadImage } from 'canvas'
+import canvas from 'canvas';
+const { createCanvas, registerFont, loadImage } = canvas;
 import { whiteCards } from '../assets/cards.js'
 import CAHDeck from './CAHDeck.js'
 import BlackCard from './BlackCard.js'

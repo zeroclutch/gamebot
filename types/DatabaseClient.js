@@ -9,20 +9,51 @@ export default class DatabaseClient {
   constructor(label, options = {
     useNewUrlParser: true,
     useUnifiedTopology: true
-  }) {
+  }, uri) {
+    // A name for the client
     this.label = label
-    this.URI = process.env.MONGO_DB_URI;
+
+    // The connection URI
+    this.URI = process.env.MONGO_DB_URI || uri
+
+    // The MongoClient this belongs to
     this.client = new MongoClient(this.URI, options)
+
+    // Development mode converts this class to a mock shell to avoid throwing errors without a URI string
+    this.developmentMode = this.URI == undefined
   }
 
   /**
    * Sets up a DatabaseClient for use
    */
   async initialize() {
+    if(this.developmentMode) {
+      this.mock()
+      return
+    }
     await this.connect().catch(err => {
       console.error(err)
       this.initialize()
     })
+  }
+
+  /**
+   * Mocks a MongoDB database
+   */
+  mock() {
+    this.client = {
+      connect: () => {},
+      database: {
+        collection: () => {
+          return {
+            findOne: new Promise().resolve({}),
+            find: new Promise().resolve({}),
+            insertOne: new Promise().resolve({})
+          }
+        }
+      },
+      db: () => {}
+    }
   }
 
   /**

@@ -20,4 +20,4 @@ const LichessAPI = class LichessAPI {
     }
 }
 
-export defaultichessAPI
+export default LichessAPI

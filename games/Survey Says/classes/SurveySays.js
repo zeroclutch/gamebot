@@ -2,7 +2,7 @@ import Game from './../../Game.js'
 import options from './../../../config/options.js'
 import metadata from './../metadata.js'
 import { Collection } from './../../../discord_mod.js'
-import { decrypt } from './../../../util/cryptography.js'
+import { decrypt } from './../../../types/cryptography.js'
 import fs from 'fs'
 
 let questionList

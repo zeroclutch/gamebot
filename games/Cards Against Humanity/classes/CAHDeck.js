@@ -1,4 +1,4 @@
-import  { whiteCards, blackCards } from ('../assets/cards.js')
+import  { whiteCards, blackCards } from '../assets/cards.js'
 import BlackCard from './BlackCard.js'
 
 export default class CAHDeck {
