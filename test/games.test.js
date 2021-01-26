@@ -50,16 +50,6 @@ export default async (client, tester) => {
         collected = (await tester.commandFrom(tester.accounts[1], `${$}join`))
         assert.strictEqual(collected.first().embeds[0].description.includes(`The game can't have more than 2 players!`), true)
     })
-
-    await test('leave during join freely', async () => {
-        collected = (await tester.commandFrom(tester.accounts[0], `${$}leave`))
-        assert.strictEqual(collected.first().embeds[0].description.includes(`was removed from the game!`), true)
-    })
-
-    await test('add user with command (id)', async () => {
-        collected = (await tester.command(`${$}add ${tester.accounts[0].client.user.id}`, 3))
-        assert.strictEqual(collected.first().embeds[0].description.includes(`was added from the game!`), true)
-    })
     
     await test('configure chess options', async () => {
         collected = (await tester.command($ + 'start', 2))
@@ -77,23 +67,18 @@ export default async (client, tester) => {
         // check image hash
     })
 
-    await test('attempt to leave during game', async () => {
-        collected = (await tester.commandFrom(tester.accounts[0], `${$}leave`))
-        assert.strictEqual(collected.first().embeds[0].description, `The game can't have fewer than 2 players!`)
-    })
-
     await test('make moves in game', async () => {
         message = (await tester.commandFrom(tester.accounts[0], `${$}f4`)).first()
         // get message
-        assert.strictEqual(message.content.includes(`It's your turn to move as`), true)
+        assert.strictEqual(message.content.includes(`it's your turn to move as`), true)
 
         message = (await tester.command(`${$}e6`)).first()
         // get message
-        assert.strictEqual(message.content.includes(`It's your turn to move as`), true)
+        assert.strictEqual(message.content.includes(`it's your turn to move as`), true)
 
         message = (await tester.commandFrom(tester.accounts[0], `${$}g4`)).first()
         // get message
-        assert.strictEqual(message.content.includes(`It's your turn to move as`), true)
+        assert.strictEqual(message.content.includes(`it's your turn to move as`), true)
     })
 
     await test('checkmate and win game', async () => {

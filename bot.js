@@ -3,76 +3,48 @@ const client = new Discord.Client({
   messageCacheLifetime: 120,
   messageSweepInterval: 10,
   messageCacheMaxSize: 50,
-  disabledEvents: ['TYPING_START','MESSAGE_UPDATE', 'PRESENCE_UPDATE', 'GUILD_MEMBER_ADD', 'GUILD_MEMBER_REMOVE']
+  disabledEvents: ['TYPING_START','MESSAGE_UPDATE', 'PRESENCE_UPDATE', 'GUILD_MEMBER_ADD', 'GUILD_MEMBER_REMOVE'],
+  cacheGuilds: true,
+  cacheChannels: false,
+  cacheOverwrites: false,
+  cacheRoles: false,
+  cacheEmojis: false,
+  cachePresences: false
 })
 
 import options from './config/options.js'
 
-// Discord Bot List dependencies
-import DBL from 'dblapi.js';
-
-import DatabaseClient from './types/DatabaseClient.js'
-const dbClient = new DatabaseClient('shard ' + client.shard.ids[0])
-dbClient.initialize()
-.then(() => {
-  Object.defineProperty(client, 'dbClient', {
-    value: dbClient,
-    writable: false,
-    enumerable: true
-  })
-
-  Object.defineProperty(client, 'database', {
-    value: dbClient.database,
-    writable: false,
-    enumerable: true
-  })
-  
-  // configure downtime notifications
-  client.getTimeToDowntime = () => {
-    return new Promise((resolve, reject) => {
-      client.database.collection('status').findOne( { type: 'downtime' }).then((data, err) => {
-        if(err || !data) {
-          reject(console.error(err))
-          return
-        }
-        resolve(data.downtimeStart - Date.now())
-      })
-    })
+import { parentPort } from 'worker_threads'
+parentPort.on('message', async message => {
+  if(message.testMode) {
+    // Check if we are testing
+    if(client.readyAt && await client.channels.fetch(process.env.TEST_CHANNEL)) {
+      client.isTestingMode = true
+      const {default: test} = await import('./test/index.test.js')
+      test(client)
+    }
   }
 })
+
+// Discord Bot List dependencies
+import DBL from 'dblapi.js';
 
 // configure WebUIClient
 import WebUIClient from './types/WebUIClient.js'
 client.webUIClient = new WebUIClient(client)
 
+// Configure analytics
 import Logger from './types/Logger.js'
 client.logger = new Logger()
 
+// configure logging
+import { config, stdout } from './scripts/console.js'
+config(client)
+
 client.setMaxListeners(40)
 
-// configure Discord logging
-const oldConsole = {
-  error: console.error,
-  log: console.log
-}
-
-console.log = (message) => {
-  oldConsole.log(message)
-  if(!client.readyAt) return
-  const loggingChannel = client.channels.cache.get(options.loggingChannel)
-  if(loggingChannel) loggingChannel.sendMsgEmbed(JSON.stringify(message))
-}
-
-console.error = (message) => {
-  oldConsole.error(message)
-  if(!client.readyAt) return
-  const loggingChannel = client.channels.cache.get(options.loggingChannel)
-  if(loggingChannel) loggingChannel.sendMsgEmbed(JSON.stringify(message), 'Error', options.colors.error)
-}
-
-
 // configure DBL 
-var dbl
+let dbl
 if(process.env.DBL_TOKEN)
   dbl = new DBL(process.env.DBL_TOKEN)
 client.dbl = dbl
@@ -80,13 +52,14 @@ client.dbl = dbl
 // initialization
 client.login(process.env.DISCORD_BOT_TOKEN)
 
-import setup from './properties/setup.js'
+import setup from './scripts/setup.js'
 
 client.on('ready', async () => {
   // Logged in!
   console.log(`Logged in as ${client.user.tag} on shard ${client.shard.ids[0]}!`)
 
   // Setup bot
+  await setup.database(client)
   await setup.events(client)
   await setup.commands(client)
   await setup.moderators(client)
@@ -98,13 +71,6 @@ client.on('ready', async () => {
 
   // Update bot system status
   client.updateStatus()
-
-  // Check if we are testing
-  if(process.execArgv.includes('--title=test') && client.channels.cache.has(process.env.TEST_CHANNEL)) {
-    const {default: test} = await import('./test/index.test.js')
-    client.isTestingMode = true
-    test(client)
-  }
 
   // Post DBL stats every 30 minutes
   setInterval(() => {

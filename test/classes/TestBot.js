@@ -32,6 +32,7 @@ export default class TestBot {
     init() {
         return new Promise(async (resolve, reject) => {
             try {
+                await this.client.channels.fetch(this._channel, true)
                 await this.login().catch(reject)
                 let clientUser = await this.target.users.fetch(this.client.user.id, true)
 

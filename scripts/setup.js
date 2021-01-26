@@ -57,8 +57,41 @@ const moderators = async client => {
     client.moderators = moderators ? moderators.split(',') : []
 }
 
+
+import DatabaseClient from '../types/DatabaseClient.js'
+
+const database = async client => {
+    const dbClient = new DatabaseClient('shard ' + client.shard.ids[0])
+    await dbClient.initialize()
+    Object.defineProperty(client, 'dbClient', {
+        value: dbClient,
+        writable: false,
+        enumerable: true
+    })
+
+    Object.defineProperty(client, 'database', {
+        value: dbClient.database,
+        writable: false,
+        enumerable: true
+    })
+    
+    // configure downtime notifications
+    client.getTimeToDowntime = () => {
+        return new Promise((resolve, reject) => {
+        client.database.collection('status').findOne( { type: 'downtime' }).then((data, err) => {
+            if(err || !data) {
+            reject(console.error(err))
+            return
+            }
+            resolve(data.downtimeStart - Date.now())
+        })
+        })
+    }
+}
+
 export default {
     commands,
+    database,
     events,
     games,
     moderators,

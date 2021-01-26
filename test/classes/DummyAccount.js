@@ -22,6 +22,7 @@ export default class DummyAccount {
      */
     init() {
         return new Promise(async (resolve, reject) => {
+            await this.client.channels.fetch(this._channel, true)
             try {
                 await this.login().catch(reject)
             } catch (error) {
