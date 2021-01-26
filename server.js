@@ -4,21 +4,23 @@ import options from './config/options.js'
 const testMode = process.argv.includes('--title=test') 
 const manager = new Discord.ShardingManager('./bot.js', {
   token: options.token,
-  execArgv: testMode ? ['--title=test'] : [],
   respawn: testMode ? false : true,
-  //mode: 'worker'
+  mode: 'worker'
 })
 
-manager.spawn('auto', 5000).catch(err => console.error(err))
+const SPAWN_DELAY = 5000
+
+manager.on('shardCreate', shard => setTimeout(() => shard.send({ testMode }), SPAWN_DELAY))
+manager.spawn('auto', SPAWN_DELAY).catch(err => console.error(err))
 
 // Add server dependencies
-import request from 'request'
 import bodyParser from 'body-parser'
 import querystring from 'querystring';
 import express from 'express'
 const app = express()
 
 // Add requests
+import request from 'request'
 import axios from 'axios'
 import qs from 'qs';
 
@@ -134,7 +136,7 @@ app.post('/purchase', async (req, res) => {
 
     if(balance < item.cost) {
       res.send({
-        error: 'Not enough credits, purchase could not be completed.'
+        error: 'Not enough credits, purchase could not be completed.',
       })
       return
     }
@@ -310,7 +312,7 @@ app.post('/donations', (req, res) => {
 				// IPN message values depend upon the type of notification sent.
         // check for refund
         if(creditsEarned < 0) {
-          manager.shards.first().eval(`this.users.cache.get('${userID}').createDM().then(channel => channel.sendMsgEmbed('You were refunded \$${PAYMENT_AMOUNT} USD from Gamebot.', 'Refunded!', ${options.colors.economy})).catch(err => console.error(err))`)
+          manager.shards.first().eval(`this.users.fetch('${userID}', false).then(user => user.createDM().then(channel => channel.sendMsgEmbed('You were refunded \$${PAYMENT_AMOUNT} USD from Gamebot.', 'Refunded!', ${options.colors.economy})).catch(err => console.error(err)))`)
           return
         }
 
@@ -322,7 +324,7 @@ app.post('/donations', (req, res) => {
           $inc: { balance: ${creditsEarned} }\
         })`)
 
-        manager.shards.first().eval(`this.users.cache.get('${userID}').createDM().then(channel => channel.sendMsgEmbed('Thank you for your contribution to Gamebot! You spent \$${PAYMENT_AMOUNT} USD and received ${creditsEarned} credits.', 'Success!', ${options.colors.economy})).catch(err => console.error(err))`)
+        manager.shards.first().eval(`this.users.fetch('${userID}', false).then(user => user.createDM().then(channel => channel.sendMsgEmbed('Thank you for your contribution to Gamebot! You spent \$${PAYMENT_AMOUNT} USD and received ${creditsEarned} credits.', 'Success!', ${options.colors.economy})).catch(err => console.error(err)))`)
         
         logger.log('User donated', {
           amount: PAYMENT_AMOUNT
@@ -333,7 +335,7 @@ app.post('/donations', (req, res) => {
         console.error('A payment did not go through at ' + Date.now() + ' for user ' + userID)
         console.error(req.body)
         if(req.body.custom) {
-          manager.shards.first().eval(`this.users.cache.get('${req.body.custom}').createDM().then(channel => channel.sendMsgEmbed('There was an error processing your purchase. Please message @zero#1234 or join the Gamebot support server to have this issue resolved.', 'Error!')).catch(err => console.error(err))`)
+          manager.shards.first().eval(`this.users.fetch('${userID}', false).then((user => user.createDM().then(channel => channel.sendMsgEmbed('There was an error processing your purchase. Please message @zero#1234 or join the Gamebot support server to have this issue resolved.', 'Error!')).catch(err => console.error(err)))`)
         }
 			}
 		}

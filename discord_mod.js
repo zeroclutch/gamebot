@@ -1,17 +1,8 @@
 /**
  * Discord Mod. An extension of the discord.js module to streamline usage of this bot.
  */
-import Discord from 'discord.js'
+import Discord from 'discord.js-light'
 import options from './config/options.js'
-
-/**
- * Checks if a Discord.GuildMember has a role
- * @returns {Boolean} True if the member has that role
- */
-Discord.GuildMember.prototype.hasRole = function(roleID) {
-    if(this.roles.array().find(role=>role.id === roleID)) return true
-    return false
-  }
   
 /**
  * Asynchronous version of {@link https://discord.js.org/#/docs/main/11.5.1/class/TextChannel?scrollTo=startTyping|Discord.TextChannel.startTyping()}
@@ -92,7 +83,7 @@ Discord.User.prototype.hasItem = function (itemID) {
  */
 Discord.Client.prototype.updateStatus = async function(itemID) {
   // try fetching message
-  let statusChannel = this.channels.cache.get(options.statusChannel)
+  let statusChannel = await this.channels.fetch(options.statusChannel)
   if(statusChannel) {
     let message = (await statusChannel.messages.fetch({ limit: 1 }).catch(console.error)).first()
     this.latestStatus = { content: message.content, date: message.createdAt.toLocaleDateString() }

@@ -10,8 +10,8 @@ export default {
   dmCommand: true,
   args: false,
   run: async function(msg, args) {
-    const guilds = (await msg.client.shard.fetchClientValues('guilds.size')).reduce((prev, val) => prev + val, 0)
-    const users = (await msg.client.shard.fetchClientValues('users.size')).reduce((prev, val) => prev + val, 0)
+    const guilds = (await msg.client.shard.fetchClientValues('guilds.cache.size')).reduce((prev, val) => prev + val, 0)
+    const users = (await msg.client.shard.fetchClientValues('users.cache.size')).reduce((prev, val) => prev + val, 0)
     const usersInDB = await msg.client.database.collection('users').stats()
 
     // try fetching message

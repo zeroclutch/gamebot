@@ -24,14 +24,14 @@ export default class DatabaseClient {
   }
 
   /**
-   * Sets up a DatabaseClient for use
+   * Sets up a DatabaseClient for use by connecting to the database instance
    */
   async initialize() {
     if(this.developmentMode) {
       this.mock()
       return
     }
-    await this.connect().catch(err => {
+     return await this.connect().catch(err => {
       console.error(err)
       this.initialize()
     })
@@ -70,6 +70,16 @@ export default class DatabaseClient {
         console.log(`Database client ${this.label} connected to database`);
         this.database = this.client.db(process.env.MONGO_DB_NAME)
       })
+    })
+  }
+
+  /**
+   * Reconnects to the item database
+   */
+  reconnect() {
+    return new Promise((resolve, reject) => {
+      this.databse = null
+      this.initialize.then(resolve)
     })
   }
 

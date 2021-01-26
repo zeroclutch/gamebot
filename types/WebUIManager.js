@@ -1,4 +1,4 @@
-import Discord from 'discord.js';
+import Discord from 'discord.js-light';
 const { Collection } = Discord;
 import fs from 'fs'
 
