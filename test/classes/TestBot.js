@@ -18,10 +18,6 @@ export default class TestBot {
         this.client = new Discord.Client()
     }
 
-    get channel() {
-        return this.client.channels.cache.get(this._channel)
-    }
-
     get id() {
         return this.client.user.id
     }
@@ -32,17 +28,17 @@ export default class TestBot {
     init() {
         return new Promise(async (resolve, reject) => {
             try {
-                await this.client.channels.fetch(this._channel, true)
                 await this.login().catch(reject)
-                let clientUser = await this.target.users.fetch(this.client.user.id, true)
+                this.channel = await this.client.channels.fetch(this._channel)
 
+                let clientUser = await this.target.users.fetch(this.client.user.id, true)
                 // Pretend tester isn't a bot
                 clientUser.createDM = () => new Promise(resolve => resolve(this.channel))
 
                 // Log into dummy accounts and update bot status
                 for(let i = 0; i < this.accounts.length; i++) {
                     let account = this.accounts[i]
-                    await account.login(account.token)
+                    await account.init()
 
                     let dummyUser = await this.target.users.fetch(account.client.user.id)
                     dummyUser.createDM = () => new Promise(resolve => resolve(this.channel))

@@ -1,7 +1,7 @@
-import options from '../config/options.js'
+import options from '../../config/options.js'
 const $ = options.prefix
 
-import { test, testResults } from './classes/test.js'
+import { test, testResults } from '../classes/test.js'
 
 import { strict as assert } from 'assert'
 
@@ -10,6 +10,7 @@ let message, collected
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 export default async (client, tester) => {
+    /** ANAGRAMS **/
     await test('start anagrams game', async () => {
         collected = (await tester.command($ + 'play ana', 2))
         assert.strictEqual(collected.first().embeds[0].title, tester.client.user.tag + ' is starting a Anagrams game!')
@@ -35,6 +36,7 @@ export default async (client, tester) => {
         assert.strictEqual(message.embeds[0].title.includes(`Game over!`), true)
     })
 
+    /** ANAGRAMS **/
     await test('start chess game with full name', async () => {
         collected = (await tester.command($ + 'play chess', 2))
         assert.strictEqual(collected.first().embeds[0].title, tester.client.user.tag + ' is starting a Chess game!')
@@ -84,10 +86,13 @@ export default async (client, tester) => {
     await test('checkmate and win game', async () => {
         collected = (await tester.command(`${$}Qh4`, 3))
         // get message
-        assert.strictEqual(collected.first().embeds[0].title, `View the computer analysis and game recap.`)
-        // get message
-        assert.strictEqual(collected.last().embeds[0].title, `This game contains unlockable content!`)
+        let titles = collected.array().map(m => m.embeds[0].title)
+        assert.strictEqual(titles.includes(`View the computer analysis and game recap.`), true)
+        assert.strictEqual(titles.includes(`This game contains unlockable content!`), true)
+        assert.strictEqual(titles.includes(`Game over!`), true)
     })
+
+    /** Cards Against Humanity? **/
 
     testResults()
 }

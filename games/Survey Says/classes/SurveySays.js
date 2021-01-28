@@ -1,8 +1,8 @@
-import Game from './../../Game.js'
+import Game from '../../_Game/main.js'
 import options from './../../../config/options.js'
 import metadata from './../metadata.js'
 import { Collection } from './../../../discord_mod.js'
-import { decrypt } from './../../../types/cryptography.js'
+import { decrypt } from './../../../types/util/cryptography.js'
 import fs from 'fs'
 
 let questionList

@@ -1,6 +1,5 @@
-import options from './../../config/options.js'
-
-export default {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'credit',
     usage: 'credit <user> <amount>',
     aliases: [],
@@ -24,4 +23,4 @@ export default {
         })
 
     }
-}
+})

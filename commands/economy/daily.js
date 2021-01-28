@@ -13,7 +13,8 @@ const HOUR_LENGTH = (60 * 60 * 1000)
 const RESET_LENGTH = (12 * HOUR_LENGTH)
 const DAY_LENGTH = (24 * HOUR_LENGTH)
 
-export default {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'daily',
     usage: 'daily',
     aliases: ['claim', 'vote'],
@@ -49,7 +50,7 @@ export default {
                 msg.channel.send({
                     embed: {
                         title: 'Claim your daily rewards!',
-                        description: `[Vote for Gamebot on top.gg here](https://top.gg/bot/620307267241377793/vote) and receive credits each day! After voting, type \`${options.prefix}daily\` to claim your rewards.`,
+                        description: `[Vote for Gamebot on top.gg here](https://top.gg/bot/620307267241377793/vote) and receive credits each day! After voting, type \`${msg.channel.prefix}daily\` to claim your rewards.`,
                         fields: [{
                             name: 'Current vote streak',
                             value: voteStreak(info.voteStreak)
@@ -113,8 +114,8 @@ export default {
                 })
             } else {    
                 // this should never happen
-                msg.channel.sendMsgEmbed(`There seems to be an issue with the ${options.prefix}daily command. Please submit a bug report in the [support server](${options.serverInvite}).`, 'Error!')
+                msg.channel.sendMsgEmbed(`There seems to be an issue with the ${msg.channel.prefix}daily command. Please submit a bug report in the [support server](${options.serverInvite}).`, 'Error!')
             }
         })
     }
-  }
+  })

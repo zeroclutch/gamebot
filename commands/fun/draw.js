@@ -1,6 +1,7 @@
 import options from './../../config/options.js'
 
-export default {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
   name: 'draw',
   usage: 'draw',
   aliases: [],
@@ -59,4 +60,4 @@ export default {
       console.error(err)
     })
   }
-}
+})

@@ -1,7 +1,8 @@
 import Discord from './../../discord_mod.js'
 import options from './../../config/options.js'
 
-export default {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'inventory',
     usage: 'inventory <item type>',
     aliases: ['inv'],
@@ -13,11 +14,11 @@ export default {
     run: async function(msg, args) {
         const collection = msg.client.database.collection('items')
         const itemType = args.join(' ')
-        var items = []
+        let items = []
         msg.author.fetchDBInfo().then(async info => {
             // check if user has items
             if(info.unlockedItems.length == 0) {
-                msg.channel.sendMsgEmbed(`View available items in the shop by typing \`${options.prefix}shop\`.`, 'You do not have any items in your inventory!', 13632027)
+                msg.channel.sendMsgEmbed(`View available items in the shop by typing \`${msg.channel.prefix}shop\`.`, 'You do not have any items in your inventory!', 13632027)
                 return
             }
 
@@ -32,16 +33,16 @@ export default {
 
             // get categories
             if(!itemType) {
-                var itemTypes = []
-                for(var i = 0; i < inventoryItems.length; i++) {
-                    var item = inventoryItems[i]
+                let itemTypes = []
+                for(let i = 0; i < inventoryItems.length; i++) {
+                    let item = inventoryItems[i]
                     if(!itemTypes.includes(item.type)) {
                         itemTypes.push(item.type)
                     }
                 }
 
                 // make a new embed 
-                var embed = new Discord.MessageEmbed()
+                let embed = new Discord.MessageEmbed()
                 embed.setTitle(`${msg.author.tag}'s Items - ${itemTypes.length} Categor${itemTypes.length == 1 ? 'y' : 'ies'}`)
                 embed.setColor(options.colors.economy)
 
@@ -49,28 +50,28 @@ export default {
                     const count = inventoryItems.filter(item => item.type == itemType).length
                     embed.addField(`${itemType} - ${count} item${count == 1 ? '' : 's'}`, inventoryItems.filter(item => item.type == itemType).map(item => { return item.friendlyName }).join(', '))
                 })
-                embed.setFooter(`To see a list of your items for a category, type ${options.prefix}inventory <category name>`)
+                embed.setFooter(`To see a list of your items for a category, type ${msg.channel.prefix}inventory <category name>`)
                 await msg.channel.send({ embed })
             } else {
                 const categoryItems = inventoryItems.filter(item => item.type.toLowerCase() == itemType.toLowerCase())
                 if(categoryItems.length == 0) {
-                    msg.channel.sendMsgEmbed(`View available items in the shop by typing \`${options.prefix}shop\`. Make sure you are spelling the category correctly.`, 'You do not have any items in this category!', 13632027)
+                    msg.channel.sendMsgEmbed(`View available items in the shop by typing \`${msg.channel.prefix}shop\`. Make sure you are spelling the category correctly.`, 'You do not have any items in this category!', 13632027)
                     return
                 }
                 // make a new embed 
-                var embed = new Discord.MessageEmbed()
+                let embed = new Discord.MessageEmbed()
                 embed.setTitle(`${msg.author.tag}'s items - Category: ${categoryItems[0].type}`)
                 embed.setColor(options.colors.economy)
-                var description = ''
+                let description = ''
                 categoryItems.forEach(item => {
                     description += `${item.cost}${options.creditIcon} | **${item.friendlyName}** | **ID:** \`${item.itemID}\`\n`
                 })
                 embed.setDescription(description)
-                embed.setFooter(`To see more info about an item, use ${options.prefix}item info <id>.`)
+                embed.setFooter(`To see more info about an item, use ${msg.channel.prefix}item info <id>.`)
 
                 let message
                 await msg.channel.send({ embed })
             }
         })
     }
-  }
+  })

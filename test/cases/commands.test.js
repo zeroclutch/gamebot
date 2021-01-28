@@ -1,7 +1,7 @@
-import options from '../config/options.js'
+import options from '../../config/options.js'
 const $ = options.prefix
 
-import { test, testResults } from './classes/test.js'
+import { test, testResults } from '../classes/test.js'
 
 import assert from 'assert'
 

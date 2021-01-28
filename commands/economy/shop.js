@@ -1,7 +1,8 @@
 import Discord from './../../discord_mod.js'
 import options from './../../config/options.js'
 
-export default {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'shop',
     usage: 'shop',
     aliases: [],
@@ -13,4 +14,4 @@ export default {
     run: async function(msg, args) {
         msg.channel.sendMsgEmbed(`See our new shop at [gamebot.rocks/shop](${process.env.BASE_URL}/shop)`)
     }
-  }
+  })

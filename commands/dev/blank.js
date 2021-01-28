@@ -1,4 +1,5 @@
-export default {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
   name: 'blank',
   usage: 'blank',
   aliases: ['blank'],
@@ -9,4 +10,4 @@ export default {
   args: false,
   run: function(msg, args) {
   }
-}
+})

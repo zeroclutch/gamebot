@@ -1,7 +1,8 @@
 // create Collection<Game> of all the games
 import options from './../../config/options.js'
 
-export default {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
   name: 'play',
   usage: 'play <game>',
   aliases: ['p'],
@@ -18,22 +19,7 @@ export default {
     
     const gameOptions = args.slice(1).join(' ')
 
-    // check if game is playing in channel
-    if(msg.channel.gamePlaying) {
-      msg.channel.sendMsgEmbed(`A game is already playing in this channel! End that game first by using the \`${options.prefix}end\` command.`, 'Uh oh...', 13632027)
-      return
-    }
-    if(!game) {
-      msg.channel.sendMsgEmbed(`Game not found. Make sure you typed the game ID correctly. You can see the game IDs by typing \`${options.prefix}gamelist\``, 'Error!', 13632027)
-      return
-    }
-
-    msg.channel.gamePlaying = true
+    msg.client.gameManager.start(game, msg, gameOptions)
     
-    // create new instance of game
-    msg.channel.game = new (game)(msg, gameOptions)
-
-    // run initialization of game
-    msg.channel.game.init()
   }
-}
+})

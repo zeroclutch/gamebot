@@ -25,27 +25,27 @@ import axios from 'axios'
 import qs from 'qs';
 
 // Create manager for custom WebUIs
-import WebUIManager from './types/WebUIManager.js'
+import WebUIManager from './types/webui/WebUIManager.js'
 const webUIManager = new WebUIManager(app)
 
-import DatabaseClient from './types/DatabaseClient.js'
+import DatabaseClient from './types/database/DatabaseClient.js'
 const dbClient = new DatabaseClient('server')
 dbClient.initialize()
 
 // Create shop manager
-import ShopGenerator from './types/ShopGenerator.js'
+import ShopGenerator from './types/database/ShopGenerator.js'
 const shopGenerator = new ShopGenerator({
   shopRefreshDelay: 60000
 })
 shopGenerator.initialize()
 
 // 
-import OAuth2Client from './types/OAuth2Client.js'
+import OAuth2Client from './types/auth/OAuth2Client.js'
 const oauth2 = new OAuth2Client()
 oauth2.initialize()
 
 // Create logger
-import Logger from './types/Logger.js'
+import Logger from './types/log/Logger.js'
 const logger = new Logger()
 
 import fs from 'fs'

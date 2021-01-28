@@ -5,7 +5,7 @@ import metadata from '../metadata.js'
 import fs from 'fs'
 
 // CAH dependencies
-import Game from '../../Game.js'
+import Game from '../../_Game/main.js'
 import canvas from 'canvas';
 const { createCanvas, registerFont, loadImage } = canvas;
 import { whiteCards } from '../assets/cards.js'
@@ -120,8 +120,6 @@ export default class CardsAgainstHumanity extends Game {
         
         if(!this.settings.handLimit)   this.settings.handLimit   = 10
         if(!this.settings.pointsToWin) this.settings.pointsToWin = 5
-
-        this.messageListener = msg => {this.onMessage(msg)}
     }
 
     get leader () { return this.gameMaster }
@@ -130,7 +128,6 @@ export default class CardsAgainstHumanity extends Game {
      * Initialize the game. Called before the play() method at the start of each game. 
      */
     async gameInit() {
-        this.stage = 'init'
         // create list of possible card czars
         this.updateCzars()
 
@@ -178,14 +175,14 @@ export default class CardsAgainstHumanity extends Game {
                 choices: await this.renderSetList(),
                 default: ['**Base Set** *(460 cards)*', '**The First Expansion** *(80 cards)*', '**The Second Expansion** *(75 cards)*', '**The Third Expansion** *(75 cards)*', '**The Fourth Expansion** *(70 cards)*', '**The Fifth Expansion** *(75 cards)*', '**The Sixth Expansion** *(75 cards)*'],
                 type: 'checkboxes',
-                note: `You can purchase more packs in the shop, using the command \`${options.prefix}shop cah\``
+                note: `You can purchase more packs in the shop, using the command \`${this.channel.prefix}shop cah\``
             },
             {
                 friendlyName: 'Card Back',
                 type: 'radio',
                 choices: await this.renderCardBackList(),
                 default: 'Default',
-                note: `Select a card back. Type \`${options.prefix}shop cah\` to view the card backs available for purchase.`
+                note: `Select a card back. Type \`${this.channel.prefix}shop cah\` to view the card backs available for purchase.`
             },
             {
                 friendlyName: 'Timer',
@@ -207,8 +204,8 @@ export default class CardsAgainstHumanity extends Game {
 
     async renderSetList () {
          // Build the list of sets
-         var setList = []
-         var whiteCount = 0
+         let setList = []
+         let whiteCount = 0
 
         // check available setLists
         this.availableSets = this.settings.sets.slice(0)
@@ -219,7 +216,7 @@ export default class CardsAgainstHumanity extends Game {
             info.unlockedItems.forEach(item => {
                 if(CARD_PACKS[item]) {
                     // map item ids to availableSets
-                    var packs = CARD_PACKS[item]
+                    let packs = CARD_PACKS[item]
                     if(typeof packs == 'string') this.availableSets.push(packs)
                     else this.availableSets = this.availableSets.concat(packs)
                 }
@@ -236,7 +233,7 @@ export default class CardsAgainstHumanity extends Game {
     }
 
     async renderCardBackList () {
-        var cardBackList = ['Default']
+        let cardBackList = ['Default']
         await this.gameMaster.fetchDBInfo().then(info => {
             // get unlocked items
             info.unlockedItems.forEach(item => {
@@ -299,7 +296,7 @@ export default class CardsAgainstHumanity extends Game {
         let wordList = cardText.split(/[\n\s]/g),
             textLine = '',
             textTotal = ''
-        for(var i = 0; i < wordList.length; i++) {
+        for(let i = 0; i < wordList.length; i++) {
             // See if adding the next word would exceed the size
             if(ctx.measureText(textLine + wordList[i]).width > 255) {
                 textTotal += textLine + '\n'
@@ -344,7 +341,7 @@ export default class CardsAgainstHumanity extends Game {
 
     renderPlayerHand(player) {
         // write out the list of cards
-        var cardList = ''
+        let cardList = ''
         for(let i = 0; i < player.cards.length; i++) {
             let card = player.cards[i]
             if(card == '') continue
@@ -354,8 +351,8 @@ export default class CardsAgainstHumanity extends Game {
     }
 
     renderSubmissionStatus() {
-        var links = ''
-        for(var item of this.players) {
+        let links = ''
+        for(let item of this.players) {
             // create reference variables
             let key = item[0]
             let player = item[1]
@@ -375,9 +372,9 @@ export default class CardsAgainstHumanity extends Game {
     }
 
     renderCardChoices() {
-        var text = `The selected black card is: **${this.blackCard.escaped}**\n\n${this.czar.user}, select one of the white card choices below.\n\n`
+        let text = `The selected black card is: **${this.blackCard.escaped}**\n\n${this.czar.user}, select one of the white card choices below.\n\n`
         
-        for(var i = 0; i < this.submittedCards.length; i++) {
+        for(let i = 0; i < this.submittedCards.length; i++) {
             let card = this.submittedCards[i].card.join(', ')
             text += `**${i + 1}:** ${card}\n`
         }
@@ -385,7 +382,7 @@ export default class CardsAgainstHumanity extends Game {
     }
      
     renderLeaderboard() {
-        var text = ''
+        let text = ''
         this.players.forEach(player => {
             text += `${player.user}: ${player.score || 0}\n`
         })
@@ -398,7 +395,7 @@ export default class CardsAgainstHumanity extends Game {
 
         // reset submissions
         this.submittedCards = []
-        for(var item of this.players) {
+        for(let item of this.players) {
             // create reference variables
             let key = item[0]
             let player = item[1]
@@ -449,7 +446,7 @@ export default class CardsAgainstHumanity extends Game {
             if(this.ending) return
             collected.forEach(async m => {
                 let index = parseInt(m.content) - 1
-                var winner = this.submittedCards[index]
+                let winner = this.submittedCards[index]
 
                 // announce winner
                 await this.msg.channel.send({
@@ -461,7 +458,7 @@ export default class CardsAgainstHumanity extends Game {
                 })
 
                 // give the winning player a point
-                var winningPlayer = winner.player 
+                let winningPlayer = winner.player 
                 winningPlayer.score = winningPlayer.score || 0
                 winningPlayer.score++ 
 
@@ -522,8 +519,8 @@ export default class CardsAgainstHumanity extends Game {
 
         // check if game end
         if(this.ending) {
-            var winner = { score: -1 }
-            for(var item of this.players) {
+            let winner = { score: -1 }
+            for(let item of this.players) {
                 // create reference variables
                 let key = item[0]
                 let player = item[1]
@@ -544,7 +541,7 @@ export default class CardsAgainstHumanity extends Game {
 
     async playGame() {
         if(this.ending) return
-        this.stage = 'playing'
+        this.stage = 'play'
 
         // choose a black card
         // only select single-blanks
@@ -568,10 +565,10 @@ export default class CardsAgainstHumanity extends Game {
         })
 
         // draw cards 
-        for(var item of this.players) {
+        for(let item of this.players) {
             // create reference variables
-            var key = item[0]
-            var player = item[1]
+            let key = item[0]
+            let player = item[1]
 
             // skip the czar 
             if(key == this.czar.user.id) continue
@@ -625,8 +622,8 @@ export default class CardsAgainstHumanity extends Game {
 
             m.delete()
 
-            var player = this.players.get(m.author.id)
-            var cardRemoved = parseInt(m.content) - 1
+            let player = this.players.get(m.author.id)
+            let cardRemoved = parseInt(m.content) - 1
             // tell user which card they selected
             player.dmChannel.sendMsgEmbed(`You have selected: ${player.cards[cardRemoved]}\n\n**Return to game chat: <#${this.channel.id}>**`)
 
@@ -638,7 +635,7 @@ export default class CardsAgainstHumanity extends Game {
             player.submitted = true
 
             // update in chat
-            this.msg.channel.fetchMessage(this.lastMessageID).then(message => {
+            this.msg.channel.messages.fetch(this.lastMessageID).then(message => {
                 message.edit('', {
                     embed: {
                         title: 'Submission status',
@@ -660,10 +657,10 @@ export default class CardsAgainstHumanity extends Game {
         collector.on('end', (collected, reason) => {
             if(this.ending) return
             // check all players at the end
-            for(var item of this.players) {
+            for(let item of this.players) {
                 // create reference variables
-                var key = item[0]
-                var player = item[1]
+                let key = item[0]
+                let player = item[1]
 
                 // handle timeout
                 if(reason == 'time' && !player.submitted && this.czar.user.id != player.user.id) {
@@ -681,7 +678,7 @@ export default class CardsAgainstHumanity extends Game {
             }
 
             // update in chat
-            this.msg.channel.fetchMessage(this.lastMessageID).then(message => {
+            this.msg.channel.messages.fetch(this.lastMessageID).then(message => {
                 message.edit('', {
                     embed: {
                         title: 'Submission status',

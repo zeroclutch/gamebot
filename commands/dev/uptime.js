@@ -1,4 +1,5 @@
-export default {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'uptime',
     usage: 'uptime',
     aliases: [],
@@ -9,12 +10,12 @@ export default {
     args: false,
     run: function(msg, args) {
         let s = (Date.now() - msg.client.readyAt.valueOf())
-        var ms = s % 1000;
+        let ms = s % 1000;
         s = (s - ms) / 1000;
-        var secs = s % 60;
+        let secs = s % 60;
         s = (s - secs) / 60;
-        var mins = s % 60;
-        var hrs = (s - mins) / 60;
+        let mins = s % 60;
+        let hrs = (s - mins) / 60;
         msg.channel.sendMsgEmbed(`Gamebot has been running for ${hrs} hours, ${mins} minutes, ${secs}.${ms} seconds`)
     }
-  }
+})

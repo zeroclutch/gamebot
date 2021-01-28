@@ -1,9 +1,7 @@
 import Discord from "./discord_mod.js"
 const client = new Discord.Client({
-  messageCacheLifetime: 120,
-  messageSweepInterval: 10,
-  messageCacheMaxSize: 50,
-  disabledEvents: ['TYPING_START','MESSAGE_UPDATE', 'PRESENCE_UPDATE', 'GUILD_MEMBER_ADD', 'GUILD_MEMBER_REMOVE'],
+  disabledEvents: ['TYPING_START','MESSAGE_UPDATE'],
+  ws: { intents: Discord.Intents.NON_PRIVILEGED },
   cacheGuilds: true,
   cacheChannels: false,
   cacheOverwrites: false,
@@ -29,12 +27,16 @@ parentPort.on('message', async message => {
 // Discord Bot List dependencies
 import DBL from 'dblapi.js';
 
+// Configure GameManager
+import GameManager from './types/games/GameManager.js'
+client.gameManager = new GameManager(client)
+
 // configure WebUIClient
-import WebUIClient from './types/WebUIClient.js'
+import WebUIClient from './types/webui/WebUIClient.js'
 client.webUIClient = new WebUIClient(client)
 
 // Configure analytics
-import Logger from './types/Logger.js'
+import Logger from './types/log/Logger.js'
 client.logger = new Logger()
 
 // configure logging
@@ -60,10 +62,10 @@ client.on('ready', async () => {
 
   // Setup bot
   await setup.database(client)
-  await setup.events(client)
-  await setup.commands(client)
-  await setup.moderators(client)
   await setup.games(client)
+  await setup.commands(client)
+  await setup.events(client)
+  await setup.moderators(client)
 
   // Refresh user activity
   client.user.setActivity(options.activity.game, { type: options.activity.type })

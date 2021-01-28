@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node -r dotenv/config server.js",
-    "debug": "node -r dotenv/config --nolazy --inspect-brk=9229 server.js",
+    "debug": "node --trace-warnings -r dotenv/config --nolazy --inspect-brk=9229 server.js",
     "dev": "node -r dotenv/config server.dev.js",
     "generate-docs": "jsdoc -c .jsdoc.json",
     "test": "node -r dotenv/config server.js --title=test"

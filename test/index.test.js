@@ -1,9 +1,9 @@
 import TestBot from './classes/TestBot.js'
 
 // import test suites
-import commandTest from './commands.test.js'
-import apiTest from './api.test.js'
-import gameTest from './games.test.js'
+import commandTest from './cases/commands.test.js'
+import apiTest from './cases/api.test.js'
+import gameTest from './cases/games.test.js'
 import DummyAccount from './classes/DummyAccount.js'
 
 export default async client => {

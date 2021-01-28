@@ -1,6 +1,8 @@
 import axios from 'axios'
 import WebUIManager from './WebUIManager.js'
-import { Collection } from '../discord_mod.js'
+import { Collection } from '../../discord_mod.js'
+
+// TODO: Use Worker messages
 
 /**
  * An API for creating WebUIs, which allow users to enter responses from a webpage

@@ -1,4 +1,5 @@
-export default {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'ping',
     usage: 'ping',
     aliases: ['latency', 'test'],
@@ -13,4 +14,4 @@ export default {
         const resMessage = `Pong!\nServer latency: \`${Math.max(response, 1)}ms\``
         msg.channel.send(resMessage).then(m => m.edit(resMessage + `\nAPI latency: \`${m.createdTimestamp - time}ms\``))
     }
-  }
+})

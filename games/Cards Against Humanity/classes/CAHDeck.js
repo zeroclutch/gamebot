@@ -37,7 +37,7 @@ export default class CAHDeck {
         count = isNaN(count) ? 1 : count
         if(deck == 'white') deck = this.whiteCards
         if(deck == 'black') deck = this.blackCards
-        var drawCards = deck.slice(0, count)
+        let drawCards = deck.slice(0, count)
         deck.splice(0, count)
         return drawCards
     }

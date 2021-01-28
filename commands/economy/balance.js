@@ -1,5 +1,6 @@
 import options from './../../config/options.js'
-export default {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'balance',
     usage: 'balance',
     aliases: ['bal'],
@@ -17,7 +18,7 @@ export default {
                     description: `You have **${user.balance}**${options.creditIcon}.`,
                     color: 4513714,
                     footer: {
-                        text: `Get credits by typing ${options.prefix}daily, ${options.prefix}donate, and from giveaways in the support server!`
+                        text: `Get credits by typing ${msg.channel.prefix}daily, ${msg.channel.prefix}donate, and from giveaways in the support server!`
                     }
                 } 
             })
@@ -27,4 +28,4 @@ export default {
         })
 
     }
-  }
+  })
