@@ -1,4 +1,5 @@
-export default {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'setstreak',
     usage: 'setstreak <@user> <streak>',
     aliases: [],
@@ -29,4 +30,4 @@ export default {
           .then(e => msg.channel.sendMsgEmbed(`<@${userID}> now has a streak of ${voteStreak}.`))
           .catch(e => msg.channel.sendMsgEmbed(`There was an error with setting the user's streak.`))
     }
-}
+})

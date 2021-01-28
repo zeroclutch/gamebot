@@ -1,4 +1,5 @@
-export default {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'storedinfo',
     usage: 'storedinfo <@user>',
     aliases: [],
@@ -16,4 +17,4 @@ export default {
           .catch(e => msg.channel.sendMsgEmbed(`There was an error with retrieving the data.`))
         })
     }
-}
+})

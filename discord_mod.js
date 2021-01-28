@@ -3,7 +3,39 @@
  */
 import Discord from 'discord.js-light'
 import options from './config/options.js'
+import Game from './games/_Game/classes/Game.js'
   
+/**
+ * Accesses and sets the prefix for a specific channel, regardless of channel caching
+ */
+Object.defineProperty(Discord.TextChannel.prototype, 'prefix', {
+  get() {
+    return this.client.commandHandler.getPrefix(this)
+  },
+  set(prefix) {
+    if(this.guild)
+      this.client.commandHandler.prefixes.set(this.guild.id, prefix) 
+  },
+  enumerable: true
+})
+
+/**
+ * Accesses the game for the current channel
+ */
+Object.defineProperty(Discord.TextChannel.prototype, 'game', {
+  get() {
+    return this.client.gameManager.games.get(this.id)
+  },
+  set(value) {
+    if(value == null) {
+      return this.client.gameManager.games.delete(this.id)
+    } else if (value instanceof Game) {
+      return this.client.gameManager.games.set(this.id, value)
+    }
+  },
+  enumerable: true
+})
+
 /**
  * Asynchronous version of {@link https://discord.js.org/#/docs/main/11.5.1/class/TextChannel?scrollTo=startTyping|Discord.TextChannel.startTyping()}
  * @returns {Promise<Boolean>} Always resolves to true.

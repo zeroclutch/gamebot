@@ -1,20 +1,22 @@
-// import all dependencies
+import BotCommand from '../../types/command/BotCommand.js'
 
-const clean = text => {
-  if (typeof(text) === 'string')
-    return text.replace(/`/g, "`" + String.fromCharCode(8203)).replace(/@/g, "@" + String.fromCharCode(8203));
-  else if(typeof(text) == 'object' || typeof(text) == 'map' || typeof(text) == 'collection') 
-  try {
-    let response = JSON.stringify(text, null, 2)
-    text = response
-  } catch (err) {
-    console.info(text)
-    text = 'Unable to stringify. Output in console.'
-  }
-  return text;
+import Discord from '../../discord_mod.js' 
+const { Util } = Discord
+import util from 'util'
+
+let responsify = (response, msg, completed='+ eval completed +') => {
+    response = util.inspect(response) 
+    response = Util.splitMessage(response, {maxLength: 1600})
+    response.forEach((res, index, arr) => {
+        const isFirst = index === 0
+        const isLast = index === arr.length - 1
+        const message = `${isFirst ? '**Response**' : ''}\`\`\`js\n${res}\`\`\`${isLast ? `\`\`\`diff\n${completed}\`\`\`\nResponse Time: \`${(Date.now()-msg.createdTimestamp)}ms\`\nType: \`${typeof res}\``
+            : ''}`
+        msg.channel.send(message)
+    })
 }
 
-export default {
+export default new BotCommand({
   name: 'eval',
   usage: 'eval',
   aliases: ['ev'],
@@ -23,14 +25,14 @@ export default {
   permissions: ["GOD"],
   dmCommand: true,
   args: true,
-  run: async function(msg, args) {
-    var response = '';
+  run: async (msg, args) => {
+    let response
     try {
-      response = await eval('(()=>{'+args.join(' ')+'})()')
-      msg.channel.send("```css\neval completed```\nResponse Time: `" + (Date.now()-msg.createdTimestamp) + "ms`\nresponse:```json\n" + clean(response) + "```\nType: `" + typeof(response) + "`");
+        response = await eval('(async ()=>{'+args.join(' ')+'})()')
+        responsify(response, msg)
     } catch (err) {
-      console.error(err)
-      msg.channel.send("```diff\n- eval failed -```\nResponse Time: `" + (Date.now()-msg.createdTimestamp) + "ms`\nerror:```json\n" + err + "```");
+        console.error(err)
+        responsify(err, msg, '- eval failed -')
     }
-  }
 }
+})

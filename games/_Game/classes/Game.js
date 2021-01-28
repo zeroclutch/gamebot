@@ -1,5 +1,5 @@
-import options from '../config/options.js'
-import Discord from '../discord_mod.js'
+import options from '../../../config/options.js'
+import Discord from '../../../discord_mod.js'
 
 /**
  * The base class for all games, see {@tutorial getting_started} to get started.
@@ -36,7 +36,7 @@ export default class Game {
          * The metadata from the game, typically read from a metadata.js file.
          * @type {GameMetadata}
          * @example
-         * import this.metadata from './metadata.js'
+         * import metadata from './metadata.js'
          * @static
          */
         this.metadata = {
@@ -107,6 +107,7 @@ export default class Game {
          *     if(this.ending) return
          *     // ...
          * })
+         * @deprecated use this.stage = 'ending' instead
          */
         this.ending = false
 
@@ -129,12 +130,6 @@ export default class Game {
          * @deprecated
          */
         this.collectors = []
-
-        /**
-         * The message listener wrapper function. Whenever a message is sent, the message is handled by the `this.onMessage(msg)` callback in order to provide custom command functionality.
-         * @type {callback}
-         */
-        this.messageListener = msg => { this.onMessage(msg) }
 
         /**
          * The current stage of the game. Default stages include 'join' and 'init'.
@@ -226,92 +221,92 @@ export default class Game {
 
         // Check if downtime is going to start
         // Refresh downtime
-        this.msg.client.getTimeToDowntime().then(timeToDowntime => {
-            var downtime = Math.ceil(timeToDowntime / 60000)
-            if(timeToDowntime > 0 && timeToDowntime <= 5 * 60000) {
-                const downtime = Math.round(timeToDowntime / 60000)
-                this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Games cannot be started right now. For more information, [see our support server.](${options.serverInvite}?ref=downtimeError)`, 'Error!', options.colors.error)
-                this.forceStop()
-                return
-            } else if(timeToDowntime > 0) {
-                this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Any active games will be automatically ended. For more information, [see our support server.](${options.serverInvite}?ref=downtimeWarning)`, 'Warning!', options.colors.warning)
-            }
+        let timeToDowntime = await this.msg.client.getTimeToDowntime()
+        let downtime = Math.ceil(timeToDowntime / 60000)
+        if(timeToDowntime > 0 && timeToDowntime <= 5 * 60000) {
+            const downtime = Math.round(timeToDowntime / 60000)
+            this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Games cannot be started right now. For more information, [see our support server.](${options.serverInvite}?ref=downtimeError)`, 'Error!', options.colors.error)
+            this.forceStop()
+            return
+        } else if(timeToDowntime > 0) {
+            this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Any active games will be automatically ended. For more information, [see our support server.](${options.serverInvite}?ref=downtimeWarning)`, 'Warning!', options.colors.warning)
+        }
 
-            // Create listener for commands
-            this.msg.client.on('message', this.messageListener)
+        this.stage = 'join'
+        await this.join()
 
-            this.join(async () => {
-                // Generate the game-specific option lists
-                await this.generateOptions()
-                
-                if(this.gameOptions) {
-                    // Allow game leader to configure options. Configured ptions will be outputted to this.options
-                    await this.configureOptions()
-                }
+        // Generate the game-specific option lists
+        await this.generateOptions()
+        
+        if(this.gameOptions) {
+            this.stage = 'options'
+            // Allow game leader to configure options. Configured options will be outputted to this.options
+            await this.configureOptions()
+        }
 
-                // Prevent players from joining and leaving freely during the game
-                this.settings.updatePlayersAnytime = false
+        // Prevent players from joining and leaving freely during the game
+        this.settings.updatePlayersAnytime = false
 
-                // Initialize specific game
-                await this.gameInit()
+        // Initialize specific game
+        this.stage = 'gameinit'
+        await this.gameInit()
 
-                // Begin playing the game
-                await this.play()
-            })
-        })
+        // Begin playing the game
+        this.stage = 'play'
+        await this.play()
     }
 
     /**
      * Begins the join phase of the game.
      * @param {Function} callback The callback that is executed when the players are collected.
      */
-    async join(callback) {
-        this.stage = 'join'
+    join() {
+        return new Promise(async (resolve, reject) => {
+            // allow players to join
+            await this.msg.channel.send({
+                embed: {
+                    title: `${this.msg.author.tag} is starting a ${this.metadata.name} game!`,
+                    description: `Type \`${this.channel.prefix}join\` to join in the next **120 seconds**.\n\n${this.leader}, type \`${this.channel.prefix}start\` to begin once everyone has joined.`,
+                    color: options.colors.info
+                }
+            })
 
-        // allow players to join
-        await this.msg.channel.send({
-            embed: {
-                title: `${this.msg.author.tag} is starting a ${this.metadata.name} game!`,
-                description: `Type \`${options.prefix}join\` to join in the next **120 seconds**.\n\n${this.leader}, type \`${options.prefix}start\` to begin once everyone has joined.`,
-                color: options.colors.info
-            }
-        })
-
-        // Add gameMaster
-        await this.addPlayer(this.gameMaster.id, null)
-        this.updatePlayers()
-
-        const filter = m => (m.content.startsWith(`${options.prefix}join`) && !this.players.has(m.author.id)) || (m.author.id == this.gameMaster.id && m.content.startsWith(`${options.prefix}start`))
-        const collector = this.channel.createMessageCollector(filter, { time: 120000 })
-        this.collectors.push(collector)
-        collector.on('collect', async m => {
-            if(this.ending) return
-            if(m.content.startsWith(`${options.prefix}start`)) {
-                collector.stop()
-                return
-            }
-            await this.addPlayer(m.author.id, null)
+            // Add gameMaster
+            await this.addPlayer(this.gameMaster.id, null)
             this.updatePlayers()
-            m.delete()
-        })
 
-        collector.on('end', collected => {
-            if(this.ending) return
-            // check if there are enough players
-            let size = this.players.size
-            if(this.playersToAdd)  size += this.playersToAdd.length
-            if(this.playersToKick) size -= this.playersToKick.length
-            if(size >= this.metadata.playerCount.min) {
-                let players = []
-                this.players.forEach(player => { players.push(player.user) })
-                this.msg.channel.sendMsgEmbed(`${players.join(", ")} joined the game!`, 'Time\'s up!')
-            } else {
-                this.msg.channel.sendMsgEmbed(`Not enough players joined the game!`, 'Time\'s up!')
-                this.forceStop()
-                return
-            }
-            // continue playing
-            callback()
+            const filter = m => (m.content.startsWith(`${this.channel.prefix}join`) && !this.players.has(m.author.id)) || (m.author.id == this.gameMaster.id && m.content.startsWith(`${this.channel.prefix}start`))
+            const collector = this.channel.createMessageCollector(filter, { time: 120000 })
+            this.collectors.push(collector)
+            collector.on('collect', async m => {
+                if(this.ending) return
+                if(m.content.startsWith(`${this.channel.prefix}start`)) {
+                    collector.stop()
+                    return
+                }
+                await this.addPlayer(m.author.id, null)
+                this.updatePlayers()
+                m.delete()
+            })
+
+            collector.on('end', collected => {
+                if(this.ending) return
+                // check if there are enough players
+                let size = this.players.size
+                if(this.playersToAdd)  size += this.playersToAdd.length
+                if(this.playersToKick) size -= this.playersToKick.length
+                if(size >= this.metadata.playerCount.min) {
+                    let players = []
+                    this.players.forEach(player => { players.push(player.user) })
+                    this.msg.channel.sendMsgEmbed(`${players.join(", ")} joined the game!`, 'Time\'s up!')
+                } else {
+                    this.msg.channel.sendMsgEmbed(`Not enough players joined the game!`, 'Time\'s up!')
+                    this.forceStop()
+                    return
+                }
+                // continue playing
+                resolve(true)
+            })
         })
     }
 
@@ -328,7 +323,7 @@ export default class Game {
      * @param {GameOption} option The option to render into text.
      */
     renderOptionInfo (option) {
-        var response = ''
+        let response = ''
         if(option.type == 'checkboxes') {
             option.choices.forEach((choice, index) => {
                 response += `${option.value.includes(choice) ? '**✓**' : '☐'} ${index + 1}: ${choice}\n`
@@ -357,9 +352,9 @@ export default class Game {
      * @returns {Object<String,ConfiguredOption>} The configured options, with their key as the option friendly name, and value as the configured value.
      */
     async configureOptions () {
-        var isConfigured = false
-        var optionMessage
-        for(var i = 0; i < this.gameOptions.length; i++) {
+        let isConfigured = false
+        let optionMessage
+        for(let i = 0; i < this.gameOptions.length; i++) {
             // configure options
             let option = this.gameOptions[i]
             Object.defineProperty(option, 'value', {
@@ -372,13 +367,13 @@ export default class Game {
         await this.channel.send('Loading options...').then(m => optionMessage = m)
         do {
             // Display options
-            var optionsDisplay = ''
-            for(var i = 0; i < this.gameOptions.length; i++) {
+            let optionsDisplay = ''
+            for(let i = 0; i < this.gameOptions.length; i++) {
                 // write to options display
-                var option = this.gameOptions[i]
+                let option = this.gameOptions[i]
                 optionsDisplay += `**${i + 1}.** ${option.friendlyName}: ${typeof option.value == 'object' ? option.value.join(', ') : option.value }\n`
             }
-            optionsDisplay += `\nType \`${options.prefix}start\` to start the game.`
+            optionsDisplay += `\nType \`${this.channel.prefix}start\` to start the game.`
             optionMessage.edit({
                 embed: {
                     title: 'Configure Settings',
@@ -390,7 +385,7 @@ export default class Game {
                 }
             })
 
-            const filter = m => m.author.id == this.gameMaster.id && ((!isNaN(m.content) && parseInt(m.content) <= this.gameOptions.length && parseInt(m.content) > 0) || m.content.toLowerCase() == options.prefix + 'start')
+            const filter = m => m.author.id == this.gameMaster.id && ((!isNaN(m.content) && parseInt(m.content) <= this.gameOptions.length && parseInt(m.content) > 0) || m.content.toLowerCase() == this.channel.prefix + 'start')
             await this.channel.awaitMessages(filter, {
                 time: 60000,
                 max: 1,
@@ -399,7 +394,7 @@ export default class Game {
                 if(this.ending) return
                 const message = collected.first()
                 message.delete()
-                if(message.content == `${options.prefix}start`) {
+                if(message.content == `${this.channel.prefix}start`) {
                     optionMessage.edit({
                         embed: {
                             title: 'Options saved!',
@@ -410,7 +405,7 @@ export default class Game {
                     isConfigured = true
                     return
                 } else {
-                    var option = this.gameOptions[parseInt(message.content) - 1]
+                    let option = this.gameOptions[parseInt(message.content) - 1]
                     const optionData = {
                         'checkboxes': {
                             footer: `Type multiple numbers (separated by a space) to select and deselect items.`,
@@ -443,7 +438,7 @@ export default class Game {
                         }
                     }).catch(err => {
                         console.error(err)
-                        this.channel.sendMsgEmbed(`Something went wrong when editing the message. Type \`${options.prefix}start\` to begin the game.`, 'Error!', options.colors.error).delete(5000)
+                        this.channel.sendMsgEmbed(`Something went wrong when editing the message. Type \`${this.channel.prefix}start\` to begin the game.`, 'Error!', options.colors.error).delete(5000)
                     })
 
                     // await a response for the option
@@ -495,7 +490,7 @@ export default class Game {
                         }
                     })
                     .catch(err => {
-                        this.channel.sendMsgEmbed(`Please select an option! Type \`${options.prefix}start\` to start the game.`, 'Error!', options.colors.error)
+                        this.channel.sendMsgEmbed(`Please select an option! Type \`${this.channel.prefix}start\` to start the game.`, 'Error!', options.colors.error)
                     })
                     // on timeout restart this
                 }
@@ -531,82 +526,6 @@ export default class Game {
     }
 
     /**
-     * Handles message events emitted by the client.
-     * @param {Discord.Message} message The message emitted by the client.
-    */
-    async onMessage(message) {
-        // Only listen to messages sent in the game channel
-        if(message.channel.id !== this.channel.id) return
-
-        // leader command
-        if(message.content.startsWith(`${options.prefix}leader`)) {
-            message.channel.sendMsgEmbed(`The game leader is ${this.leader}. They can add players by typing \`${options.prefix}add @user\`, kick players by typing \`${options.prefix}kick @user\`, and end the game using \`${options.prefix}end\`.`)
-        }
-
-        // game command
-        if(message.content.startsWith(`${options.prefix}game`)) {
-            message.channel.sendMsgEmbed(`Game leader: ${this.leader}\nDMs required: ${this.settings.isDmNeeded}\n`, `${this.metadata.name} - ${this.players.size} player${this.players.size == 1 ? '' : 's'}`)
-        }
-
-        // leader commands
-        if(message.author.id == this.gameMaster.id) {
-            // add command
-            if(message.content.startsWith(`${options.prefix}add`)) {
-                let member = message.content.substring(options.prefix.length + 3, message.content.length).replace(/\D/g, '')
-                if(this.settings.updatePlayersAnytime) {
-                    await this.addPlayer(member, null)
-                    this.updatePlayers()
-                } else {
-                    await this.addPlayer(member)
-                }
-            }
-
-            // kick command
-            if(message.content.startsWith(`${options.prefix}kick`)) {
-                let member = message.content.substring(options.prefix.length + 4, message.content.length).replace(/\D/g, '')
-                if(this.settings.updatePlayersAnytime) {
-                    await this.removePlayer(member, null)
-                    this.updatePlayers()
-                } else {
-                    await this.removePlayer(member)
-                }
-            }
-
-            // setleader command
-            if(message.content.startsWith(`${options.prefix}setleader`)) {
-                let member = message.content.substring(options.prefix.length + 4, message.content.length).replace(/\D/g, '')
-                if(this.settings.updatePlayersAnytime) {
-                    await this.setLeader(member)
-                }
-            }
-        } else {
-            // leave command
-            if(message.content.startsWith(`${options.prefix}leave`)) {
-                let member = message.member
-                if(this.settings.updatePlayersAnytime) {
-                    await this.removePlayer(member, null)
-                    this.updatePlayers()
-                } else {
-                    await this.removePlayer(member)
-                }
-            }
-        }
-
-        // bot owner commands
-        if(message.author.id === process.env.OWNER_ID) {
-            if(message.content.startsWith(`${options.prefix}evalg`)) {
-                var response = '';
-                try {
-                    response = await eval('(async ()=>{'+message.content.substring(options.prefix.length + 6,message.content.length)+'})()')
-                    message.channel.send("```css\neval completed```\nResponse Time: `" + (Date.now()-message.createdTimestamp) + "ms`\nresponse:```json\n" + JSON.stringify(response) + "```\nType: `" + typeof(response) + "`");
-                } catch (err) {
-                    message.channel.send("```diff\n- eval failed -```\nResponse Time: `" + (Date.now()-message.createdTimestamp) + "ms`\nerror:```json\n" + err + "```");
-                }
-            }
-        }
-    }
-
-    /**
      * Sets or changes the game leader during the game.
      * @param {Discord.Member|string} member The member or id of the member to add
      * @param {string} message The message to send if the user is successfully queued. Set to "null" for no message to be sent.
@@ -639,7 +558,7 @@ export default class Game {
      * @param {string} message The message to send if the user is successfully queued. Set to "null" for no message to be sent.
      */
     async addPlayer(member, message) {
-        if(typeof member == 'string') {
+        if(typeof member === 'string') {
             member = await this.msg.guild.members.fetch(member).catch(async () => {
                 await this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
                 return false
@@ -720,7 +639,7 @@ export default class Game {
         this.playersToAdd.forEach(member => {
             member.user.createDM().then(dmChannel => {
                 return new Promise(resolve => {
-                    var player = { user: member.user, dmChannel }
+                    let player = { user: member.user, dmChannel }
                     // Construct default player object
                     for(let key in this.defaultPlayer) {
                         if(this.defaultPlayer[key] == 'String') {
@@ -815,7 +734,6 @@ export default class Game {
             // Remove all event listeners created during this game.
             this.msg.channel.gamePlaying = false
             this.msg.channel.game = undefined
-            this.msg.client.removeListener('message', this.messageListener)
         }).catch(console.error)
 
         if(this.metadata.unlockables) {

@@ -49,7 +49,7 @@ export default class WebUIManager {
     }
 
     generatePage(webUI) {
-        let page = fs.readFileSync(`./public/web-ui/ui-${webUI.type}.html`, 'utf8')
+        let page = fs.readFileSync(`./web-ui/ui-${webUI.type}.html`, 'utf8')
         let variables = webUI.variables || []
         try {
             variables = webUI.variables

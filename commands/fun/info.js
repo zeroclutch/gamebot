@@ -2,7 +2,8 @@
 import Discord from '../../discord_mod.js'
 import options from '../../config/options.js'
 
-export default {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'info',
     usage: 'info <game>',
     aliases: [],
@@ -42,7 +43,7 @@ export default {
                         }
                     ],
                     footer: {
-                        text: `Type ${options.prefix}play ${game.id} to start a new game!`
+                        text: `Type ${msg.channel.prefix}play ${game.id} to start a new game!`
                     }
                 }
             }
@@ -50,11 +51,11 @@ export default {
             if(game.unlockables) {
                 message.embed.fields.push({
                     name: 'Unlockable Content',
-                    value: `This game has extra content you can unlock! Type \`${options.prefix}shop ${game.id}\` to see what's available.`
+                    value: `This game has extra content you can unlock! Type \`${msg.channel.prefix}shop ${game.id}\` to see what's available.`
                 })
             }
             
             msg.channel.send(message)
         }
     }
-  }
+  })

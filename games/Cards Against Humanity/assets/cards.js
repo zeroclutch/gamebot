@@ -15,9 +15,9 @@ const cardFolder = fs.readdirSync('./gameData/CardsAgainstHumanity')
 for (const cardSet of cardFolder) {
   //search through each folder
   if(!cardSet.includes('.DS_Store')) {
-    var metadata = JSON.parse(fs.readFileSync(`./gameData/CardsAgainstHumanity/${cardSet}/metadata.json`, 'utf8'))
-    var blackCardList = fs.readFileSync(`./gameData/CardsAgainstHumanity/${cardSet}/black.md.txt`, 'utf8').split('\n')
-    var whiteCardList = fs.readFileSync(`./gameData/CardsAgainstHumanity/${cardSet}/white.md.txt`, 'utf8').split('\n')
+    let metadata = JSON.parse(fs.readFileSync(`./gameData/CardsAgainstHumanity/${cardSet}/metadata.json`, 'utf8'))
+    let blackCardList = fs.readFileSync(`./gameData/CardsAgainstHumanity/${cardSet}/black.md.txt`, 'utf8').split('\n')
+    let whiteCardList = fs.readFileSync(`./gameData/CardsAgainstHumanity/${cardSet}/white.md.txt`, 'utf8').split('\n')
     _blackCards.set(metadata, blackCardList)
     _whiteCards.set(metadata, whiteCardList)
   }

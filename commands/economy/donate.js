@@ -1,7 +1,8 @@
 import options from './../../config/options.js'
 import url from 'url';
 
-export default {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'donate',
     usage: 'donate',
     aliases: ['patreon', 'paypal', 'support'],
@@ -53,4 +54,4 @@ export default {
         }) 
 
     }
-  }
+  })

@@ -1,4 +1,5 @@
-export default {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'fakevote',
     usage: 'fakevote <@user>',
     aliases: [],
@@ -25,4 +26,4 @@ export default {
           .then(e => msg.channel.sendMsgEmbed(`<@${userID}> has voted, and can claim.`))
           .catch(e => msg.channel.sendMsgEmbed(`There was an error with fake voting.`))
     }
-}
+})

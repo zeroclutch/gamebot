@@ -1,6 +1,7 @@
 import options from './../../config/options.js'
 
-export default {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'invite',
     usage: 'invite',
     aliases: ['botinfo', 'support', 'donate'],
@@ -17,4 +18,4 @@ export default {
         **Support** Gamebot on Paypal - Type \`&donate\` for the link!
         `, 'Important Links')
     }
-}
+})

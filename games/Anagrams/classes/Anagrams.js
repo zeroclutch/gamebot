@@ -1,13 +1,13 @@
-import Game from '../../Game.js'
+import Game from '../../_Game/main.js'
 import options from '../../../config/options.js'
 import metadata from '../metadata.js'
 import fs from 'fs'
 
-var words = fs.readFileSync('./gameData/WordGames/Collins_Scrabble_Dictionary.txt', { encoding: 'utf-8' }, err => {
+let words = fs.readFileSync('./gameData/WordGames/Collins_Scrabble_Dictionary.txt', { encoding: 'utf-8' }, err => {
     console.error(err)
 })
 
-var wordRegistry = {}
+let wordRegistry = {}
 
 words = words.split('\n')
 words.splice(0,1)
@@ -120,8 +120,8 @@ export default class Anagrams extends Game {
         }
 
         // check if word can be created
-        for(var i = 0; i < word.length; i++) {
-            var index = originalWord.indexOf(word[i])
+        for(let i = 0; i < word.length; i++) {
+            let index = originalWord.indexOf(word[i])
             if(index < 0) return false
             originalWord = originalWord.replace(word[i], '')
         }
@@ -266,8 +266,8 @@ export default class Anagrams extends Game {
     }
 
     finish() {
-        var fields = []
-        var winner = [{ score: -1 }]
+        let fields = []
+        let winner = [{ score: -1 }]
         this.players.forEach(player => {
             if(player.score > winner[0].score) {
                 winner = [player]
@@ -280,7 +280,7 @@ export default class Anagrams extends Game {
                 value: player.words && player.words.length > 0 ? player.words.join(', ') : 'No words submitted.'
             })
         })
-        var title
+        let title
         if(winner.length == 1) {
             title = `The winner is ${winner[0].user.tag}! `
         } else {

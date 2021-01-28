@@ -1,6 +1,6 @@
 export const eventName = 'guildCreate'
 
-export const handler = (client, guild) => {
+export const handler = (guild, client) => {
     client.logger.log('Joined Guild', {
         size: guild.memberCount
     })

@@ -13,18 +13,15 @@ export default class DummyAccount {
         this.client = new Discord.Client()
     }
 
-    get channel() {
-        return this.client.channels.cache.get(this._channel)
-    }
-
     /**
      * Initializes the bot. The other client must be logged in separately.
      */
     init() {
         return new Promise(async (resolve, reject) => {
-            await this.client.channels.fetch(this._channel, true)
             try {
                 await this.login().catch(reject)
+                this.channel = await this.client.channels.fetch(this._channel, true)
+                resolve(true)
             } catch (error) {
                 reject(error)
             }

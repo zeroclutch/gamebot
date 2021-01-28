@@ -1,4 +1,4 @@
-import Game from '../../Game.js'
+import Game from '../../_Game/main.js'
 import options from '../../../config/options.js'
 import metadata from '../metadata.js'
 
