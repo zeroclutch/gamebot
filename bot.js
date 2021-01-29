@@ -1,7 +1,13 @@
 import Discord from "./discord_mod.js"
+
+const intents = new Discord.Intents([
+  'GUILD_MESSAGES',
+  'GUILD_MESSAGE_REACTIONS',
+  'DIRECT_MESSAGES',
+  'DIRECT_MESSAGE_REACTIONS'
+])
 const client = new Discord.Client({
-  disabledEvents: ['TYPING_START','MESSAGE_UPDATE'],
-  ws: { intents: Discord.Intents.NON_PRIVILEGED },
+  ws: { intents },
   cacheGuilds: true,
   cacheChannels: false,
   cacheOverwrites: false,

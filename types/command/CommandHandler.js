@@ -44,6 +44,7 @@ export default class CommandHandler {
         // Fetch member
         let member
         let userPermissions = []
+        
         if(message.guild) {
             member = await message.guild.members.fetch(message.author.id)
             userPermissions = message.channel.permissionsFor(member || message.author).toArray()
@@ -169,8 +170,6 @@ export default class CommandHandler {
             message.channel.sendMsgEmbed(`Incorrect usage of this command. Usage: \`${prefix}${command.usage}\`.`)
             return
         }
-
-        
 
         try {
             if (['dev', 'economy'].includes(command.category)) {
