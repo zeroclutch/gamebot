@@ -51,6 +51,9 @@ const logger = new Logger()
 import fs from 'fs'
 const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'))
 
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Update guild count
 let cachedGuilds = '??'
@@ -64,7 +67,7 @@ setInterval(updateGuilds, 60000)
 import path from 'path'
 
 // Handle all GET requests
-app.use('/', express.static(path.join(import.meta.url, 'public'),{ extensions:['html']}))
+app.use('/', express.static(path.join(__dirname, 'public'),{ extensions:['html']}))
 
 app.get('/docs', (request, response) => {
   response.redirect('/docs/version/' + pkg.version)
@@ -73,7 +76,7 @@ app.get('/docs', (request, response) => {
   })
 })
 
-app.use('/docs/version/', express.static(path.join(import.meta.url, 'docs', 'gamebot')))
+app.use('/docs/version/', express.static(path.join(__dirname, 'docs', 'gamebot')))
 
 app.get('/guilds', async (req, res) => {
   res.send({
@@ -201,7 +204,7 @@ app.post('/response/:ui_id', (req, res) => {
   // Check if UI ID is registered
   if(!UI) {
     res.status(404)
-    res.send(path.join(import.meta.url, 'public', '404'))
+    res.send(path.join(__dirname, 'public', '404'))
     throw new Error('Response webpage not found.')
   }
 
