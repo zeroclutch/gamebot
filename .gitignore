@@ -26,6 +26,7 @@ assets/temp/
 
 # data files
 data.json
+dist/
 
 # Configuration files
 *.jsdoc.json

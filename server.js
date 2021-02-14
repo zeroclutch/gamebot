@@ -51,6 +51,10 @@ const logger = new Logger()
 
 const package = require('./package.json');
 
+
+// Handle all GET requests
+app.use('/', express.static(__dirname + '/dist', { extensions:['html'] }))
+
 // Update guild count
 let cachedGuilds = '??'
 updateGuilds = async () => {
@@ -60,9 +64,6 @@ updateGuilds = async () => {
 
 setInterval(updateGuilds, 60000)
 
-// Handle all GET requests
-app.use('/', express.static(__dirname + '/public',{ extensions:['html']}))
-
 app.get('/docs', (request, response) => {
   response.redirect('/docs/version/' + package.version)
   logger.log('Docs viewed', {
@@ -70,13 +71,7 @@ app.get('/docs', (request, response) => {
   })
 })
 
-app.use('/docs/version/', express.static(__dirname + '/docs/gamebot/'))
-
-app.get('/thanks', (request, response) => {
-  response.sendFile(__dirname + '/public/thanks.html');
-})
-
-app.get('/guilds', async (req, res) => {
+app.get('/api/guilds', async (req, res) => {
   res.send({
     guilds: cachedGuilds,
     shards: manager.totalShards
@@ -97,11 +92,7 @@ app.get('/invite', (req,res) => {
   res.redirect('https://discord.com/oauth2/authorize?client_id=620307267241377793&scope=bot&permissions=1547041872')
 })
 
-app.get('/login', (req, res) => {
-  res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(process.env.BASE_URL)}%2Fauthenticate&response_type=token&scope=identify`)
-})
-
-app.get('/shopItems', async (req, res) => {
+app.get('/api/shopItems', async (req, res) => {
   let validated, shopItems
   if(req.query.userID)
     validated = await oauth2.validate(req.query.userID, req.header('authorization'))
@@ -123,7 +114,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }))
 
 // Handle SHOP endpoints
-app.post('/purchase', async (req, res) => {
+app.post('/api/purchase', async (req, res) => {
   const userID = req.body.userID
   const itemID = req.body.itemID
   // validate request
@@ -194,32 +185,31 @@ const commandFiles = fs.readdirSync('./commands');
 // add commands to list
 for (const commandFolder of commandFiles) {
   //search through each folder
-  if(commandFolder == 'economy') continue
   if(!commandFolder.includes('.DS_Store')) {
     const folder = fs.readdirSync(`./commands/${commandFolder}`)
     for(const file of folder) {
       if(file == '.DS_Store') continue
       const command = require(`./commands/${commandFolder}/${file}`)
       if(command.category !== 'dev' && command.category !== 'mod')
-      commands.push({
-        name: command.name,
-        usage: command.usage,
-        aliases: command.aliases,
-        description: command.description,
-        category: command.category,
-        permissions: command.permissions,
-        args: command.args,
-      })
+        commands.push({
+          name: command.name,
+          usage: command.usage,
+          aliases: command.aliases,
+          description: command.description,
+          category: command.category,
+          permissions: command.permissions,
+          args: command.args,
+        })
     }
   }
 }
 
-app.get('/fetchCommands', (req, res) => {
+app.get('/api/fetchCommands', (req, res) => {
   res.status(200)
   res.send(commands)
 })
 
-app.get('/userInfo', async (req, res) => {
+app.get('/api/userInfo', async (req, res) => {
   const userID = req.query.userID
   // validate request
   if(await oauth2.validate(userID, req.header('authorization'))) {
@@ -340,8 +330,8 @@ const SubscriptionManager = require('./types/database/SubscriptionManager.js')
 const subscriptionManager = new SubscriptionManager({ sweepInterval: 60000 })
 subscriptionManager.init()
 // Chargebee
-// Handle GAMEPLAY endpoint
-app.post('/checkout/generateHostedPage', async (req, res) => {
+// Handle CHECKOUT endpoint
+app.post('/api/checkout/generateHostedPage', async (req, res) => {
   //console.log(req.body.customerID, req.header('authorization'))
   let validated = await oauth2.validate(req.body.customerID, req.header('authorization'))
   if(!validated) {
@@ -401,7 +391,7 @@ app.post('/checkout/generateHostedPage', async (req, res) => {
   })
 })
 
-app.post('/checkout/confirmHostedPage', async (req, res) => {
+app.post('/api/checkout/confirmHostedPage', async (req, res) => {
   // Validate ID
   let userID = req.body.customerID
   let validated = await oauth2.validate(req.body.customerID, req.header('authorization'))
@@ -475,9 +465,10 @@ app.post('/checkout/confirmHostedPage', async (req, res) => {
   
 })
 
+
 // Catch all 404s
 app.get('*', (req, res) => {
-  res.sendFile(__dirname + '/public/404.html')
+  res.sendFile(__dirname + '/dist/index.html')
 });
 
 app.on('error', function(err) {
