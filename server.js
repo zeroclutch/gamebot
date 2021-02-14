@@ -374,7 +374,9 @@ app.post('/api/checkout/generateHostedPage', async (req, res) => {
       plan_id,
       plan_quantity
     },
-    cf_discord_user_id: req.body.customerID
+    customer: {
+      cf_discord_user_id: req.body.customerID
+    }
   }).request(function(error, result) {
     if(error) {
       //handle error
