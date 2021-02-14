@@ -1,0 +1,7 @@
+{
+    "abbr": "hum",
+    "name": "Human Pack",
+    "icon": "person",
+    "official": true,
+    "description": "30 cards actually written by a machine learning algorithm trained on our brainstorming documents."
+}
