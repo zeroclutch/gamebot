@@ -343,8 +343,6 @@ app.post('/api/checkout/generateHostedPage', async (req, res) => {
     return
   }
 
-  console.log(req.body)
-
   if(!req.body.plan) {
     res.status(400)
     res.send({
