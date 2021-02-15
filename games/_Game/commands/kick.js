@@ -9,11 +9,11 @@ export default new GameCommand({
     args: false,
     run: async function(msg, args, game) {
         let member = args[0].replace(/\D/g, '')
-        if(this.settings.updatePlayersAnytime) {
-            await this.removePlayer(member, null)
-            this.updatePlayers()
+        if(game.settings.updatePlayersAnytime) {
+            await game.removePlayer(member, null)
+            game.updatePlayers()
         } else {
-            await this.removePlayer(member)
+            await game.removePlayer(member)
         }
     }
 })

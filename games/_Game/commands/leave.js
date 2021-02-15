@@ -7,7 +7,13 @@ export default new GameCommand({
     category: 'player',
     permissions: [],
     args: false,
-    run: function(msg, args, game) {
-        game.forceStop()
+    run: async function(msg, args, game) {
+        let member = msg.member
+        if(game.settings.updatePlayersAnytime) {
+            await game.removePlayer(member, null)
+            game.updatePlayers()
+        } else {
+            await game.removePlayer(member)
+        }
     }
 })
