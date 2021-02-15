@@ -14,20 +14,15 @@ module.exports = {
         msg.channel.send({
             embed: {
                 title: 'Support Gamebot\'s development by donating!',
-                description: `Go to [our shop](${process.env.BASE_URL}) and purchase credits or coins to donate!`,
+                description: `[Go to our shop](${process.env.BASE_URL}/shop) and purchase credits or coins to donate!`,
                 //description: 'Donation link coming soon.',
                 color: options.colors.economy,
                 fields: [
                     {
                         name: 'Rewards',
-                        value: `Each $1 you donate will give you 1000${options.creditIcon}.`
+                        value: `You can gain ${options.creditIcon} credits and ${options.goldIcon} gold for donating!`
                     },
-                    {
-                        name: 'Support',
-                        value: `After donating, you should receive a confirmation DM. If you don't receive this DM and your credits are not added within 2 minutes, [join the support server](${options.serverInvite}?ref=donateCommand) and contact @zero#1234.`
-                    }
                 ],
-                footer: { text: 'All values are in US Dollars.' }
             }
         }).catch(err => {
             console.error(err)
