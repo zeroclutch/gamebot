@@ -210,7 +210,7 @@ app.post('/response/:ui_id', (req, res) => {
 
   let data = JSON.stringify({...req.body, id: UI_ID})
 
-  manager.broadcastEval(`if(this.shard.id == ${UI.shard}) {
+  manager.broadcastEval(`if(this.shard.ids[0] == ${UI.shard}) {
     this.webUIClient.receive(${data})
   }`)
   .then(value => {
@@ -363,4 +363,8 @@ app.on('error', function(err) {
 app.listen(process.env.PORT || 5000, (err) => {
   if (err) throw new Error(err)
   console.log('Server is running on port ' + (process.env.PORT || 5000))
+})
+
+process.on('unhandledRejection', err => {
+  console.error(err.stack, 'error')
 })
