@@ -295,20 +295,24 @@ app.post('/voted', async (req, res) => {
   }
   const userID = req.body.user
 
-  manager.shards.first().eval(`
-  this.fetchUser('${userID}', false).then(info => {
-    this.database.collection('users').findOneAndUpdate(
+  // Check if first ever vote
+  let firstVote = false
+  let user = await dbClient.fetchDBInfo(userID)
+  if(user.lastClaim < 0) {
+    firstVote = true
+  }
+
+  dbClient.database.collection('users').findOneAndUpdate(
     {
-      userID: '${userID}'
+      userID: userID
     },
     {
       $set: {
         dailyClaimed: false,
-        lastClaim: Date.now()
+        lastClaim: Date.now(),
+        firstVote
       }
-    })
-  }).catch(console.error)
-  `).then(() => {
+    }).then(() => {
     logger.log('User voted')
     res.status(200)
     res.send()
@@ -449,9 +453,9 @@ app.post('/api/checkout/confirmHostedPage', async (req, res) => {
 
       // Handle payment
       const PLAN_IDS = {
-        'credit_1000': { $inc: { balance: Math.floor(content.subscription.plan_quantity * 1000) } },
-        'credit_0001': { $inc: { balance: Math.floor(content.subscription.plan_quantity) } },
-        'gold_0001': { $inc: { goldBalance: Math.round(content.subscription.plan_quantity) } },
+        'credit_1000': { $inc: { balance: Math.floor(content.subscription.plan_quantity * 1000), amountDonated: content.invoice.total } },
+        'credit_0001': { $inc: { balance: Math.floor(content.subscription.plan_quantity), amountDonated: content.invoice.total } },
+        'gold_0001': { $inc: { goldBalance: Math.round(content.subscription.plan_quantity), amountDonated: content.invoice.total } },
       }
       let newUser = await dbClient.database.collection('users').findOneAndUpdate(
         { userID },
