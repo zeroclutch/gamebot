@@ -51,6 +51,10 @@ const logger = new Logger()
 
 const package = require('./package.json');
 
+
+// Handle all GET requests
+app.use('/', express.static(__dirname + '/dist', { extensions:['html'] }))
+
 // Update guild count
 let cachedGuilds = '??'
 updateGuilds = async () => {
@@ -60,9 +64,6 @@ updateGuilds = async () => {
 
 setInterval(updateGuilds, 60000)
 
-// Handle all GET requests
-app.use('/', express.static(__dirname + '/public',{ extensions:['html']}))
-
 app.get('/docs', (request, response) => {
   response.redirect('/docs/version/' + package.version)
   logger.log('Docs viewed', {
@@ -70,13 +71,7 @@ app.get('/docs', (request, response) => {
   })
 })
 
-app.use('/docs/version/', express.static(__dirname + '/docs/gamebot/'))
-
-app.get('/thanks', (request, response) => {
-  response.sendFile(__dirname + '/public/thanks.html');
-})
-
-app.get('/guilds', async (req, res) => {
+app.get('/api/guilds', async (req, res) => {
   res.send({
     guilds: cachedGuilds,
     shards: manager.totalShards
@@ -97,11 +92,7 @@ app.get('/invite', (req,res) => {
   res.redirect('https://discord.com/oauth2/authorize?client_id=620307267241377793&scope=bot&permissions=1547041872')
 })
 
-app.get('/login', (req, res) => {
-  res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(process.env.BASE_URL)}%2Fauthenticate&response_type=token&scope=identify`)
-})
-
-app.get('/shopItems', async (req, res) => {
+app.get('/api/shopItems', async (req, res) => {
   let validated, shopItems
   if(req.query.userID)
     validated = await oauth2.validate(req.query.userID, req.header('authorization'))
@@ -123,7 +114,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }))
 
 // Handle SHOP endpoints
-app.post('/purchase', async (req, res) => {
+app.post('/api/purchase', async (req, res) => {
   const userID = req.body.userID
   const itemID = req.body.itemID
   // validate request
@@ -131,13 +122,19 @@ app.post('/purchase', async (req, res) => {
     // Checkout
     // check if user has enough currency
     let info = await dbClient.fetchDBInfo(userID)
-    let balance = info.balance
 
     let item = await dbClient.fetchItemInfo(itemID)
 
-    if(balance < item.cost) {
+    if(info.balance < item.cost) {
       res.send({
         error: 'Not enough credits, purchase could not be completed.'
+      })
+      return
+    }
+
+    if(info.goldBalance < item.goldCost) {
+      res.send({
+        error: 'Not enough gold, purchase could not be completed.'
       })
       return
     }
@@ -154,7 +151,7 @@ app.post('/purchase', async (req, res) => {
         { userID },
         { 
             $push: { unlockedItems: item.itemID },
-            $inc: { balance: -item.cost }
+            $inc: { balance: -item.cost, goldBalance: -item.goldCost }
         },
         { returnOriginal: false }
     ).catch(err => {
@@ -178,6 +175,60 @@ app.post('/purchase', async (req, res) => {
     })
   }
   // 
+})
+
+
+const fs = require('fs')
+const commands = [];
+const commandFiles = fs.readdirSync('./commands');
+
+// add commands to list
+for (const commandFolder of commandFiles) {
+  //search through each folder
+  if(!commandFolder.includes('.DS_Store')) {
+    const folder = fs.readdirSync(`./commands/${commandFolder}`)
+    for(const file of folder) {
+      if(file == '.DS_Store') continue
+      const command = require(`./commands/${commandFolder}/${file}`)
+      if(command.category !== 'dev' && command.category !== 'mod')
+        commands.push({
+          name: command.name,
+          usage: command.usage,
+          aliases: command.aliases,
+          description: command.description,
+          category: command.category,
+          permissions: command.permissions,
+          args: command.args,
+        })
+    }
+  }
+}
+
+app.get('/api/fetchCommands', (req, res) => {
+  res.status(200)
+  res.send(commands)
+})
+
+app.get('/api/userInfo', async (req, res) => {
+  const userID = req.query.userID
+  // validate request
+  if(await oauth2.validate(userID, req.header('authorization'))) {
+    try {
+      let info = await dbClient.fetchDBInfo(userID)
+      res.status(200)
+      res.send(info)
+    } catch (err) {
+      res.status(500)
+      res.send({
+        error: err.message
+      })
+    }
+  } else {
+    res.status(401)
+    res.send({
+      error: 'Invalid authorization, user info could not be fetched.'
+    })
+  }
 })
 
 // Handle GAMEPLAY endpoint
@@ -244,20 +295,24 @@ app.post('/voted', async (req, res) => {
   }
   const userID = req.body.user
 
-  manager.shards.first().eval(`
-  this.fetchUser('${userID}', false).then(info => {
-    this.database.collection('users').findOneAndUpdate(
+  // Check if first ever vote
+  let firstVote = false
+  let user = await dbClient.fetchDBInfo(userID)
+  if(user.lastClaim < 0) {
+    firstVote = true
+  }
+
+  dbClient.database.collection('users').findOneAndUpdate(
     {
-      userID: '${userID}'
+      userID: userID
     },
     {
       $set: {
         dailyClaimed: false,
-        lastClaim: Date.now()
+        lastClaim: Date.now(),
+        firstVote
       }
-    })
-  }).catch(console.error)
-  `).then(() => {
+    }).then(() => {
     logger.log('User voted')
     res.status(200)
     res.send()
@@ -268,84 +323,156 @@ app.post('/voted', async (req, res) => {
   })
 })
 
-app.post('/donations', (req, res) => {
+const chargebee = require('chargebee')
+chargebee.configure({
+    site: process.env.CHARGEBEE_SITE, 
+    api_key : process.env.CHARGEBEE_API_KEY
+});
 
-	// STEP 1: read POST data
-	req.body = req.body || {};
-	res.status(200).send('OK');
-	res.end();
 
-	// read the IPN message sent from PayPal and prepend 'cmd=_notify-validate'
-	var postreq = 'cmd=_notify-validate';
-	for (var key in req.body) {
-    var value = querystring.escape(req.body[key])
-    postreq = postreq + "&" + key + "=" + value
-	}
+const SubscriptionManager = require('./types/database/SubscriptionManager.js')
+const subscriptionManager = new SubscriptionManager({ sweepInterval: 60000 })
+subscriptionManager.init()
+// Chargebee
+// Handle CHECKOUT endpoint
+app.post('/api/checkout/generateHostedPage', async (req, res) => {
+  //console.log(req.body.customerID, req.header('authorization'))
+  let validated = await oauth2.validate(req.body.customerID, req.header('authorization'))
+  if(!validated) {
+    res.status(401)
+    res.send({
+      error: 'Invalid authorization, log in and try again.',
+      redirect: '/login'
+    })
+    return
+  }
 
-	// Step 2: POST IPN data back to PayPal to validate
-	console.log('Posting back to paypal');
-	console.log(postreq);
-	console.log('\n\n');
-	var reqOptions = {
-		url: 'https://ipnpb.paypal.com/cgi-bin/webscr',
-		method: 'POST',
-		headers: {
-			'Connection': 'close'
-		},
-		body: postreq,
-		strictSSL: true,
-		rejectUnauthorized: false,
-		requestCert: true,
-		agent: false
-	};
+  if(!req.body.plan) {
+    res.status(400)
+    res.send({
+      error: 'Bad request.',
+    })
+    return
+  }
 
-	request(reqOptions, function callback(error, response, body) {
-		if (!error && response.statusCode === 200) {
-			// inspect IPN validation result and act accordingly
-			if (body.substring(0, 8) === 'VERIFIED') {
+  // Validate purchase
+  let plan_id =  req.body.plan.id
+  let plan_quantity = req.body.plan.quantity || 1
 
-				// assign posted variables to local variables
-        const PAYMENT_AMOUNT = req.body['mc_gross'];
-        const userID = req.body['custom']
+  if(plan_id === 'gold_0001' && plan_quantity < 1) {
+    res.status(400)
+    res.send({
+      error: 'Bad request, please enter a valid quantity.',
+    })
+    return
+  } else if(plan_id === 'credit_0001' && plan_quantity < 100) {
+    res.status(400)
+    res.send({
+      error: 'Bad request, please enter a valid quantity.',
+    })
+    return
+  }
 
-        const creditsEarned = Math.floor(PAYMENT_AMOUNT * 1000)
-
-				// IPN message values depend upon the type of notification sent.
-        // check for refund
-        if(creditsEarned < 0) {
-          manager.shards.first().eval(`this.users.get('${userID}').createDM().then(channel => channel.sendMsgEmbed('You were refunded \$${PAYMENT_AMOUNT} USD from Gamebot.', 'Refunded!', ${options.colors.economy})).catch(err => console.error(err))`)
-          return
-        }
-
-        // update database
-        manager.shards.first().eval(`\
-        this.database.collection('users').findOneAndUpdate( {\
-          userID: '${userID}'\
-        }, {\
-          $inc: { balance: ${creditsEarned} }\
-        })`)
-
-        manager.shards.first().eval(`this.users.get('${userID}').createDM().then(channel => channel.sendMsgEmbed('Thank you for your contribution to Gamebot! You spent \$${PAYMENT_AMOUNT} USD and received ${creditsEarned} credits.', 'Success!', ${options.colors.economy})).catch(err => console.error(err))`)
-        
-        logger.log('User donated', {
-          amount: PAYMENT_AMOUNT
-        })
-
-			} else if (body.substring(0, 7) === 'INVALID') {
-				// IPN invalid, log for manual investigation
-        console.error('A payment did not go through at ' + Date.now() + ' for user ' + userID)
-        console.error(req.body)
-        if(req.body.custom) {
-          manager.shards.first().eval(`this.users.get('${req.body.custom}').createDM().then(channel => channel.sendMsgEmbed('There was an error processing your purchase. Please message @zero#1234 or join the Gamebot support server to have this issue resolved.', 'Error!')).catch(err => console.error(err))`)
-        }
-			}
-		}
-	});
+  chargebee.hosted_page.checkout_new({
+    subscription: {
+      plan_id,
+      plan_quantity
+    },
+    customer: {
+      cf_discord_user_id: req.body.customerID
+    }
+  }).request(function(error, result) {
+    if(error) {
+      //handle error
+      console.log(error)
+      res.status(500)
+      res.send({ error: error.message })
+    } else {
+      //console.log(result)
+      subscriptionManager.add(result.hosted_page)
+      res.send(result)
+    }
+  })
 })
+
+app.post('/api/checkout/confirmHostedPage', async (req, res) => {
+  // Validate ID
+  let userID = req.body.customerID
+  let validated = await oauth2.validate(req.body.customerID, req.header('authorization'))
+  if(!validated) {
+    res.status(401)
+    res.send({
+      error: 'Invalid authorization, log in and try again.',
+      redirect: '/login'
+    })
+  }
+
+  chargebee.hosted_page.retrieve(req.body.hostedPageID).request(async function(error,result) {
+    if(error){
+      //handle error
+      console.log(error);
+      res.status(500)
+      res.send(error.message)
+      return
+    } else {
+      //console.log(result.hosted_page.content);
+      // Credit user with their purchase
+      let content = result.hosted_page.content;
+      if(result.hosted_page.state !== 'succeeded') {
+        res.status(402)
+        res.send({
+          error: 'Payment required, purchase not successful.',
+        })
+        return
+      }
+      if(content.subscription.status === 'non_renewing') {
+        chargebee.subscription.cancel(
+          content.subscription.id,
+          {
+            contract_term_cancel_option: 'terminate_immediately' 
+          })
+      } else {
+        res.status(403)
+        res.send({
+          error: 'Rewards already claimed.'
+        })
+        return
+      }
+
+      // remove subscription
+      let subscriptionExists = subscriptionManager.subscriptions.delete(req.body.hostedPageID)
+      if(!subscriptionExists) {
+        res.status(403)
+        res.send({
+          error: 'Rewards already claimed.'
+        })
+        return
+      }
+
+      await dbClient.fetchDBInfo(userID)
+
+      // Handle payment
+      const PLAN_IDS = {
+        'credit_1000': { $inc: { balance: Math.floor(content.subscription.plan_quantity * 1000), amountDonated: content.invoice.total } },
+        'credit_0001': { $inc: { balance: Math.floor(content.subscription.plan_quantity), amountDonated: content.invoice.total } },
+        'gold_0001': { $inc: { goldBalance: Math.round(content.subscription.plan_quantity), amountDonated: content.invoice.total } },
+      }
+      let newUser = await dbClient.database.collection('users').findOneAndUpdate(
+        { userID },
+        PLAN_IDS[content.subscription.plan_id],
+        { returnOriginal: false }
+      )
+      res.status(200).send(newUser)
+      return
+    }
+  });
+  
+})
+
 
 // Catch all 404s
 app.get('*', (req, res) => {
-  res.sendFile(__dirname + '/public/404.html')
+  res.sendFile(__dirname + '/dist/index.html')
 });
 
 app.on('error', function(err) {

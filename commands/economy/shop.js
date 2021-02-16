@@ -5,12 +5,12 @@ module.exports = {
     name: 'shop',
     usage: 'shop',
     aliases: [],
-    description: 'Shows the available shop items.',
+    description: 'Shows the link to the shop.',
     category: 'economy',
     permissions: [],
     dmCommand: true,
     args: false,
     run: async function(msg, args) {
-        msg.channel.sendMsgEmbed(`See our new shop at [gamebot.rocks/shop](${process.env.BASE_URL}/shop)`)
+        msg.channel.sendMsgEmbed(`See our online shop at [gamebot.rocks/shop](${process.env.BASE_URL}/shop)`)
     }
   }
