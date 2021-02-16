@@ -2,19 +2,19 @@ const options = require('./../../config/options')
 const DAILY_REWARDS = [
     { credits: 50,  gold: 0 },
     { credits: 100, gold: 0 }, 
-    { credits: 150, gold: 0 }, // Day 0 Median
-    { credits: 200, gold: 0 }, // Day 1 Median
-    { credits: 250, gold: 0 }, // Day 2 Median
-    { credits: 300, gold: 0 }, // Day 3 Median
-    { credits: 350, gold: 0 }, // Day 4 Median
-    { credits: 400, gold: 0 }, // Day 5 Median
+    { credits: 200, gold: 0 }, // Day 0 Median
+    { credits: 250, gold: 0 }, // Day 1 Median
+    { credits: 300, gold: 0 }, // Day 2 Median
+    { credits: 350, gold: 0 }, // Day 3 Median
+    { credits: 400, gold: 0 }, // Day 4 Median
+    { credits: 420, gold: 0 }, // Day 5 Median
     { credits: 450, gold: 0 }, // Day 6 Median
     { credits: 500, gold: 0 }, // Day 7+ Median
     { credits: 600, gold: 0 },
     { credits: 0,   gold: 1 },
     { credits: 1000, gold: 0 },
     { credits: 1500, gold: 0 },
-    { credits: 0,   gold: 10 },
+    { credits: 0,   gold: 50 },
 ]
 
 // Box-Muller Transform
