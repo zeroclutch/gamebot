@@ -14,7 +14,7 @@ const DAILY_REWARDS = [
     { credits: 0,   gold: 1 },
     { credits: 1000, gold: 0 },
     { credits: 1500, gold: 0 },
-    { credits: 0,   gold: 50 },
+    { credits: 0,   gold: 500 },
 ]
 
 // Box-Muller Transform
