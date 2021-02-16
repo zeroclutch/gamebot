@@ -9,7 +9,8 @@ module.exports = {
   loggingChannel: process.env.LOGGING_CHANNEL,
   statusChannel: '618344167759675413',
   serverInvite: 'https://gamebot.rocks/discord',
-  creditIcon: '<:credit:619756127101386762>',
+  creditIcon: '<:credit:810656538775650344>',
+  goldIcon: '<a:gold:810683680556187668>',
   colors: {
     info: 3789311,
     error: 13632027,

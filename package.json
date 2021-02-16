@@ -19,6 +19,7 @@
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "canvas": "^2.5.0",
+    "chargebee": "^2.6.5",
     "chess": "^0.4.3",
     "dblapi.js": "^2.3.0",
     "discord-oauth2": "^2.6.0",
