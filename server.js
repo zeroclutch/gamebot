@@ -19,11 +19,6 @@ import querystring from 'querystring';
 import express from 'express'
 const app = express()
 
-// Add requests
-import request from 'request'
-import axios from 'axios'
-import qs from 'qs';
-
 // Create manager for custom WebUIs
 import WebUIManager from './types/webui/WebUIManager.js'
 const webUIManager = new WebUIManager(app)
@@ -71,7 +66,9 @@ app.get('/docs', (request, response) => {
   })
 })
 
+import path from 'path'
 app.use('/docs/version/', express.static(path.join(__dirname, 'docs', 'gamebot')))
+app.use('/', express.static(path.join(__dirname, 'dist')))
 
 app.get('/api/guilds', async (req, res) => {
   res.send({
@@ -179,8 +176,7 @@ app.post('/api/purchase', async (req, res) => {
   // 
 })
 
-
-const fs = require('fs')
+// import fs from 'fs'
 const commands = [];
 const commandFiles = fs.readdirSync('./commands');
 
@@ -191,7 +187,7 @@ for (const commandFolder of commandFiles) {
     const folder = fs.readdirSync(`./commands/${commandFolder}`)
     for(const file of folder) {
       if(file == '.DS_Store') continue
-      const command = require(`./commands/${commandFolder}/${file}`)
+      const command = await import(`./commands/${commandFolder}/${file}`)
       if(command.category !== 'dev' && command.category !== 'mod')
         commands.push({
           name: command.name,
@@ -325,14 +321,14 @@ app.post('/voted', async (req, res) => {
   })
 })
 
-const chargebee = require('chargebee')
+import chargebee from 'chargebee'
 chargebee.configure({
     site: process.env.CHARGEBEE_SITE, 
     api_key : process.env.CHARGEBEE_API_KEY
 });
 
 
-const SubscriptionManager = require('./types/database/SubscriptionManager.js')
+import SubscriptionManager from './types/database/SubscriptionManager.js'
 const subscriptionManager = new SubscriptionManager({ sweepInterval: 60000 })
 subscriptionManager.init()
 // Chargebee
@@ -457,7 +453,7 @@ app.post('/api/checkout/confirmHostedPage', async (req, res) => {
       const PLAN_IDS = {
         'credit_1000': { $inc: { balance: Math.floor(content.subscription.plan_quantity * 1000), amountDonated: content.invoice.total } },
         'credit_0001': { $inc: { balance: Math.floor(content.subscription.plan_quantity), amountDonated: content.invoice.total } },
-        'gold_0001': { $inc: { goldBalance: Math.round(content.subscription.plan_quantity), amountDonated: content.invoice.total } },
+        'gold_0001':   { $inc: { goldBalance: Math.round(content.subscription.plan_quantity), amountDonated: content.invoice.total } },
       }
       let newUser = await dbClient.database.collection('users').findOneAndUpdate(
         { userID },

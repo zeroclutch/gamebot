@@ -1,4 +1,4 @@
-module.exports = class SubscriptionManager {
+export default class SubscriptionManager {
     constructor(options) {
         this.subscriptions = new Map()
         this.sweepInterval = options && options.sweepInterval ? options.sweepInterval : 60000
