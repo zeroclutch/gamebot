@@ -46,7 +46,7 @@ module.exports = class Chess extends Game {
 
     async getShopMapping() {
         const collection = this.msg.client.database.collection('items')
-        const boards = await collection.find({ type: "Chess Board" }).toArray()
+        const boards = await collection.find({ type: "Game Board" }).toArray()
         const pieces = await collection.find({ type: "Chess Piece Set" }).toArray()
         return { boards, pieces }
     }
@@ -389,7 +389,7 @@ module.exports = class Chess extends Game {
         this.setSides()
         let move = 0;
         let sides = ['White', 'Black']
-        while(!this.over) {
+        do {
             this.side = sides[move % 2]
             // Display the board
             await this.displayBoard(this.side)
@@ -397,7 +397,7 @@ module.exports = class Chess extends Game {
             await this.awaitMove(this.side)
             this.analyzeBoard(this.side)
             move++
-        } 
+        } while(!this.over)
     }
 
     finish(id) {
