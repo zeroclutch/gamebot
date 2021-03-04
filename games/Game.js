@@ -806,7 +806,7 @@ const Game = class Game {
                 endPhrase = ''
             }
 
-            endPhrase += `\nTo play games with the community, [join our server](${options.serverInvite}?ref=gameEnd)!`
+            endPhrase += `\nWant free Nitro? Join our [Nitro giveaway on Twitter](https://twitter.com/GamebotDiscord/status/1366868132623654915)!`
         }
 
         // Send a message in the game channel (this.msg.channel) that the game is over.
