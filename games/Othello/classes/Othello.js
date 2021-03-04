@@ -50,7 +50,7 @@ module.exports = class Othello extends Game {
     async getShopMapping() {
         const collection = this.msg.client.database.collection('items')
         const pieces = await collection.find({ type: "Othello Pieces" }).toArray()
-        const boards = await collection.find({ type: "Chess Board" }).toArray()
+        const boards = await collection.find({ type: "Game Board" }).toArray()
         return { boards, pieces }
     }
 

@@ -112,10 +112,10 @@ module.exports = {
                     }
                 )
                 // display vote streak
-                let rewardContent = `Daily reward claimed! - ${reward.credits || ''}${reward.credits ? options.creditIcon : ''}${reward.gold || ''}${reward.gold ? options.gold : ''}`
+                let rewardContent = `Daily reward claimed! - ${reward.credits || ''}${reward.credits ? options.creditIcon : ''}${reward.gold || ''}${reward.gold ? options.goldIcon : ''}`
                 msg.channel.send({
                     embed: {
-                        title: `Daily reward claimed! - ${rewardContent}`,
+                        title: rewardContent,
                         description: `Thank you for voting on Gamebot! You can vote again in about 12 hours.`,
                         fields: [{
                             name: 'Current vote streak',
