@@ -47,7 +47,8 @@ export default class CommandHandler {
         
         if(message.guild) {
             member = await message.guild.members.fetch(message.author.id)
-            userPermissions = message.channel.permissionsFor(member || message.author).toArray()
+            let channel = await this.client.channels.fetch(message.channel.id, false)
+            userPermissions = (channel.permissionsFor(member) || new Collection()).toArray()
         }
 
         // Substitute custom permissions

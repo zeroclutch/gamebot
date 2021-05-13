@@ -96,7 +96,7 @@ app.get('/invite', (req,res) => {
   logger.log('Invite used', {
     ref: req.query.ref
   })
-  res.redirect('https://discord.com/oauth2/authorize?client_id=620307267241377793&scope=bot&permissions=1547041872')
+  res.redirect(`https://discord.com/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&scope=bot&permissions=1547041872`)
 })
 
 app.get('/login', (req, res) => {
@@ -210,9 +210,11 @@ app.post('/response/:ui_id', (req, res) => {
 
   let data = JSON.stringify({...req.body, id: UI_ID})
 
-  manager.broadcastEval(`if(this.shard.id == ${UI.shard}) {
+  manager.broadcastEval(`
+  if(this.shard.ids[0] == ${UI.shard}) {
     this.webUIClient.receive(${data})
-  }`)
+  }
+  `)
   .then(value => {
     // Return the success webpage
     res.status(302)

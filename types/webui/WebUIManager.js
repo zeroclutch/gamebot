@@ -49,6 +49,7 @@ export default class WebUIManager {
     }
 
     generatePage(webUI) {
+        // TODO: Load page directly into memory to prevent expensive file IO
         let page = fs.readFileSync(`./web-ui/ui-${webUI.type}.html`, 'utf8')
         let variables = webUI.variables || []
         try {

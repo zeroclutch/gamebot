@@ -40,5 +40,5 @@ const testResults = () =>
 export {
     test,
     testSync,
-    testResults
+    testResults,
 }

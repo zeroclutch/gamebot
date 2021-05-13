@@ -17,7 +17,7 @@ export default async client => {
     const tester = new TestBot(process.env.DISCORD_TEST_BOT_TOKEN, client, channel, ...dummyBots)
     await tester.init()
     
-    await commandTest(client, tester)
     await apiTest(client, tester)
+    await commandTest(client, tester)
     await gameTest(client, tester)
 }
