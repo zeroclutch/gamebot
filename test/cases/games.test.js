@@ -65,28 +65,29 @@ export default async (client, tester) => {
     await test('play chess game', async () => {
         message = (await tester.command($ + 'start')).first()
         // get message
-        assert.strictEqual(message.content.includes(`It's your turn to move as`), true) 
+        assert.strictEqual(message.content.includes(`it's your turn to move as white`), true) 
         // check image hash
     })
 
     await test('make moves in game', async () => {
         message = (await tester.commandFrom(tester.accounts[0], `${$}f4`)).first()
         // get message
-        assert.strictEqual(message.content.includes(`it's your turn to move as`), true)
+        assert.strictEqual(message.content.includes(`it's your turn to move as black`), true)
 
         message = (await tester.command(`${$}e6`)).first()
         // get message
-        assert.strictEqual(message.content.includes(`it's your turn to move as`), true)
+        assert.strictEqual(message.content.includes(`it's your turn to move as white`), true)
 
         message = (await tester.commandFrom(tester.accounts[0], `${$}g4`)).first()
         // get message
-        assert.strictEqual(message.content.includes(`it's your turn to move as`), true)
+        assert.strictEqual(message.content.includes(`it's your turn to move as black`), true)
     })
 
     await test('checkmate and win game', async () => {
         collected = (await tester.command(`${$}Qh4`, 3))
         // get message
         let titles = collected.array().map(m => m.embeds[0].title)
+        console.log(titles)
         assert.strictEqual(titles.includes(`View the computer analysis and game recap.`), true)
         assert.strictEqual(titles.includes(`This game contains unlockable content!`), true)
         assert.strictEqual(titles.includes(`Game over!`), true)

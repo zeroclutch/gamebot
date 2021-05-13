@@ -7,11 +7,11 @@ const intents = new Discord.Intents([
   'DIRECT_MESSAGE_REACTIONS'
 ])
 const client = new Discord.Client({
-  ws: { intents },
+  //ws: { intents },
   cacheGuilds: true,
   cacheChannels: false,
   cacheOverwrites: false,
-  cacheRoles: false,
+  cacheRoles: true,
   cacheEmojis: false,
   cachePresences: false
 })
@@ -22,11 +22,7 @@ import { parentPort } from 'worker_threads'
 parentPort.on('message', async message => {
   if(message.testMode) {
     // Check if we are testing
-    if(client.readyAt && await client.channels.fetch(process.env.TEST_CHANNEL)) {
-      client.isTestingMode = true
-      const {default: test} = await import('./test/index.test.js')
-      test(client)
-    }
+    client.isTestingMode = true
   }
 })
 
@@ -79,6 +75,12 @@ client.on('ready', async () => {
 
   // Update bot system status
   client.updateStatus()
+
+  // Run tests
+  if(client.isTestingMode && await client.channels.fetch(process.env.TEST_CHANNEL)) {
+    const {default: test} = await import('./test/index.test.js')
+    test(client)
+  }
 
   // Post DBL stats every 30 minutes
   setInterval(() => {
