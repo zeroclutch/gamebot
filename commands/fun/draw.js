@@ -7,7 +7,7 @@ export default new BotCommand({
   aliases: [],
   description: 'Lets you send a drawing in chat!',
   category: 'fun',
-  permissions: ['ATTACH_FILES'],
+  // permissions: ['ATTACH_FILES'],
   dmCommand: false,
   args: false,
   run: function (msg, args) {

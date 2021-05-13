@@ -1,4 +1,6 @@
+import options from '../../../config/options.js'
 import GameCommand from '../../../types/command/GameCommand.js'
+
 export default new GameCommand({
     name: 'timer',
     usage: 'timer',

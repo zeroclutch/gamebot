@@ -8,12 +8,6 @@ export default new GameCommand({
     permissions: [],
     args: false,
     run: async function(msg, args, game) {
-        let member = msg.member || msg.author.id
-        if(this.settings.updatePlayersAnytime) {
-            await this.removePlayer(member, null)
-            this.updatePlayers()
-        } else {
-            await this.removePlayer(member)
-        }
+        msg.channel.send(`There is a game playing in this channel.`)
     }
 })
