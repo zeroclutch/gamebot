@@ -408,7 +408,7 @@ app.post('/api/checkout/confirmHostedPage', async (req, res) => {
   }
 
   chargebee.hosted_page.retrieve(req.body.hostedPageID).request(async function(error,result) {
-    if(error){
+    if(error) {
       //handle error
       console.log(error);
       res.status(500)
