@@ -54,7 +54,6 @@ const games = async client => {
         if (!game.startsWith('_')) {
             const { default: metadata } = await import(`../games/${game}/metadata.js`)
             const { default: gameFile } =  await import(`../games/${game}/main.js`)
-            client.games.set(metadata, gameFile)
             
             // import game-specific commands
             gameFile.commands = new Collection()
@@ -69,13 +68,15 @@ const games = async client => {
             }
 
             // import general Game commands
-            const gameCommandsPath = path.join('.','games', '_Game', 'commands')
+            const gameCommandsPath = path.join('.', 'games', '_Game', 'commands')
             const commands = fs.readdirSync(gameCommandsPath)
             for (let command of commands) {
                 if (command.startsWith('_') || command === '.DS_Store') continue
                 const { default: cmd } = await import(`../games/_Game/commands/${command}`)
                 gameFile.commands.set(cmd.name, cmd)
             }
+
+            client.games.set(metadata, gameFile)
         }
     }
     

@@ -87,7 +87,6 @@ export default async (client, tester) => {
         collected = (await tester.command(`${$}Qh4`, 3))
         // get message
         let titles = collected.array().map(m => m.embeds[0].title)
-        console.log(titles)
         assert.strictEqual(titles.includes(`View the computer analysis and game recap.`), true)
         assert.strictEqual(titles.includes(`This game contains unlockable content!`), true)
         assert.strictEqual(titles.includes(`Game over!`), true)

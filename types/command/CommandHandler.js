@@ -6,10 +6,10 @@ import GameCommand from './GameCommand.js'
 export default class CommandHandler {
     constructor(client) {
         this.client = client
-        this.games = client.games // get game-specific commands
         
         // Collection<String, Command>
         this.commands = new Collection()
+        this.games = new Collection()
 
         // cache for prefixes
         this.prefixes = new Collection()
@@ -22,7 +22,7 @@ export default class CommandHandler {
         this.commands = new Collection()
         this.games = new Collection()
         this.client.commands.forEach(command => this.commands.set(command.name, command))
-        this.client.games.forEach(game => (game.commands) ? this.games.set((game.metadata || {id: '_Game'}).id, game.commands) : null)
+        this.client.games.forEach(game => this.games.set((game.metadata || {id: '_Game'}).id, game.commands))
         
         // cache all guild prefixes available for this shard 
         await this.updatePrefixes()
@@ -116,6 +116,21 @@ export default class CommandHandler {
         
     }
 
+    getCommand(messageData, game) {
+        let command
+
+        // Get default commands and aliases
+        command = this.commands.get(messageData.name)
+            || this.commands.find(command => command.aliases.includes(messageData.name))
+
+        // Get in-game commands
+        if(game && this.client.games.has(game.metadata)) {
+            command = command || this.client.games.get(game.metadata).commands.get(messageData.name)
+        }
+
+        return command
+    }
+
     async handle(message) {
         // Ignore bots
         if(message.author.bot && !message.client.isTestingMode) {
@@ -140,11 +155,8 @@ export default class CommandHandler {
         let game = this.client.gameManager.games.get(message.channel.id)
 
         // Get command
-        console.log()
-        let command = this.commands.get(messageData.name)
-                    || this.commands.find(command => command.aliases.includes(messageData.name))
-                    || ((game && game.commands) ? this.games.get(game.metadata.id).get(messageData.name)
-                            : this.games.get('_Game').get(messageData.name))
+        let command = this.getCommand(messageData, game)
+        
         if(!command) return false
 
         if (command instanceof BotCommand) {} 
