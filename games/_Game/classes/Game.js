@@ -559,8 +559,11 @@ export default class Game {
      */
     async addPlayer(member, message) {
         if(typeof member === 'string') {
-            member = await this.msg.guild.members.fetch(member).catch(async () => {
-                await this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
+            console.log('member' + member)
+            console.log(this.msg.guild)
+            member = await this.msg.guild.members.fetch(member).catch(async err => {
+                console.error(err)
+                await this.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
                 return false
             })
             if(member === false) return

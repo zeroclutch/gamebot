@@ -1,3 +1,4 @@
+import axios from 'axios'
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
     name: 'fakevote',
@@ -11,19 +12,21 @@ export default new BotCommand({
     run: function(msg, args) {
         const collection = msg.client.database.collection('users')
         const userID = args[0].replace(/\D/g, '')
-        msg.client.users.fetch(userID, false).then(info => {
-            collection.findOneAndUpdate(
-            {
-              userID
-            },
-            {
-              $set: {
-                dailyClaimed: false,
-                lastClaim: Date.now()
-              }
-            })
-          })
+        axios({
+          method: 'POST',
+          url: process.env.BASE_URL + '/voted',
+          data: {
+            user: userID
+          }, 
+          headers: {
+            authorization: process.env.DBL_WEBHOOK_AUTH,
+            'content-type': 'application/json'
+          }
+        })
           .then(e => msg.channel.sendMsgEmbed(`<@${userID}> has voted, and can claim.`))
-          .catch(e => msg.channel.sendMsgEmbed(`There was an error with fake voting.`))
+          .catch(e =>{
+            msg.channel.sendMsgEmbed(`There was an error with fake voting.`)
+            console.log(e)
+          })
     }
 })

@@ -1,4 +1,6 @@
+import options from '../../config/options.js'
 import BotCommand from '../../types/command/BotCommand.js'
+
 export default new BotCommand({
     name: 'credit',
     usage: 'credit <user> <amount>',

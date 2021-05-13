@@ -47,11 +47,15 @@ Players take turns dropping one colored disc into a game board, which falls to t
 ### *Play the 500-year-old classic on Discord.*
 Be the first to checkmate the opponent's king.  To view the full rules, see [this article on Chess.com](https://www.chess.com/learn-how-to-play-chess). Gamebot has tons of board styles and piece styles to choose from. Customize your game however you like it!
 
-## 5. Survey Says
+## 5. Othello
+### *Flip over discs and capture opposing pieces in this classic strategy game.*
+Players take turns placing their pieces on a board. They capture opposing pieces in every direction, flipping them over to their color. The game is over when neither player has a legal move or when the board is full.
+
+## 6. Survey Says
 ### *The wacky game that tells you just how weird people are.*
 We surveyed over 450 people on Reddit. You have to guess what percentage of them answered 'yes' to our questions. Every round, one player guesses a percentage, and everyone else has to figure out whether the real value is higher or lower.
 
-## 6. Wisecracks
+## 7. Wisecracks
 ### *Make the wittiest responses to the silliest prompts.*
 Two players are randomly chosen to face off, and have to submit answers to a given prompt. The rest of the players vote on their favorite, and the winner gets a point. First to a configurable number of points wins.
 

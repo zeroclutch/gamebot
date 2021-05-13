@@ -20,8 +20,10 @@ export default class CommandHandler {
     async init () {
         // construct fast command index
         this.commands = new Collection()
+        this.games = new Collection()
         this.client.commands.forEach(command => this.commands.set(command.name, command))
-        this.client.games.forEach(game => game.commands ? game.commands.forEach(command => this.commands.set(command.name, command)) : null)
+        this.client.games.forEach(game => (game.commands) ? this.games.set((game.metadata || {id: '_Game'}).id, game.commands) : null)
+        
         // cache all guild prefixes available for this shard 
         await this.updatePrefixes()
     }
@@ -134,12 +136,17 @@ export default class CommandHandler {
             return false
         }
 
-        // Get command
-        let command = this.commands.get(messageData.name) || this.commands.find(command => command.aliases.includes(messageData.name))
-        if(!command) return false
-
         // Validate command type
         let game = this.client.gameManager.games.get(message.channel.id)
+
+        // Get command
+        console.log()
+        let command = this.commands.get(messageData.name)
+                    || this.commands.find(command => command.aliases.includes(messageData.name))
+                    || ((game && game.commands) ? this.games.get(game.metadata.id).get(messageData.name)
+                            : this.games.get('_Game').get(messageData.name))
+        if(!command) return false
+
         if (command instanceof BotCommand) {} 
         else if (command instanceof GameCommand) {
             if(!game) {
@@ -167,7 +174,7 @@ export default class CommandHandler {
             return false
         }
 
-        if (messageData.args.join() === '' && command.args) {
+        if (command.args && messageData.args.join() === '') {
             message.channel.sendMsgEmbed(`Incorrect usage of this command. Usage: \`${prefix}${command.usage}\`.`)
             return
         }

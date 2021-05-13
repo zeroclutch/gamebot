@@ -21,6 +21,7 @@
     "body-parser": "^1.19.0",
     "bufferutil": "^4.0.3",
     "canvas": "^2.6.1",
+    "chargebee": "^2.6.5",
     "chess": "^0.4.3",
     "dblapi.js": "^2.3.0",
     "discord-oauth2": "^2.6.0",

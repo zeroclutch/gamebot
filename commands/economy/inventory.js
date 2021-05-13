@@ -64,10 +64,13 @@ export default new BotCommand({
                 embed.setColor(options.colors.economy)
                 let description = ''
                 categoryItems.forEach(item => {
-                    description += `${item.cost}${options.creditIcon} | **${item.friendlyName}** | **ID:** \`${item.itemID}\`\n`
+                    let cost = ''
+                    if(item.goldCost > 0)
+                        cost += `${item.goldCost}${options.goldIcon} `
+                    else cost += cost += `${item.cost}${options.creditIcon} `
+                    description += `${cost}| **${item.friendlyName}** | **ID:** \`${item.itemID}\`\n`
                 })
                 embed.setDescription(description)
-                embed.setFooter(`To see more info about an item, use ${msg.channel.prefix}item info <id>.`)
 
                 let message
                 await msg.channel.send({ embed })

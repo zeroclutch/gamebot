@@ -14,6 +14,7 @@ import BlackCard from './BlackCard.js'
 
 const CARD_PACKS = {
     '90sn_pack': '90s',
+    'ai_pack': 'ai',
     'can_pack': 'Canadian',
     'pax_pset': ['PAX2015', 'PAXE2013', 'PAXE2014', 'PAXEP2014', 'PAXP2013', 'PAXPP2014'],
     'pol_pset': ['trumpbag', 'trumpvote', 'hillary'],
@@ -26,7 +27,8 @@ const CARD_PACKS = {
     'www_pack': 'www',
     'sci_pack': 'science',
     'hoc_pack': 'HOCAH',
-    'hol_pset': ['xmas2012', 'xmas2013']
+    'hol_pset': ['xmas2012', 'xmas2013'],
+    'hum_pack': 'hum',
 }
 
 const CARD_BACKS = {
