@@ -1,7 +1,8 @@
-const options = require('./../../config/options')
-const Discord = require('./../../discord_mod')
+import options from './../../config/options.js'
+import Discord from './../../discord_mod.js'
 
-module.exports = {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'giveaway',
     usage: 'giveaway <channel> <time (minutes)> <amount> <reaction> <message>',
     aliases: [],
@@ -12,13 +13,13 @@ module.exports = {
     args: false,
     run: async function(msg, args) {
         // initialize constants
-        const channel = msg.client.channels.get(args[0].replace(/\D/g, ''))
-        var time =  parseFloat(args[1])
+        const channel = msg.client.channels.cache.get(args[0].replace(/\D/g, ''))
+        let time =  parseFloat(args[1])
         const amount = parseInt(args[2])
         const reaction = args[3].replace(/\D/g, '')
         const message = args.slice(4, args.length).join(' ') || `React to the message in the next ${time} minute${time == 1 ? '' : 's'} to get ${amount}${options.creditIcon}.`
         time *= 60000 // convert time to ms
-        var reactionMessage
+        let reactionMessage
         const collection = msg.client.database.collection('users')
 
         // send reaction message
@@ -29,7 +30,7 @@ module.exports = {
 
         const filter = r => r.emoji.id == reaction
         const collector = reactionMessage.createReactionCollector(filter, { time });
-        var collectedUsers = []
+        let collectedUsers = []
         collector.on('collect', async r => {
             const user = r.users.last()
             // avoid duplicates 
@@ -70,4 +71,4 @@ module.exports = {
             }
         });
     }
-  }
+  })

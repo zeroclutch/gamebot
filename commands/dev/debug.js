@@ -1,7 +1,8 @@
 // create Collection<Game> of all the games
-const options = require('./../../config/options')
+import options from './../../config/options.js'
 
-module.exports = {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
   name: 'debug',
   usage: 'debug <game>',
   aliases: ['db'],
@@ -20,11 +21,11 @@ module.exports = {
 
     // check if game is playing in channel
     if(msg.channel.gamePlaying) {
-      msg.channel.sendMsgEmbed(`A game is already playing in this channel! End that game first by using the \`${options.prefix}end\` command.`, 'Uh oh...', 13632027)
+      msg.channel.sendMsgEmbed(`A game is already playing in this channel! End that game first by using the \`${msg.channel.prefix}end\` command.`, 'Uh oh...', 13632027)
       return
     }
     if(!game) {
-      msg.channel.sendMsgEmbed(`Game not found. Make sure you typed the game ID correctly. You can see the game IDs by typing \`${options.prefix}gamelist\``, 'Error!', 13632027)
+      msg.channel.sendMsgEmbed(`Game not found. Make sure you typed the game ID correctly. You can see the game IDs by typing \`${msg.channel.prefix}gamelist\``, 'Error!', 13632027)
       return
     }
 
@@ -41,4 +42,4 @@ module.exports = {
     msg.channel.game.init()
     
   }
-}
+})

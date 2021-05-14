@@ -1,6 +1,7 @@
-const options = require('./../../config/options')
+import options from './../../config/options.js'
 
-module.exports = {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'invite',
     usage: 'invite',
     aliases: ['botinfo', 'support', 'donate'],
@@ -17,4 +18,4 @@ module.exports = {
         **Support** Gamebot on Paypal - Type \`&donate\` for the link!
         `, 'Important Links')
     }
-}
+})

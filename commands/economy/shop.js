@@ -1,7 +1,8 @@
-const Discord = require('./../../discord_mod')
-const options = require('./../../config/options')
+import Discord from './../../discord_mod.js'
+import options from './../../config/options.js'
 
-module.exports = {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'shop',
     usage: 'shop',
     aliases: [],
@@ -13,4 +14,4 @@ module.exports = {
     run: async function(msg, args) {
         msg.channel.sendMsgEmbed(`See our online shop at [gamebot.rocks/shop](${process.env.BASE_URL}/shop)`)
     }
-  }
+  })

@@ -1,7 +1,8 @@
-const options = require('./../../config/options')
-const url = require('url');
+import options from './../../config/options.js'
+import url from 'url';
 
-module.exports = {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'donate',
     usage: 'donate',
     aliases: ['patreon', 'paypal', 'support'],
@@ -29,4 +30,4 @@ module.exports = {
             msg.channel.sendMsgEmbed('Unable to start a DM with you. Check your Discord settings and try again.', 'Error!', options.colors.error)
         })
     }
-  }
+  })

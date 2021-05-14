@@ -1,4 +1,5 @@
-module.exports = {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'setstreak',
     usage: 'setstreak <@user> <streak>',
     aliases: [],
@@ -15,7 +16,7 @@ module.exports = {
           msg.channel.send(`There was an error with fake voting.`)
           return
         }
-        msg.client.fetchUser(userID, false).then(info => {
+        msg.client.users.fetch(userID, false).then(info => {
             collection.findOneAndUpdate(
             {
               userID
@@ -29,4 +30,4 @@ module.exports = {
           .then(e => msg.channel.sendMsgEmbed(`<@${userID}> now has a streak of ${voteStreak}.`))
           .catch(e => msg.channel.sendMsgEmbed(`There was an error with setting the user's streak.`))
     }
-}
+})

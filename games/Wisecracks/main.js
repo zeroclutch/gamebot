@@ -1,3 +1,3 @@
-const Wisecracks = require('./classes/Wisecracks.js')
+import Wisecracks from './classes/Wisecracks.js'
 
-module.exports = Wisecracks
+export default Wisecracks

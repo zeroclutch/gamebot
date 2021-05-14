@@ -1,16 +1,17 @@
-const Game = require(`../../Game`)
-const options = require('../../../config/options')
-const metadata = require('../metadata.json')
+import Game from '../../_Game/main.js'
+import options from '../../../config/options.js'
+import metadata from '../metadata.js'
 
-const chess = require('chess')
-const { createCanvas, loadImage } = require('canvas')
-const Discord = require('../../../discord_mod')
-const LichessAPI = require('./../classes/LichessAPI')
+import chess from 'chess'
+import canvas from 'canvas'
+const { createCanvas, loadImage } = canvas
+import Discord from '../../../discord_mod.js'
+import LichessAPI from './../classes/LichessAPI.js'
 
 /**
  * The base class for Chess games.
  */
-module.exports = class Chess extends Game {
+export default class Chess extends Game {
     constructor(msg, settings) {
         super(msg, settings)
         
@@ -24,16 +25,6 @@ module.exports = class Chess extends Game {
 
         this.defaultPlayer = {
             side: 'String'
-        }
-
-        this.messageListener = msg => {
-            // Only listen to messages sent in the game channel
-            if(msg.channel.id !== this.channel.id) return
-
-            this.onMessage(msg)
-            this.giveChessHelp(msg)
-            this.getTimer(msg)
-            this.getResignation(msg)
         }
 
         this.moves = []
@@ -111,89 +102,6 @@ module.exports = class Chess extends Game {
         this.gameClient = chess.create({ PGN: true })
     }
 
-    async giveChessHelp(msg) {
-        if(msg.content.toLowerCase().startsWith(`${options.prefix}movehelp`)) {
-            let stream
-            try {
-                stream = await this.renderBoard(this.side)
-            } catch (err) {
-                // Game hasn't fully initialized
-                msg.channel.send({
-                    embed: {
-                        title: 'Error!',
-                        description: 'Please wait for the game to begin before using this command.',
-                        color: options.colors.error
-                    }
-                })
-                return
-            }
-            let embed = new Discord.RichEmbed()
-            .attachFile({
-                attachment: stream,
-                name: 'image.png'
-            })
-            .addField('Important Note:', `Remember to start all moves with the Gamebot's prefix, ${options.prefix}.`)
-            .addField('How do I enter my moves?', `Gamebot uses [algebraic notation](https://en.wikipedia.org/wiki/Algebraic_notation_(chess)) for chess moves. This looks long, but it's really straightforward and common in Chess! It has two main parts:`)
-            .addField('First...', `**Choose which piece you want to move.** Each piece is represented by a letter.
-            <:white_pawn:756373313126662184> <:black_pawn:756373313265205278> = No letter needed unless promoting or capturing—then use the letter column (aka "file").
-            <:white_knight:756373313214873610> <:black_knight:756373313005027340> = N
-            <:white_bishop:756373313340833933> <:black_bishop:756373313139245138> = B
-            <:white_rook:756373312862683179> <:black_rook:756373313298759741> = R
-            <:white_queen:756373313084981409> <:black_queen:756373313324056636> = Q
-            <:white_king:756373313231519805> <:black_king:756373312984318033> = K`)
-            .addField('Second...', `**Decide where you want to move your piece.** If you look at the chessboard, there are letters across the bottom, and numbers across the sides. Each square is identified by a pair of coordinates, the letter (also known as the "file") and number (aka "rank") combined. For white, the top right square is h8 and the bottom left square is a1. Find the coordinates of your destination square.\n\nIf there's an opponent's piece on it, put "x" before the name of the square to capture their piece.`)
-            .addField('Combine them!', `Now just combine these, and make your move! Some examples would be ${options.prefix}e4, ${options.prefix}d5, ${options.prefix}exd5 (pawn on e4 takes pawn on d5), ${options.prefix}Qxd5 (Queen takes d5)`)
-            .addField('A few small exceptions...', `**To castle**, use O-O for king-side castle and O-O-O for queen-side castle.
-            
-            **To promote a pawn**, use the letter (aka file) of the pawn, then the desired piece you want to promote to. For example, ${options.prefix}e8Q. If you're going to capture into a promotion, it works similarly, like ${options.prefix}dxe8Q.
-            
-            **Sometimes** two of the same piece can make it to the same square. For example, both of your rooks might be able to go to e1 if there's nothing else in their way. In this case, you have to specify which letter column (aka "file") the piece you want to move is in. Just add the letter right after, like ${options.prefix}Rae1. If both pieces are in the same number row (aka "rank"), use the number instead, like ${options.prefix}R1e1. In the rare chance that isn't enough (like if you have three queens in a triangle), specify both rank and file, like ${options.prefix}Ra1e1.`)
-            .setFooter(`Refer back to this anytime!`)
-            .setColor(options.colors.info)
-
-            if(stream) embed.setImage(`attachment://image.png`)
-            
-            msg.channel.send(embed)
-        }
-    }
-
-
-    getTimer(msg) {
-        if(msg.content.toLowerCase().startsWith(`${options.prefix}timer`)) {
-            if(this.lastTurnStartedAt > -1) {
-                msg.channel.send({
-                    embed: {
-                        description: `${this.getPlayer(this.side).user} has ${Math.floor((Date.now() - this.lastTurnStartedAt) / 1000)} seconds left.`,
-                        color: options.colors.info
-                    }
-                })
-            } else {
-                msg.channel.send({
-                    embed: {
-                        title: 'Error!',
-                        description: 'Please wait for the game to begin before using this command.',
-                        color: options.colors.error
-                    }
-                })
-            }
-        }
-    }
-
-
-    getResignation(msg) {
-        if(msg.content.toLowerCase().startsWith(`${options.prefix}resign`) && this.players.has(msg.author.id)) {
-            let winner = this.players.find(player => player.id !== msg.author.id) 
-            if(this.moves.length > 2) {
-                this.importGameToLichess(winner.side)
-            }
-
-            this.displayBoard(winner.side).then(() => {
-                this.end(winner)
-                this.over = true
-            })
-        }
-    }
-
     setSides() {
         // Use preset side for leader
         let side = this.options['Side']
@@ -260,16 +168,16 @@ module.exports = class Chess extends Game {
 
     async displayBoard(side) {
         let stream = await this.renderBoard(side)
-        let embed = new Discord.RichEmbed()
-        .attachFile({
+        let embed = new Discord.MessageEmbed()
+        .attachFiles([{
             attachment: stream,
             name: 'image.png'
-        })
+        }])
         .setDescription(`You have ${this.options['Timer']} seconds to make a move.`)
         .addField('ℹ️', 'To make a move, enter the bot prefix followed by a valid move in algebraic notation.', true)
-        .addField('⏰', `Type ${options.prefix}timer to see the move time remaining.`, true)
-        .addField('🏳', `Type ${options.prefix}resign to give up.`, true)
-        .setFooter(`Type ${options.prefix}movehelp for help.`)
+        .addField('⏰', `Type ${this.channel.prefix}timer to see the move time remaining.`, true)
+        .addField('🏳', `Type ${this.channel.prefix}resign to give up.`, true)
+        .setFooter(`Type ${this.channel.prefix}movehelp for help.`)
         .setImage(`attachment://image.png`)
         .setColor({ 'White': '#fffffe', 'Black': '#000001' }[side])
 
@@ -284,12 +192,12 @@ module.exports = class Chess extends Game {
         return new Promise((resolve, reject) => {
             this.lastTurnStartedAt = Date.now() + parseInt(this.options['Timer']) * 1000
 
-            const filter = m => m.content.startsWith(options.prefix) && this.players.has(m.author.id) && m.author.id == this.getPlayer(side).user.id
+            const filter = m => m.content.startsWith(this.channel.prefix) && this.players.has(m.author.id) && m.author.id == this.getPlayer(side).user.id
             let collector = this.channel.createMessageCollector(filter, { time: parseInt(this.options['Timer']) * 1000 })
             
             collector.on('collect', m => {
                 if(this.ending || this.over) return
-                let move = m.content.replace(options.prefix, '')
+                let move = m.content.replace(this.channel.prefix, '')
                 if(this.status.notatedMoves[move]) {
                     this.gameClient.move(move)
                     this.moves.push(move)
