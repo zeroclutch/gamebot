@@ -1,4 +1,5 @@
-module.exports = {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'wipe',
     usage: 'wipe <@user>',
     aliases: [],
@@ -17,4 +18,4 @@ module.exports = {
             msg.channel.sendMsgEmbed(`<@${userID}> could not be wiped from the database.`, 'Error!')
         })
     }
-}
+})

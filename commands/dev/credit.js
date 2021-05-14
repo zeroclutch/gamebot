@@ -1,6 +1,7 @@
-const options = require('./../../config/options')
+import options from '../../config/options.js'
+import BotCommand from '../../types/command/BotCommand.js'
 
-module.exports = {
+export default new BotCommand({
     name: 'credit',
     usage: 'credit <user> <amount>',
     aliases: [],
@@ -24,4 +25,4 @@ module.exports = {
         })
 
     }
-  }
+})

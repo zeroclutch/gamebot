@@ -1,11 +1,11 @@
-const Discord = require('../../../discord_mod')
-const fs = require('fs')
+import Discord from '../../../discord_mod.js'
+import fs from 'fs'
 
 /**
  * A selection of prompts loaded from a file for Wisecracks
  * @class
  */
-module.exports = class PromptList {
+export default class PromptList {
     constructor(files) {
         // Read files
         let content = files.map(file => file = fs.readFileSync(file, 'utf8'))

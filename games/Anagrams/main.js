@@ -1,3 +1,3 @@
-const Anagrams = require('./classes/Anagrams.js')
+import Anagrams from './classes/Anagrams.js'
 
-module.exports = Anagrams
+export default Anagrams

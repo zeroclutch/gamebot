@@ -1,6 +1,6 @@
-const axios = require('axios')
-
-module.exports = {
+import axios from 'axios'
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'fakevote',
     usage: 'fakevote <@user>',
     aliases: [],
@@ -29,4 +29,4 @@ module.exports = {
             console.log(e)
           })
     }
-}
+})

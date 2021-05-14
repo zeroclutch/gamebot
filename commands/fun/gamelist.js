@@ -1,9 +1,10 @@
 // create Collection<Game> of all the games
-const Discord = require('../../discord_mod')
-const options = require('../../config/options')
+import Discord from '../../discord_mod.js'
+import options from '../../config/options.js'
 
 
-module.exports = {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'gamelist',
     usage: 'gamelist',
     aliases: ['list', 'gl', 'games'],
@@ -24,16 +25,16 @@ module.exports = {
         msg.channel.send({
             embed: {
                 title: 'List of available games',
-                description: `Type \`${options.prefix}play <game id>\` to start a new game.`,
+                description: `Type \`${msg.channel.prefix}play <game id>\` to start a new game.`,
                 color: options.colors.economy,
                 thumbnail: {
-                    url: msg.client.user.avatarURL
+                    url: msg.client.user.avatarURL({dynamic: true})
                 },
                 fields: games,
                 footer: {
-                    text: `Type ${options.prefix}info <game id> to see how to play.`
+                    text: `Type ${msg.channel.prefix}info <game id> to see how to play.`
                 }
             }
         })
     }
-  }
+  })

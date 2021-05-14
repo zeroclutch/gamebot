@@ -1,63 +1,58 @@
-// Configure environment variabless
-const dotenv = require('dotenv')
-dotenv.config()
-
 // Initialize Discord bot
-const Discord = require('./discord_mod.js');
-const options = require('./config/options')
+import Discord from './discord_mod.js';
+import options from './config/options.js'
 const testMode = process.argv.includes('--title=test') 
 const manager = new Discord.ShardingManager('./bot.js', {
   token: options.token,
-  execArgv: testMode ? ['--title=test'] : [],
-  respawn: testMode ? false : true
+  respawn: testMode ? false : true,
+  mode: 'worker'
 })
 
-manager.spawn('auto', 5000).catch(err => console.error(err))
+const SPAWN_DELAY = 5000
+
+manager.on('shardCreate', shard => setTimeout(() => shard.send({ testMode }), SPAWN_DELAY))
+manager.spawn('auto', SPAWN_DELAY).catch(err => console.error(err))
 
 // Add server dependencies
-const request = require('request')
-const bodyParser = require('body-parser')
-const querystring = require('querystring');
-const express = require('express')
+import bodyParser from 'body-parser'
+import querystring from 'querystring';
+import express from 'express'
 const app = express()
 
-// Add requests
-const axios = require('axios')
-const qs = require('qs');
-
 // Create manager for custom WebUIs
-const WebUIManager = require('./util/WebUIManager')
+import WebUIManager from './types/webui/WebUIManager.js'
 const webUIManager = new WebUIManager(app)
 
-const DatabaseClient = require('./util/DatabaseClient')
+import DatabaseClient from './types/database/DatabaseClient.js'
 const dbClient = new DatabaseClient('server')
 dbClient.initialize()
 
 // Create shop manager
-const ShopGenerator = require('./util/ShopGenerator')
+import ShopGenerator from './types/database/ShopGenerator.js'
 const shopGenerator = new ShopGenerator({
   shopRefreshDelay: 60000
 })
 shopGenerator.initialize()
 
 // 
-const OAuth2Client = require('./util/OAuth2Client')
+import OAuth2Client from './types/auth/OAuth2Client.js'
 const oauth2 = new OAuth2Client()
 oauth2.initialize()
 
 // Create logger
-const Logger = require('./util/Logger')
+import Logger from './types/log/Logger.js'
 const logger = new Logger()
 
-const package = require('./package.json');
+import fs from 'fs'
+const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'))
 
-
-// Handle all GET requests
-app.use('/', express.static(__dirname + '/dist', { extensions:['html'] }))
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Update guild count
 let cachedGuilds = '??'
-updateGuilds = async () => {
+const updateGuilds = async () => {
   let guilds = await manager.fetchClientValues('guilds.size')
   if(guilds) cachedGuilds = guilds.reduce((prev, val) => prev + val, 0)
 }
@@ -65,11 +60,15 @@ updateGuilds = async () => {
 setInterval(updateGuilds, 60000)
 
 app.get('/docs', (request, response) => {
-  response.redirect('/docs/version/' + package.version)
+  response.redirect('/docs/version/' + pkg.version)
   logger.log('Docs viewed', {
     ref: request.query.ref
   })
 })
+
+import path from 'path'
+app.use('/docs/version/', express.static(path.join(__dirname, 'docs', 'gamebot')))
+app.use('/', express.static(path.join(__dirname, 'dist')))
 
 app.get('/api/guilds', async (req, res) => {
   res.send({
@@ -89,7 +88,7 @@ app.get('/invite', (req,res) => {
   logger.log('Invite used', {
     ref: req.query.ref
   })
-  res.redirect('https://discord.com/oauth2/authorize?client_id=620307267241377793&scope=bot&permissions=1547041872')
+  res.redirect(`https://discord.com/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&scope=bot&permissions=1547041872`)
 })
 
 app.get('/api/shopItems', async (req, res) => {
@@ -127,7 +126,7 @@ app.post('/api/purchase', async (req, res) => {
 
     if(info.balance < item.cost) {
       res.send({
-        error: 'Not enough credits, purchase could not be completed.'
+        error: 'Not enough credits, purchase could not be completed.',
       })
       return
     }
@@ -177,8 +176,7 @@ app.post('/api/purchase', async (req, res) => {
   // 
 })
 
-
-const fs = require('fs')
+// import fs from 'fs'
 const commands = [];
 const commandFiles = fs.readdirSync('./commands');
 
@@ -189,7 +187,7 @@ for (const commandFolder of commandFiles) {
     const folder = fs.readdirSync(`./commands/${commandFolder}`)
     for(const file of folder) {
       if(file == '.DS_Store') continue
-      const command = require(`./commands/${commandFolder}/${file}`)
+      const command = await import(`./commands/${commandFolder}/${file}`)
       if(command.category !== 'dev' && command.category !== 'mod')
         commands.push({
           name: command.name,
@@ -253,15 +251,17 @@ app.post('/response/:ui_id', (req, res) => {
   // Check if UI ID is registered
   if(!UI) {
     res.status(404)
-    res.send(__dirname + '/public/404.html')
+    res.send(path.join(__dirname, 'public', '404'))
     throw new Error('Response webpage not found.')
   }
 
   let data = JSON.stringify({...req.body, id: UI_ID})
 
-  manager.broadcastEval(`if(this.shard.id == ${UI.shard}) {
+  manager.broadcastEval(`
+  if(this.shard.ids[0] == ${UI.shard}) {
     this.webUIClient.receive(${data})
-  }`)
+  }
+  `)
   .then(value => {
     // Return the success webpage
     res.status(302)
@@ -323,14 +323,14 @@ app.post('/voted', async (req, res) => {
   })
 })
 
-const chargebee = require('chargebee')
+import chargebee from 'chargebee'
 chargebee.configure({
     site: process.env.CHARGEBEE_SITE, 
     api_key : process.env.CHARGEBEE_API_KEY
 });
 
 
-const SubscriptionManager = require('./types/database/SubscriptionManager.js')
+import SubscriptionManager from './types/database/SubscriptionManager.js'
 const subscriptionManager = new SubscriptionManager({ sweepInterval: 60000 })
 subscriptionManager.init()
 // Chargebee
@@ -408,7 +408,7 @@ app.post('/api/checkout/confirmHostedPage', async (req, res) => {
   }
 
   chargebee.hosted_page.retrieve(req.body.hostedPageID).request(async function(error,result) {
-    if(error){
+    if(error) {
       //handle error
       console.log(error);
       res.status(500)
@@ -455,7 +455,7 @@ app.post('/api/checkout/confirmHostedPage', async (req, res) => {
       const PLAN_IDS = {
         'credit_1000': { $inc: { balance: Math.floor(content.subscription.plan_quantity * 1000), amountDonated: content.invoice.total } },
         'credit_0001': { $inc: { balance: Math.floor(content.subscription.plan_quantity), amountDonated: content.invoice.total } },
-        'gold_0001': { $inc: { goldBalance: Math.round(content.subscription.plan_quantity), amountDonated: content.invoice.total } },
+        'gold_0001':   { $inc: { goldBalance: Math.round(content.subscription.plan_quantity), amountDonated: content.invoice.total } },
       }
       let newUser = await dbClient.database.collection('users').findOneAndUpdate(
         { userID },
@@ -488,4 +488,8 @@ app.on('error', function(err) {
 app.listen(process.env.PORT || 5000, (err) => {
   if (err) throw new Error(err)
   console.log('Server is running on port ' + (process.env.PORT || 5000))
+})
+
+process.on('unhandledRejection', err => {
+  console.error(err.stack, 'error')
 })

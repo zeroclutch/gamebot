@@ -1,4 +1,4 @@
-const options = require('./../../config/options')
+import options from './../../config/options.js'
 const DAILY_REWARDS = [
     { credits: 50,  gold: 0 },
     { credits: 100, gold: 0 }, 
@@ -41,7 +41,8 @@ const HOUR_LENGTH = (60 * 60 * 1000)
 const RESET_LENGTH = (12 * HOUR_LENGTH)
 const DAY_LENGTH = (24 * HOUR_LENGTH)
 
-module.exports = {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'daily',
     usage: 'daily',
     aliases: ['claim', 'vote'],
@@ -166,8 +167,8 @@ module.exports = {
                 })
             } else {    
                 // this should never happen
-                msg.channel.sendMsgEmbed(`There seems to be an issue with the ${options.prefix}daily command. Please submit a bug report in the [support server](${options.serverInvite}).`, 'Error!')
+                msg.channel.sendMsgEmbed(`There seems to be an issue with the ${msg.channel.prefix}daily command. Please submit a bug report in the [support server](${options.serverInvite}).`, 'Error!')
             }
         })
     }
-  }
+  })

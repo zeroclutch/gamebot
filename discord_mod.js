@@ -1,18 +1,41 @@
 /**
  * Discord Mod. An extension of the discord.js module to streamline usage of this bot.
  */
-const Discord = require('discord.js')
-const options = require('./config/options')
+import Discord from 'discord.js-light'
+import options from './config/options.js'
+import Game from './games/_Game/classes/Game.js'
+  
+/**
+ * Accesses and sets the prefix for a specific channel, regardless of channel caching
+ */
+Object.defineProperty(Discord.TextChannel.prototype, 'prefix', {
+  get() {
+    return this.client.commandHandler.getPrefix(this)
+  },
+  set(prefix) {
+    if(this.guild)
+      this.client.commandHandler.prefixes.set(this.guild.id, prefix) 
+  },
+  enumerable: true
+})
 
 /**
- * Checks if a Discord.GuildMember has a role
- * @returns {Boolean} True if the member has that role
+ * Accesses the game for the current channel
  */
-Discord.GuildMember.prototype.hasRole = function(roleID) {
-    if(this.roles.array().find(role=>role.id === roleID)) return true
-    return false
-  }
-  
+Object.defineProperty(Discord.TextChannel.prototype, 'game', {
+  get() {
+    return this.client.gameManager.games.get(this.id)
+  },
+  set(value) {
+    if(value == null) {
+      return this.client.gameManager.games.delete(this.id)
+    } else if (value instanceof Game) {
+      return this.client.gameManager.games.set(this.id, value)
+    }
+  },
+  enumerable: true
+})
+
 /**
  * Asynchronous version of {@link https://discord.js.org/#/docs/main/11.5.1/class/TextChannel?scrollTo=startTyping|Discord.TextChannel.startTyping()}
  * @returns {Promise<Boolean>} Always resolves to true.
@@ -92,13 +115,15 @@ Discord.User.prototype.hasItem = function (itemID) {
  */
 Discord.Client.prototype.updateStatus = async function(itemID) {
   // try fetching message
-  let statusChannel = this.channels.get(options.statusChannel)
+  let statusChannel = await this.channels.fetch(options.statusChannel)
   if(statusChannel) {
-    let message = (await statusChannel.fetchMessages({ limit: 1 }).catch(console.error)).first()
+    let message = (await statusChannel.messages.fetch({ limit: 1 }).catch(console.error)).first()
     this.latestStatus = { content: message.content, date: message.createdAt.toLocaleDateString() }
     return this.latestStatus
   }
   return null
 }
 
-module.exports = Discord
+const Collection = Discord.Collection
+export { Collection } 
+export default Discord

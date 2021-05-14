@@ -1,1 +1,3 @@
-module.exports = require('./classes/SurveySays.js')
+import SurveySays from './classes/SurveySays.js'
+
+export default SurveySays
