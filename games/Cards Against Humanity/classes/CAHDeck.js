@@ -1,7 +1,7 @@
-const { whiteCards, blackCards } = require('../assets/cards')
-const BlackCard = require('./BlackCard')
+import  { whiteCards, blackCards } from '../assets/cards.js'
+import BlackCard from './BlackCard.js'
 
-module.exports = class CAHDeck {
+export default class CAHDeck {
     constructor(sets) {
         // adds all appropriate sets to the collection of cards
         this.sets = sets.length == 0 ? ['Base Set'] : sets
@@ -37,7 +37,7 @@ module.exports = class CAHDeck {
         count = isNaN(count) ? 1 : count
         if(deck == 'white') deck = this.whiteCards
         if(deck == 'black') deck = this.blackCards
-        var drawCards = deck.slice(0, count)
+        let drawCards = deck.slice(0, count)
         deck.splice(0, count)
         return drawCards
     }
@@ -49,4 +49,4 @@ module.exports = class CAHDeck {
     }
 }
 
-module.exports.sets = []
+export let sets = []

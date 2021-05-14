@@ -1,12 +1,13 @@
-const options = require('./../../config/options')
+import options from './../../config/options.js'
 
-module.exports = {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
   name: 'draw',
   usage: 'draw',
   aliases: [],
   description: 'Lets you send a drawing in chat!',
   category: 'fun',
-  permissions: ['ATTACH_FILES'],
+  // permissions: ['ATTACH_FILES'],
   dmCommand: false,
   args: false,
   run: function (msg, args) {
@@ -16,7 +17,7 @@ module.exports = {
         color: 5301186,
         author: {
           name: `${msg.author.tag}'s drawing`,
-          icon_url: msg.author.avatarURL
+          icon_url: msg.author.avatarURL({dynamic: true})
         },
         image: {
           url: 'attachment://file.png'
@@ -59,4 +60,4 @@ module.exports = {
       console.error(err)
     })
   }
-}
+})

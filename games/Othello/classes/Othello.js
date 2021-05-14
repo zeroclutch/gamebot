@@ -1,18 +1,20 @@
-const Game = require(`../../Game`)
-const options = require('../../../config/options')
-const metadata = require('../metadata.json')
+import Game from '../../_Game/main.js'
+import options from '../../../config/options.js'
+import metadata from '../metadata.js'
 
-const othello = require('reversi');
+import othello from 'reversi';
 const OthelloGame = othello.Game;
 const PIECE_TYPES = othello.PIECE_TYPES;
 
-const { createCanvas, loadImage } = require('canvas')
-const Discord = require('../../../discord_mod')
+import canvas from 'canvas'
+const { createCanvas, loadImage } = canvas
+
+import Discord from '../../../discord_mod.js'
 
 /**
  * The base class for Othello games.
  */
-module.exports = class Othello extends Game {
+export default class Othello extends Game {
     constructor(msg, settings) {
         super(msg, settings)
         
@@ -30,15 +32,6 @@ module.exports = class Othello extends Game {
 
         this.defaultPlayer = {
             side: 'String'
-        }
-
-        this.messageListener = msg => {
-            // Only listen to messages sent in the game channel
-            if(msg.channel.id !== this.channel.id) return
-
-            this.onMessage(msg)
-            this.giveMoveHelp(msg)
-            this.getTimer(msg)
         }
 
         this.moves = []
@@ -106,7 +99,7 @@ module.exports = class Othello extends Game {
     }
 
     async giveMoveHelp(msg) {
-        if(msg.content.toLowerCase().startsWith(`${options.prefix}movehelp`)) {
+        if(msg.content.toLowerCase().startsWith(`${this.channel.prefix}movehelp`)) {
             let stream
             try {
                 stream = await this.renderBoard(this.side)
@@ -125,15 +118,15 @@ module.exports = class Othello extends Game {
             const columns = 'hgfedcba'
             const rows = '12345678'
 
-            let placeableSquares = this.board.getPlaceableSquares(this.side.toUpperCase()).map(s => '`' + options.prefix + columns[s._colIndex] + rows[s._rowIndex] + '`')
+            let placeableSquares = this.board.getPlaceableSquares(this.side.toUpperCase()).map(s => '`' + this.channel.prefix + columns[s._colIndex] + rows[s._rowIndex] + '`')
 
-            let embed = new Discord.RichEmbed()
-            .attachFile({
+            let embed = new Discord.MessageEmbed()
+            .attachFiles([{
                 attachment: stream,
                 name: 'image.png'
-            })
-            .addField('Important Note:', `Remember to start all moves with the Gamebot's prefix, ${options.prefix}.`)
-            .addField('How do I enter my moves?', `Find the square you want to place your tile in. Look for its column letter, and look for its row number. For example, the top left square is h1, and the bottom right one is a8. Then, type ${options.prefix}<letter><number>, and replace <letter> and <number> with your tile's letter and number.`)
+            }])
+            .addField('Important Note:', `Remember to start all moves with the Gamebot's prefix, ${this.channel.prefix}.`)
+            .addField('How do I enter my moves?', `Find the square you want to place your tile in. Look for its column letter, and look for its row number. For example, the top left square is h1, and the bottom right one is a8. Then, type ${this.channel.prefix}<letter><number>, and replace <letter> and <number> with your tile's letter and number.`)
             .addField('Possible moves', `The possible moves right now are: ${placeableSquares.join(',')}`)
             .setFooter(`Refer back to this anytime!`)
             .setColor(options.colors.info)
@@ -145,7 +138,7 @@ module.exports = class Othello extends Game {
     }
 
     getTimer(msg) {
-        if(msg.content.toLowerCase().startsWith(`${options.prefix}timer`)) {
+        if(msg.content.toLowerCase().startsWith(`${this.channel.prefix}timer`)) {
             if(this.thisTurnEndsAt > -1) {
                 msg.channel.send({
                     embed: {
@@ -246,19 +239,19 @@ module.exports = class Othello extends Game {
         let pieceCount = this.board.countByPieceType()
         let getPieces = (s) => pieceCount[s] > pieceCount[s == PIECE_TYPES.BLACK ? PIECE_TYPES.WHITE : PIECE_TYPES.BLACK] ? pieceCount[s] + ' ⭐️' : pieceCount[s] 
 
-        let embed = new Discord.RichEmbed()
-        .attachFile({
+        let embed = new Discord.MessageEmbed()
+        .attachFiles([{
             attachment: stream,
             name: 'image.png'
-        })
+        }])
         .setDescription(`You have ${this.options['Timer']} seconds to make a move.`)
-        .setFooter(`Type ${options.prefix}movehelp for help.`)
+        .setFooter(`Type ${this.channel.prefix}movehelp for help.`)
         .setImage(`attachment://image.png`)
         .setColor({ 'White': '#fffffe', 'Black': '#000001' }[side])
         .addField('Black ⚫️', getPieces(PIECE_TYPES.BLACK), true)
         .addField('White ⚪️', getPieces(PIECE_TYPES.WHITE), true)
         .addField('Remaining', `${pieceCount[PIECE_TYPES.BLANK]}`, true)
-        .addField('⏰', `Type ${options.prefix}timer to see the move time remaining.`, true)
+        .addField('⏰', `Type ${this.channel.prefix}timer to see the move time remaining.`, true)
         .addField('ℹ️', `To make a move, enter the bot prefix followed by the name of the square.`, true)
 
         this.client.logger.log('Generated image', {
@@ -271,11 +264,11 @@ module.exports = class Othello extends Game {
     awaitMove(side) {
         return new Promise((resolve, reject) => {
             this.thisTurnEndsAt = Date.now() + parseInt(this.options['Timer']) * 1000
-            const filter = m => m.content.startsWith(options.prefix) && this.players.has(m.author.id) && m.author.id == this.getPlayer(side).user.id
+            const filter = m => m.content.startsWith(this.channel.prefix) && this.players.has(m.author.id) && m.author.id == this.getPlayer(side).user.id
             let collector = this.channel.createMessageCollector(filter, { time: parseInt(this.options['Timer']) * 1000 })
             collector.on('collect', m => {
                 if(this.ending || this.over) return
-                let move = m.content.replace(options.prefix, '')
+                let move = m.content.replace(this.channel.prefix, '')
                 const columns = 'hgfedcba'
                 const rows = '12345678'
                 let column = columns.indexOf(move[0])

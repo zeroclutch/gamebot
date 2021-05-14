@@ -1,6 +1,7 @@
-const options = require('./../../config/options')
+import options from './../../config/options.js'
 
-module.exports = {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'downtime',
     usage: 'downtime <time (minutes)>',
     aliases: [],
@@ -15,7 +16,7 @@ module.exports = {
         const startTime = Date.now() + length
         if(!args[0]) {
             msg.client.getTimeToDowntime().then(timeToDowntime => {
-                var downtime = Math.ceil(timeToDowntime / 60000)
+                let downtime = Math.ceil(timeToDowntime / 60000)
                 msg.channel.sendMsgEmbed(`Downtime currently set for ${downtime} minute(s). Would you like to disable the current downtime message? Enter \`yes\` or \`no\`.`)
                 msg.channel.awaitMessages(m => (m.content.toLowerCase() == 'yes' || m.content.toLowerCase() == 'no') && m.author.id == msg.author.id, {max: 1, time: 30000 }).then(collected => {
                     const message = collected.first().content.toLowerCase()
@@ -47,4 +48,4 @@ module.exports = {
             msg.channel.sendMsgEmbed(`Invalid time, set time as a floating point value in minutes.`, 'Error!', options.colors.error)
         }
     }
-  }
+  })

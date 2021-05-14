@@ -1,8 +1,9 @@
 // create Collection<Game> of all the games
-const Discord = require('../../discord_mod')
-const options = require('../../config/options')
+import Discord from '../../discord_mod.js'
+import options from '../../config/options.js'
 
-module.exports = {
+import BotCommand from '../../types/command/BotCommand.js'
+export default new BotCommand({
     name: 'info',
     usage: 'info <game>',
     aliases: [],
@@ -25,7 +26,7 @@ module.exports = {
                     description: game.about,
                     color: 4886754,
                     thumbnail: {
-                        url: msg.client.user.avatarURL
+                        url: msg.client.user.avatarURL({dynamic: true})
                     },
                     fields: [
                         {
@@ -42,7 +43,7 @@ module.exports = {
                         }
                     ],
                     footer: {
-                        text: `Type ${options.prefix}play ${game.id} to start a new game!`
+                        text: `Type ${msg.channel.prefix}play ${game.id} to start a new game!`
                     }
                 }
             }
@@ -50,11 +51,11 @@ module.exports = {
             if(game.unlockables) {
                 message.embed.fields.push({
                     name: 'Unlockable Content',
-                    value: `This game has extra content you can unlock! Type \`${options.prefix}shop ${game.id}\` to see what's available.`
+                    value: `This game has extra content you can unlock! Type \`${msg.channel.prefix}shop ${game.id}\` to see what's available.`
                 })
             }
             
             msg.channel.send(message)
         }
     }
-  }
+  })

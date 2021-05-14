@@ -1,3 +1,3 @@
-const ConnectFour = require('./classes/ConnectFour.js')
+import ConnectFour from './classes/ConnectFour.js'
 
-module.exports = ConnectFour
+export default ConnectFour

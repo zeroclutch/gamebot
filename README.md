@@ -1,4 +1,3 @@
-
 ![](https://cdn.discordapp.com/attachments/618344107290525698/618657323380113419/information.png)
 
 # Gamebot for Discord
@@ -16,7 +15,7 @@ Add fun multiplayer games to Discord with Gamebot! **You can invite the bot to y
 * Helpful and responsive support server 
 
 # Contributing and Documentation
-The documentation for game development is available at [https://gamebot.rocks/docs](https://gamebot.rocks/docs).
+The documentation for game development is available at [https://gamebot.rocks/docs](https://gamebot.rocks/docs). This documentation is currently out of date as of version 3.0.0.
 
 # Current Game List
 ## 1. Cards Against Humanity

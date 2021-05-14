@@ -1,6 +1,6 @@
-const Game = require(`../../Game`)
-const options = require('../../../config/options')
-const metadata = require('../metadata.json')
+import Game from '../../_Game/main.js'
+import options from '../../../config/options.js'
+import metadata from '../metadata.js'
 
 const ICONS = ['⚪️','🔴','🔵', '💚', '💛', '💜', '🖤']
 const FOOTER = ['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟']
@@ -8,7 +8,7 @@ const FOOTER = ['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6�
 /**
  * The base class for Connect 4 games.
  */
-module.exports = class ConnectFour extends Game {
+export default class ConnectFour extends Game {
     constructor(msg, settings) {
         super(msg, settings)
         
@@ -218,7 +218,7 @@ module.exports = class ConnectFour extends Game {
 
     finish(id) {
         let winner = this.players.find(player => player.id == id)
-        this.end(winner, `${winner.user} has won! ${this.renderBoard()}\nWant free Nitro? Join our [Nitro giveaway on Twitter](https://twitter.com/GamebotDiscord/status/1366868132623654915)!`)
+        this.end(winner, `${winner.user} has won! ${this.renderBoard()}\nTo play games with the community, [join our server](${options.serverInvite}?ref=gameEnd)!`)
     }
     
 
