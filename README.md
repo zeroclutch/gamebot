@@ -1,16 +1,3 @@
-# Branch v3
-
-## Welcome to v3!
-
-This branch is an in-progress update. What does v3 bring?
-
-* Discord.js v12 support
-* Node.js v14 support
-* Refactoring for readability
-* Additional under the hood changes
-
----
-
 ![](https://cdn.discordapp.com/attachments/618344107290525698/618657323380113419/information.png)
 
 # Gamebot for Discord
@@ -28,7 +15,7 @@ Add fun multiplayer games to Discord with Gamebot! **You can invite the bot to y
 * Helpful and responsive support server 
 
 # Contributing and Documentation
-The documentation for game development is available at [https://gamebot.rocks/docs](https://gamebot.rocks/docs).
+The documentation for game development is available at [https://gamebot.rocks/docs](https://gamebot.rocks/docs). This documentation is currently out of date as of version 3.0.0.
 
 # Current Game List
 ## 1. Cards Against Humanity
