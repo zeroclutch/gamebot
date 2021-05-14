@@ -18,11 +18,22 @@ const client = new Discord.Client({
 
 import options from './config/options.js'
 
+const runTests = async () => {
+  // Run tests
+  if(client.isTestingMode && client.readyAt && await client.channels.fetch(process.env.TEST_CHANNEL)) {
+    console.log('Loading tests...')
+    const {default: test} = await import('./test/index.test.js')
+    test(client)
+  }
+}
+
 import { parentPort } from 'worker_threads'
 parentPort.on('message', async message => {
   if(message.testMode) {
     // Check if we are testing
+    console.log('Activated testing mode')
     client.isTestingMode = true
+    runTests()
   }
 })
 
@@ -76,11 +87,7 @@ client.on('ready', async () => {
   // Update bot system status
   client.updateStatus()
 
-  // Run tests
-  if(client.isTestingMode && await client.channels.fetch(process.env.TEST_CHANNEL)) {
-    const {default: test} = await import('./test/index.test.js')
-    test(client)
-  }
+  runTests()
 
   // Post DBL stats every 30 minutes
   setInterval(() => {
