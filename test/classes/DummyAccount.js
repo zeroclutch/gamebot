@@ -1,6 +1,6 @@
-const Discord = require('../../discord_mod.js')
+import Discord from '../../discord_mod.js'
 
-module.exports = class DummyAccount {
+export default class DummyAccount {
     /**
      * 
      * @param {string} token The token of this bot
@@ -13,17 +13,15 @@ module.exports = class DummyAccount {
         this.client = new Discord.Client()
     }
 
-    get channel() {
-        return this.client.channels.get(this._channel)
-    }
-
     /**
      * Initializes the bot. The other client must be logged in separately.
      */
     init() {
         return new Promise(async (resolve, reject) => {
             try {
-                await this.client.login(this.token).catch(reject)
+                await this.login().catch(reject)
+                this.channel = await this.client.channels.fetch(this._channel, true)
+                resolve(true)
             } catch (error) {
                 reject(error)
             }
@@ -37,7 +35,7 @@ module.exports = class DummyAccount {
                 this.client.once('ready', () => {
                     resolve(true)
                 })
-                this.client.login(token)
+                this.client.login(this.token)
             } catch(error) {
                 reject(error)
             }
@@ -51,6 +49,6 @@ module.exports = class DummyAccount {
      * @param {time} time How long to wait before timing out
      */
     async command(command) {
-        this.channel.send(command)
+        await this.channel.send(command)
     }
 }

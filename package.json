@@ -1,39 +1,44 @@
 {
   "name": "gamebot",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "description": "Add multiplayer games to Discord with Gamebot!",
   "main": "server.js",
+  "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "debug": "node --nolazy --inspect-brk=9229 server.js",
-    "dev": "node server.dev.js",
+    "start": "node -r dotenv/config server.js",
+    "debug": "node --trace-warnings -r dotenv/config --nolazy --inspect-brk=9229 server.js",
+    "dev": "node -r dotenv/config server.dev.js",
     "generate-docs": "jsdoc -c .jsdoc.json",
-    "test": "node server.js --title=test"
+    "test": "node -r dotenv/config server.js --title=test"
   },
   "author": "zeroclutch",
   "license": "MIT",
   "engines": {
-    "node": "10.x"
+    "node": "14.x"
   },
   "dependencies": {
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
-    "canvas": "^2.6.0",
+    "bufferutil": "^4.0.3",
+    "canvas": "^2.6.1",
     "chargebee": "^2.6.5",
     "chess": "^0.4.3",
     "dblapi.js": "^2.3.0",
     "discord-oauth2": "^2.6.0",
-    "discord.js": "^11.5.1",
+    "discord.js-light": "^3.5.0",
     "dotenv": "^8.0.0",
+    "erlpack": "github:discord/erlpack",
     "express": "^4.17.1",
     "mixpanel": "^0.13.0",
-    "mongodb": "^3.3.2",
+    "mongodb": "^3.6.3",
     "paypal-rest-sdk": "^1.8.1",
     "qs": "^6.9.4",
     "querystring": "^0.2.0",
     "request": "^2.88.2",
     "reversi": "^3.0.0",
-    "text2png": "^2.1.0"
+    "text2png": "^2.1.0",
+    "utf-8-validate": "^5.0.4",
+    "zlib-sync": "^0.1.7"
   },
   "devDependencies": {
     "colors": "^1.4.0",

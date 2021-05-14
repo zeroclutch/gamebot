@@ -1,3 +1,3 @@
-const CardsAgainstHumanity = require('./classes/CardsAgainstHumanity.js')
+import CardsAgainstHumanity from './classes/CardsAgainstHumanity.js'
 
-module.exports = CardsAgainstHumanity
+export default CardsAgainstHumanity

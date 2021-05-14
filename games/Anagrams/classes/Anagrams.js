@@ -1,20 +1,20 @@
-const Game = require('../../Game')
-const options = require('../../../config/options')
-const metadata = require('../metadata.json')
-const fs = require('fs')
+import Game from '../../_Game/main.js'
+import options from '../../../config/options.js'
+import metadata from '../metadata.js'
+import fs from 'fs'
 
-var words = fs.readFileSync('./gameData/WordGames/Collins_Scrabble_Dictionary.txt', { encoding: 'utf-8' }, err => {
+let words = fs.readFileSync('./gameData/WordGames/Collins_Scrabble_Dictionary.txt', { encoding: 'utf-8' }, err => {
     console.error(err)
 })
 
-var wordRegistry = {}
+let wordRegistry = {}
 
 words = words.split('\n')
 words.splice(0,1)
 
 words.forEach(word => wordRegistry[word] = true)
 
-module.exports = class Anagrams extends Game {
+export default class Anagrams extends Game {
     constructor(msg, settings) {
         super(msg, settings)
         this.metadata = metadata
@@ -120,8 +120,8 @@ module.exports = class Anagrams extends Game {
         }
 
         // check if word can be created
-        for(var i = 0; i < word.length; i++) {
-            var index = originalWord.indexOf(word[i])
+        for(let i = 0; i < word.length; i++) {
+            let index = originalWord.indexOf(word[i])
             if(index < 0) return false
             originalWord = originalWord.replace(word[i], '')
         }
@@ -163,7 +163,7 @@ module.exports = class Anagrams extends Game {
             })
         }).then(() => {
             // create a collector on the main channel
-            const filter = m => !m.author.bot
+            const filter = m => !m.author.bot  || m.client.isTestingMode
             const ROUND_LENGTH = 60000
             const collector = this.channel.createMessageCollector(filter, {time: ROUND_LENGTH})
             const isPangram = word => word.length == this.word.length
@@ -266,8 +266,8 @@ module.exports = class Anagrams extends Game {
     }
 
     finish() {
-        var fields = []
-        var winner = [{ score: -1 }]
+        let fields = []
+        let winner = [{ score: -1 }]
         this.players.forEach(player => {
             if(player.score > winner[0].score) {
                 winner = [player]
@@ -280,7 +280,7 @@ module.exports = class Anagrams extends Game {
                 value: player.words && player.words.length > 0 ? player.words.join(', ') : 'No words submitted.'
             })
         })
-        var title
+        let title
         if(winner.length == 1) {
             title = `The winner is ${winner[0].user.tag}! `
         } else {

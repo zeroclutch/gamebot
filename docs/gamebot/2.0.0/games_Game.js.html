@@ -640,7 +640,7 @@ const Game = class Game {
             if(member === false) return
         }
 
-        if(!member || this.players.has(member.id) || member.bot) {
+        if(!member || this.players.has(member.id) || (member.bot)) {
             await this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027)
             return
         }
@@ -810,7 +810,7 @@ const Game = class Game {
             if(timeToDowntime > 0) {
                 let activeGames = await this.msg.client.shard.broadcastEval('this.channels.filter(c => c.game).size')
                 if(activeGames.reduce((prev, val) => prev + val) == 0) {
-                    let channel = this.msg.client.channels.get(options.loggingChannel)
+                    let channel = this.msg.client.channels.cache.get(options.loggingChannel)
                     if(channel) channel.send(`All games finished, &lt;@${options.ownerID}>`)
                 }
             }

@@ -1,7 +1,7 @@
-const Discord = require('../../discord_mod.js')
-const DummyAccount = require('./DummyAccount.js')
+import Discord from '../../discord_mod.js'
+import DummyAccount from './DummyAccount.js'
 
-module.exports = class TestBot {
+export default class TestBot {
     /**
      * 
      * @param {string} token The token of this bot
@@ -18,10 +18,6 @@ module.exports = class TestBot {
         this.client = new Discord.Client()
     }
 
-    get channel() {
-        return this.client.channels.get(this._channel)
-    }
-
     get id() {
         return this.client.user.id
     }
@@ -32,21 +28,20 @@ module.exports = class TestBot {
     init() {
         return new Promise(async (resolve, reject) => {
             try {
-                await this.client.login(this.token).catch(reject)
-                const clientUser = await this.target.fetchUser(this.client.user.id)
+                await this.login().catch(reject)
+                this.channel = await this.client.channels.fetch(this._channel)
 
+                let clientUser = await this.target.users.fetch(this.client.user.id, true)
                 // Pretend tester isn't a bot
-                clientUser.bot = false
                 clientUser.createDM = () => new Promise(resolve => resolve(this.channel))
 
                 // Log into dummy accounts and update bot status
                 for(let i = 0; i < this.accounts.length; i++) {
                     let account = this.accounts[i]
-                    await account.login(account.token)
+                    await account.init()
 
-                    let dummyUser = await this.target.fetchUser(this.client.user.id)
+                    let dummyUser = await this.target.users.fetch(account.client.user.id)
                     dummyUser.createDM = () => new Promise(resolve => resolve(this.channel))
-                    dummyUser.bot = false
                 }
                 resolve(true)
             } catch (error) {
@@ -59,17 +54,7 @@ module.exports = class TestBot {
         return new Promise(async (resolve, reject) => {
             try {
                 /** Check if both bots are ready */
-                this.target.once('ready', () => {
-                    if(this.client.status === 1) {
-                        resolve(true)
-                    }
-                })
-                this.client.once('ready', () => {
-                    if(this.target.status === 1) {
-                        resolve(true)
-                    }
-                })
-                this.client.login(token)
+                this.client.login(this.token).then(resolve).catch(reject)
             } catch(error) {
                 reject(error)
             }
@@ -79,6 +64,7 @@ module.exports = class TestBot {
      * 
      * @param {String} command The message to send as a command
      * @param {number} responseCount The number of responses to expect
+     * @param {Discord.Channel} channel The channel to expect responses in
      * @param {time} time How long to wait before timing out
      */
     async command(command, responseCount=1, channel=this.channel, time=10000) {
@@ -93,9 +79,10 @@ module.exports = class TestBot {
      * @param {DummyAccount} account The account to send a command as
      * @param {String} command The message to send as a command
      * @param {number} responseCount The number of responses to expect
+     * @param {Discord.Channel} channel The channel to expect responses in
      * @param {time} time How long to wait before timing out
      */
-    async commandFrom(account, responseCount=1, channel=this.channel, time=10000) {
+    async commandFrom(account, command, responseCount=1, channel=this.channel, time=10000) {
         return new Promise(async (resolve, reject) => {
             await account.command(command).catch(reject)
             this.awaitMessages(channel, responseCount, time).then(resolve).catch(reject)
@@ -109,7 +96,7 @@ module.exports = class TestBot {
      */
     awaitMessages(channel=this.channel, responseCount=1, time=10000) {
         return new Promise(async (resolve, reject) => {
-            channel.awaitMessages(m => m.author.id === this.target.user.id && m.channel.id === channel.id, { maxMatches: responseCount, time, errors: ['time'] })
+            channel.awaitMessages(m => m.author.id === this.target.user.id && m.channel.id === channel.id, { maxProcessed: responseCount, time, errors: ['time'] })
             .then(resolve)
             .catch(err => {
                 if(err.size === 0) {

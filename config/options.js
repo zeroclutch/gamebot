@@ -1,10 +1,11 @@
-module.exports = {
+export default {
   prefix: process.env.DISCORD_BOT_PREFIX,
   token: process.env.DISCORD_BOT_TOKEN,
   ownerID: process.env.OWNER_ID,
   activity: {
-    game: 'Type ' + process.env.DISCORD_BOT_PREFIX + 'help',
-    type: 'PLAYING'
+    game: process.env.DISCORD_BOT_PREFIX + 'help | gamebot.rocks',
+    type: 'PLAYING',
+    url: 'https://gamebot.rocks'
   },
   loggingChannel: process.env.LOGGING_CHANNEL,
   statusChannel: '618344167759675413',
