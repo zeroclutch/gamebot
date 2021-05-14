@@ -251,8 +251,8 @@ app.post('/response/:ui_id', (req, res) => {
   // Check if UI ID is registered
   if(!UI) {
     res.status(404)
-    res.send(path.join(__dirname, 'public', '404'))
-    throw new Error('Response webpage not found.')
+    res.send(path.join(__dirname, 'dist', 'index.html'))
+    return
   }
 
   let data = JSON.stringify({...req.body, id: UI_ID})

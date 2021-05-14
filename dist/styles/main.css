@@ -1,0 +1,109 @@
+* {
+    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Helvetica', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+    padding: 0;
+    margin: 0;
+}
+
+.main-content {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #e1e1e1;
+    
+}
+
+.timer-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    background-color: #fff;
+    text-align: center;
+    padding: 20px 0;
+    z-index: 10;
+}
+
+.timer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 10px;
+    background-color: #3aaedb;
+}
+
+.is-marginless {
+    margin: 0;
+}
+
+.center-box {
+    max-width: 500px;
+    max-height: 500px;
+    background-color: #fff;
+    border-radius: 4px;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 40px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.078), 0 3px 6px rgba(0, 0, 0, 0.126);
+}
+
+.center-icon {
+    text-align: center;
+    padding: 20px;
+}
+
+h3 {
+    color: #323232;
+    text-align: center;
+    font-size: 36px;
+    padding: 20px;
+}
+
+.tools-holder {
+    width: 100%;
+    text-align: center;
+    padding: 20px;
+}
+
+.gamebot-icon {
+    height: 60px;
+    width: 70px;
+    margin: 0 auto;
+    background-image: url(/../images/bw-logo.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.blurb {
+    font-size: 16px;
+    line-height: 1.5em;
+    color: #9b9b9b;
+    padding: 20px;
+}
+
+.blurb a {
+    color: #638fae;
+}
+
+.blurb a:hover {
+    color: #3c9de3;
+}
+
+.signature {
+    color: #444;
+    text-align: right;
+    padding: 20px;
+    font-style: italic;
+}
+
+/* WEB UI */
+.ui-message {
+    text-align: center;
+}
+
+.ui-form {
+    text-align: center;
+}

@@ -27,7 +27,7 @@ export default async (client, tester) => {
     await test('run daily command and update balance', async () => {
         // try fake voting
         message = (await tester.command($ + 'daily')).first()
-        assert.strictEqual('**0 day streak!**\n⬜⬜⬜⬜⬜⬜⬜ | **Next Reward: 100' + options.creditIcon + '**', message.embeds[0].fields[0].value)
+        assert.strictEqual(message.embeds[0].fields[0].value, '**0 day streak!**\n⬜⬜⬜⬜⬜⬜⬜')
         message = (await tester.command($ + 'fakevote ' + tester.id)).first()
         message = (await tester.command($ + 'daily')).first()
         assert.strictEqual('Thank you for voting on Gamebot! You can vote again in about 12 hours.', message.embeds[0].description)
@@ -39,12 +39,12 @@ export default async (client, tester) => {
     await test('run status command', async () => {
         message = (await tester.command($ + 'status')).first()
         assert.strictEqual('Latest Status Update', message.embeds[0].fields[0].name)
-        assert.strictEqual('Shards Online', message.embeds[0].fields[1].name)
-        assert.strictEqual('Current Shard', message.embeds[0].fields[2].name)
-        assert.strictEqual('Active Games', message.embeds[0].fields[3].name)
-        assert.strictEqual('Guild Count', message.embeds[0].fields[4].name)
-        assert.strictEqual('User Count', message.embeds[0].fields[5].name)
-        assert.strictEqual('Users in database', message.embeds[0].fields[6].name)
+        assert.strictEqual('Shards Online',        message.embeds[0].fields[1].name)
+        assert.strictEqual('Current Shard',        message.embeds[0].fields[2].name)
+        assert.strictEqual('Active Games',         message.embeds[0].fields[3].name)
+        assert.strictEqual('Guild Count',          message.embeds[0].fields[4].name)
+        assert.strictEqual('User Count',           message.embeds[0].fields[5].name)
+        assert.strictEqual('Users in database',    message.embeds[0].fields[6].name)
     })
 
     testResults()
