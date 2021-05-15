@@ -27,6 +27,7 @@ const runTests = async () => {
   }
 }
 
+/*
 import { parentPort } from 'worker_threads'
 parentPort.on('message', async message => {
   if(message.testMode) {
@@ -35,7 +36,7 @@ parentPort.on('message', async message => {
     client.isTestingMode = true
     runTests()
   }
-})
+})*/
 
 // Discord Bot List dependencies
 import DBL from 'dblapi.js';
