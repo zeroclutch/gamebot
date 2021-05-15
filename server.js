@@ -5,7 +5,7 @@ const testMode = process.argv.includes('--title=test')
 const manager = new Discord.ShardingManager('./bot.js', {
   token: options.token,
   respawn: testMode ? false : true,
-  mode: 'worker'
+  mode: 'process'
 })
 
 const SPAWN_DELAY = 5000
