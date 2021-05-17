@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>discord_mod.js - Documentation</title>
+    <title>types/command/CommandHandler.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">discord_mod.js</h1>
+    <h1 class="page-title">types/command/CommandHandler.js</h1>
     
 
     
@@ -39,135 +39,210 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * Discord Mod. An extension of the discord.js module to streamline usage of this bot.
- */
-import Discord from 'discord.js-light'
-import options from './config/options.js'
-import Game from './games/_Game/classes/Game.js'
-  
-/**
- * Accesses and sets the prefix for a specific channel, regardless of channel caching
- */
-Object.defineProperty(Discord.TextChannel.prototype, 'prefix', {
-  get() {
-    return this.client.commandHandler.getPrefix(this)
-  },
-  set(prefix) {
-    if(this.guild)
-      this.client.commandHandler.prefixes.set(this.guild.id, prefix) 
-  },
-  enumerable: true
-})
+            <pre class="prettyprint source linenums"><code>import options from "../../config/options.js"
+import { Collection } from '../../discord_mod.js'
+import BotCommand from './BotCommand.js'
+import GameCommand from './GameCommand.js'
 
-/**
- * Accesses the game for the current channel
- */
-Object.defineProperty(Discord.TextChannel.prototype, 'game', {
-  get() {
-    return this.client.gameManager.games.get(this.id)
-  },
-  set(value) {
-    if(value == null) {
-      return this.client.gameManager.games.delete(this.id)
-    } else if (value instanceof Game) {
-      return this.client.gameManager.games.set(this.id, value)
+export default class CommandHandler {
+    constructor(client) {
+        this.client = client
+        
+        // Collection&lt;String, Command>
+        this.commands = new Collection()
+        this.games = new Collection()
+
+        // cache for prefixes
+        this.prefixes = new Collection()
     }
-  },
-  enumerable: true
-})
 
-/**
- * Asynchronous version of {@link https://discord.js.org/#/docs/main/11.5.1/class/TextChannel?scrollTo=startTyping|Discord.TextChannel.startTyping()}
- * @returns {Promise&lt;Boolean>} Always resolves to true.
- */
-Discord.TextChannel.prototype.startTypingAsync = function (channelResolvable) {
-  return new Promise((resolve, reject) => { 
-    try {
-      channelResolvable.startTyping()
-      resolve(true)
-    } catch (err) {
-      reject(err)
+    get tagPrefix() { return new RegExp(`^&lt;@(!?)(${this.client.user.id})>( *)`) }
+
+    async init () {
+        // construct fast command index
+        this.commands = new Collection()
+        this.games = new Collection()
+        this.client.commands.forEach(command => this.commands.set(command.name, command))
+        this.client.games.forEach(game => this.games.set((game.metadata || {id: '_Game'}).id, game.commands))
+        
+        // cache all guild prefixes available for this shard 
+        await this.updatePrefixes()
     }
-  })
-}
 
-/**
- * Easily send a message to a TextChannel or DMChannel as an embed.
- * @param {String} description The description field of the embed.
- * @param {String} title The title of the embed.
- * @param {Discord.ColorResolvable} color The color of the embed.
- * @see {@link https://discord.js.org/#/docs/main/11.5.1/typedef/ColorResolvable|Discord.ColorResolvable}
- * @returns {Promise&lt;Discord.Message>}
- */
-Discord.DMChannel.prototype.sendMsgEmbed = Discord.TextChannel.prototype.sendMsgEmbed = function(description, title, embedColor) {
-  return this.send('', {
-    embed: {
-      color:  embedColor || 3789311,
-      title,
-      description
+    // Force prefix cache update
+    async updatePrefixes() {
+        /*
+        let collection = this.client.database.collection('guilds')
+        if(collection) {
+            let guilds = await collection.find('*')
+            guilds.forEach(guild => {
+                // NOTE: GUILD.ID MAY NOT BE ACCURATE
+                this.prefixes.set(guild.id, guild.prefix)
+            })
+        }*/
     }
-  })
-}
 
-/**
- * Creates a new user object in the database.
- * @returns {Promise&lt;Object>} The data the user was initialized with.
- * @example
- * user.createDBInfo()
- * .then(info => console.log(`User was created with ${info.balance} credits`))
- * .catch(console.error)
- */
-Discord.User.prototype.createDBInfo = function() {
-  return new Promise((resolve, reject) => {
-    this.client.dbClient.createDBInfo(this.id).then(resolve).catch(reject)
-  })
-}
+    async hasPermissions(message, permissions, game) {
 
-/**
- * @typedef UserData
- * @type {Object}
- * @property {String} userID The user's ID
- * @property {Array.&lt;String>} unlockedItems The list of unlocked items, categorized by ID
- */
+        // Fetch member
+        let member
+        let userPermissions = []
+        
+        if(message.guild) {
+            member = await message.guild.members.fetch(message.author.id)
+            let channel = await this.client.channels.fetch(message.channel.id, false)
+            userPermissions = (channel.permissionsFor(member) || new Collection()).toArray()
+        }
 
-/**
- * Fetches a user's database information.
- * @returns {Promise&lt;UserData>}
- */
-Discord.User.prototype.fetchDBInfo = function() {
-  return new Promise((resolve, reject) => {
-    this.client.dbClient.fetchDBInfo(this.id).then(resolve).catch(reject)
-  })
-}
+        // Substitute custom permissions
+        if(message.author.id === process.env.OWNER_ID) {
+            userPermissions.push('GOD')
+        }
 
-/**
- * Sees if a user has an item in their inventory.
- * @returns {Boolean}
- */
-Discord.User.prototype.hasItem = function (itemID) {
-  return new Promise((resolve, reject) => {
-    this.client.dbClient.hasItem(this.id, itemID).then(resolve).catch(reject)
-  })
-}
+        if(this.client.moderators.includes(message.author.id)) {
+            userPermissions.push('MOD')
+        }
 
-/**
- * Updates the current status message.
- */
-Discord.Client.prototype.updateStatus = async function(itemID) {
-  // try fetching message
-  let statusChannel = await this.channels.fetch(options.statusChannel)
-  if(statusChannel) {
-    let message = (await statusChannel.messages.fetch({ limit: 1 }).catch(console.error)).first()
-    this.latestStatus = { content: message.content, date: message.createdAt.toLocaleDateString() }
-    return this.latestStatus
-  }
-  return null
-}
+        if(game &amp;&amp; game.leader.id === message.author.id) {
+            userPermissions.push('GAME_LEADER') 
+        }
 
-const Collection = Discord.Collection
-export { Collection } 
-export default Discord</code></pre>
+        return permissions.every(permission => userPermissions.includes(permission))
+    }
+    
+    /**
+     * Converts a string to 'Title Case'
+     * @param {string} string String to convert
+     * @returns string
+     */
+    titleCase(string) {
+        return string.toLowerCase().replace(/^_*(.)|_+(.)/g, (s, c, d) => c ? c.toUpperCase() : ' ' + d.toUpperCase())
+    }
+
+    /**
+     * Returns a prefix
+     * @param {Channel} channel The channel that the message was sent in
+     * @returns {string}
+     */
+    getPrefix(channel) {
+        let prefix = options.prefix
+        if(channel.guild) {
+            prefix = this.prefixes.get(channel.guild.id) || options.prefix
+        }
+        return prefix
+    }
+
+    getMessageData(message) {
+        let content = message.content
+        let prefix,
+            parts,
+            name,
+            args
+
+        // Check if message starts with tag
+        if(content.match(this.tagPrefix)) {
+            prefix = this.tagPrefix
+            content = content.replace(this.tagPrefix, '')
+        } else if(content.startsWith(this.getPrefix(message.channel))) {
+            prefix = this.getPrefix(message.channel)
+            content = content.replace(prefix, '')
+        } else {
+            return false
+        }
+        // Split after removing prefix in case prefix has spaces
+        parts = content.split(' ')
+        name = parts[0].toLowerCase()
+        args = parts.slice(1)
+        return { prefix, content, name, args }
+        
+    }
+
+    getCommand(messageData, game) {
+        let command
+
+        // Get default commands and aliases
+        command = this.commands.get(messageData.name)
+            || this.commands.find(command => command.aliases.includes(messageData.name))
+
+        // Get in-game commands
+        if(game &amp;&amp; this.client.games.has(game.metadata)) {
+            command = command || this.client.games.get(game.metadata).commands.get(messageData.name)
+        }
+
+        return command
+    }
+
+    async handle(message) {
+        // Ignore bots
+        if(message.author.bot &amp;&amp; !message.client.isTestingMode) {
+            return false
+        }
+
+        // Find command 
+        let messageData = this.getMessageData(message)
+
+        // Check command exists
+        if(!messageData) return false
+
+        let prefix = this.getPrefix(message.channel)
+
+        // Check for empty tag
+        if(messageData.prefix === this.client.user.tag &amp;&amp; !messageData.name) {
+            message.channel.sendMsgEmbed(`The prefix for this bot is \`${prefix}\`. You can also use ${this.client.user.tag} as a prefix.`)
+            return false
+        }
+
+        // Validate command type
+        let game = this.client.gameManager.games.get(message.channel.id)
+
+        // Get command
+        let command = this.getCommand(messageData, game)
+        
+        if(!command) return false
+
+        if (command instanceof BotCommand) {} 
+        else if (command instanceof GameCommand) {
+            if(!game) {
+                message.channel.sendMsgEmbed(`Please start a game before using this command.`, 'Error!', options.colors.error)
+                return false
+            }
+            if(!game.players.has(message.author.id)) {
+                message.channel.sendMsgEmbed(`Only players may use in-game commands.`, 'Error!', options.colors.error)
+                return false
+            }
+        } else {
+            throw new TypeError('Improperly constructed command, all commands must be of type BotCommand or GameCommand')
+        }
+
+
+        // Check for dmChannel
+        if (message.channel.type === 'dm' &amp;&amp; !command.dmCommand) {
+            message.channel.send('This command is not available in a DM channel. Please try this again in a server.')
+            return false
+        } 
+        
+        if(!(await this.hasPermissions(message, command.permissions, game))) {
+            let permissions = command.permissions.map(permission => this.titleCase(permission)).join(', ')
+            message.channel.sendMsgEmbed(`Sorry, you don't have the necessary permissions for this command.\n\nRequired permissions: \`${permissions}\``, 'Error!', options.colors.error)
+            return false
+        }
+
+        if (command.args &amp;&amp; messageData.args.join() === '') {
+            message.channel.sendMsgEmbed(`Incorrect usage of this command. Usage: \`${prefix}${command.usage}\`.`)
+            return
+        }
+
+        try {
+            if (['dev', 'economy'].includes(command.category)) {
+                await this.client.dbClient.createDBInfo(message.author.id)
+            }
+            command.run(message, messageData.args, game)
+        } catch (err) {
+            this.client.emit('error', err, this.client, message)
+        }
+    
+    }
+}</code></pre>
         </article>
     </section>
 

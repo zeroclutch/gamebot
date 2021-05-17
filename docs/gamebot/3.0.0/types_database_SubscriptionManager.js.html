@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>discord_mod.js - Documentation</title>
+    <title>types/database/SubscriptionManager.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">discord_mod.js</h1>
+    <h1 class="page-title">types/database/SubscriptionManager.js</h1>
     
 
     
@@ -39,135 +39,49 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * Discord Mod. An extension of the discord.js module to streamline usage of this bot.
- */
-import Discord from 'discord.js-light'
-import options from './config/options.js'
-import Game from './games/_Game/classes/Game.js'
-  
-/**
- * Accesses and sets the prefix for a specific channel, regardless of channel caching
- */
-Object.defineProperty(Discord.TextChannel.prototype, 'prefix', {
-  get() {
-    return this.client.commandHandler.getPrefix(this)
-  },
-  set(prefix) {
-    if(this.guild)
-      this.client.commandHandler.prefixes.set(this.guild.id, prefix) 
-  },
-  enumerable: true
-})
-
-/**
- * Accesses the game for the current channel
- */
-Object.defineProperty(Discord.TextChannel.prototype, 'game', {
-  get() {
-    return this.client.gameManager.games.get(this.id)
-  },
-  set(value) {
-    if(value == null) {
-      return this.client.gameManager.games.delete(this.id)
-    } else if (value instanceof Game) {
-      return this.client.gameManager.games.set(this.id, value)
+            <pre class="prettyprint source linenums"><code>export default class SubscriptionManager {
+    constructor(options) {
+        this.subscriptions = new Map()
+        this.sweepInterval = options &amp;&amp; options.sweepInterval ? options.sweepInterval : 60000
     }
-  },
-  enumerable: true
-})
 
-/**
- * Asynchronous version of {@link https://discord.js.org/#/docs/main/11.5.1/class/TextChannel?scrollTo=startTyping|Discord.TextChannel.startTyping()}
- * @returns {Promise&lt;Boolean>} Always resolves to true.
- */
-Discord.TextChannel.prototype.startTypingAsync = function (channelResolvable) {
-  return new Promise((resolve, reject) => { 
-    try {
-      channelResolvable.startTyping()
-      resolve(true)
-    } catch (err) {
-      reject(err)
+    init() {
+        setInterval(function() {
+            this.sweep()
+        }.bind(this), this.sweepInterval)
     }
-  })
-}
 
-/**
- * Easily send a message to a TextChannel or DMChannel as an embed.
- * @param {String} description The description field of the embed.
- * @param {String} title The title of the embed.
- * @param {Discord.ColorResolvable} color The color of the embed.
- * @see {@link https://discord.js.org/#/docs/main/11.5.1/typedef/ColorResolvable|Discord.ColorResolvable}
- * @returns {Promise&lt;Discord.Message>}
- */
-Discord.DMChannel.prototype.sendMsgEmbed = Discord.TextChannel.prototype.sendMsgEmbed = function(description, title, embedColor) {
-  return this.send('', {
-    embed: {
-      color:  embedColor || 3789311,
-      title,
-      description
+    /**
+    @example hosted_page
+    { id: 'ABCDEKwUSVyLqzwoIeSvmhz40NV12345',
+        type: 'checkout_new',
+        url: 'https://example-test.chargebee.com/pages/v3/VPQ6NKwUSVyLqzwoIeSvmhz40NV0jOyq/',
+        state: 'created',
+        embed: false,
+        created_at: 1612759805,
+        expires_at: 1612770605,
+        object: 'hosted_page',
+        updated_at: 1612759805,
+        resource_version: 1612759805404
     }
-  })
-}
+    */
+    add(hostedPage) {
+        return this.subscriptions.set(hostedPage.id, hostedPage.expires_at * 1000)
+    }
+    
+    remove(hostedPage) {
+        return this.subscriptions.delete(hostedPage.id)
+    }
 
-/**
- * Creates a new user object in the database.
- * @returns {Promise&lt;Object>} The data the user was initialized with.
- * @example
- * user.createDBInfo()
- * .then(info => console.log(`User was created with ${info.balance} credits`))
- * .catch(console.error)
- */
-Discord.User.prototype.createDBInfo = function() {
-  return new Promise((resolve, reject) => {
-    this.client.dbClient.createDBInfo(this.id).then(resolve).catch(reject)
-  })
-}
-
-/**
- * @typedef UserData
- * @type {Object}
- * @property {String} userID The user's ID
- * @property {Array.&lt;String>} unlockedItems The list of unlocked items, categorized by ID
- */
-
-/**
- * Fetches a user's database information.
- * @returns {Promise&lt;UserData>}
- */
-Discord.User.prototype.fetchDBInfo = function() {
-  return new Promise((resolve, reject) => {
-    this.client.dbClient.fetchDBInfo(this.id).then(resolve).catch(reject)
-  })
-}
-
-/**
- * Sees if a user has an item in their inventory.
- * @returns {Boolean}
- */
-Discord.User.prototype.hasItem = function (itemID) {
-  return new Promise((resolve, reject) => {
-    this.client.dbClient.hasItem(this.id, itemID).then(resolve).catch(reject)
-  })
-}
-
-/**
- * Updates the current status message.
- */
-Discord.Client.prototype.updateStatus = async function(itemID) {
-  // try fetching message
-  let statusChannel = await this.channels.fetch(options.statusChannel)
-  if(statusChannel) {
-    let message = (await statusChannel.messages.fetch({ limit: 1 }).catch(console.error)).first()
-    this.latestStatus = { content: message.content, date: message.createdAt.toLocaleDateString() }
-    return this.latestStatus
-  }
-  return null
-}
-
-const Collection = Discord.Collection
-export { Collection } 
-export default Discord</code></pre>
+    sweep() {
+        let now = Date.now()
+        this.subscriptions.forEach((expiry, id) => {
+            if(expiry &lt; now) {
+                this.subscriptions.delete(id)
+            }
+        })
+    }
+}</code></pre>
         </article>
     </section>
 

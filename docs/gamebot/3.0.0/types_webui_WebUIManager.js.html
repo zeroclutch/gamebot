@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>discord_mod.js - Documentation</title>
+    <title>types/webui/WebUIManager.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">discord_mod.js</h1>
+    <h1 class="page-title">types/webui/WebUIManager.js</h1>
     
 
     
@@ -39,135 +39,94 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * Discord Mod. An extension of the discord.js module to streamline usage of this bot.
- */
-import Discord from 'discord.js-light'
-import options from './config/options.js'
-import Game from './games/_Game/classes/Game.js'
-  
-/**
- * Accesses and sets the prefix for a specific channel, regardless of channel caching
- */
-Object.defineProperty(Discord.TextChannel.prototype, 'prefix', {
-  get() {
-    return this.client.commandHandler.getPrefix(this)
-  },
-  set(prefix) {
-    if(this.guild)
-      this.client.commandHandler.prefixes.set(this.guild.id, prefix) 
-  },
-  enumerable: true
-})
+            <pre class="prettyprint source linenums"><code>import Discord from 'discord.js-light';
+const { Collection } = Discord;
+import fs from 'fs'
 
 /**
- * Accesses the game for the current channel
+ * A manager for creating and using WebUIs within games
+ * The WebUI manager must be able to communicate with the Express server and each client
+ * It will be a property of each client 
+ * @class
  */
-Object.defineProperty(Discord.TextChannel.prototype, 'game', {
-  get() {
-    return this.client.gameManager.games.get(this.id)
-  },
-  set(value) {
-    if(value == null) {
-      return this.client.gameManager.games.delete(this.id)
-    } else if (value instanceof Game) {
-      return this.client.gameManager.games.set(this.id, value)
+export default class WebUIManager {
+    /**
+     * @typedef WebUI
+     */
+
+    /**
+     * Creates a new WebUI Manager
+     */
+    constructor(app) {
+        this.app = app
+        
+        /**
+         * A collection of the UIs, keyed by their game IDs
+         * @type {Discord.Collection&lt;WebUI>}
+         */
+        this.UIs = new Collection()
+
+        // Periodically sweep UIs for expired links
+        setInterval(() => {
+            this.UIs.forEach(UI => {
+                if(Date.now() > (UI.killAt + 5000)) {
+                    this.UIs.delete(UI.id)
+                }
+            })
+        }, 20000)
     }
-  },
-  enumerable: true
-})
 
-/**
- * Asynchronous version of {@link https://discord.js.org/#/docs/main/11.5.1/class/TextChannel?scrollTo=startTyping|Discord.TextChannel.startTyping()}
- * @returns {Promise&lt;Boolean>} Always resolves to true.
- */
-Discord.TextChannel.prototype.startTypingAsync = function (channelResolvable) {
-  return new Promise((resolve, reject) => { 
-    try {
-      channelResolvable.startTyping()
-      resolve(true)
-    } catch (err) {
-      reject(err)
+    /**
+     * Generates a guaranteed™ unique WebUI identifier.
+     * @param {String|Number} user The user's ID
+     * @param {String|Number} channel The game channel's ID
+     */
+    static generateUIID(user) {
+        return Buffer.from(user + Date.now() + Math.floor(Math.random() * Math.pow(10,8))).toString('base64').replace(/\W/g,'')
     }
-  })
-}
 
-/**
- * Easily send a message to a TextChannel or DMChannel as an embed.
- * @param {String} description The description field of the embed.
- * @param {String} title The title of the embed.
- * @param {Discord.ColorResolvable} color The color of the embed.
- * @see {@link https://discord.js.org/#/docs/main/11.5.1/typedef/ColorResolvable|Discord.ColorResolvable}
- * @returns {Promise&lt;Discord.Message>}
- */
-Discord.DMChannel.prototype.sendMsgEmbed = Discord.TextChannel.prototype.sendMsgEmbed = function(description, title, embedColor) {
-  return this.send('', {
-    embed: {
-      color:  embedColor || 3789311,
-      title,
-      description
+    create(UI) {
+        this.UIs.set(UI.id, {...UI})
     }
-  })
-}
 
-/**
- * Creates a new user object in the database.
- * @returns {Promise&lt;Object>} The data the user was initialized with.
- * @example
- * user.createDBInfo()
- * .then(info => console.log(`User was created with ${info.balance} credits`))
- * .catch(console.error)
- */
-Discord.User.prototype.createDBInfo = function() {
-  return new Promise((resolve, reject) => {
-    this.client.dbClient.createDBInfo(this.id).then(resolve).catch(reject)
-  })
-}
+    generatePage(webUI) {
+        // TODO: Load page directly into memory to prevent expensive file IO
+        let page = fs.readFileSync(`./web-ui/ui-${webUI.type}.html`, 'utf8')
+        let variables = webUI.variables || []
+        try {
+            variables = webUI.variables
+            variables.push(['{id}', webUI.id])
+            variables.push(['{killAt}', webUI.killAt])
+        } catch(err) {
+            console.error(err)
+            return false
+        }
+        variables.forEach(v => page = page.replace(v[0], v[1]))
+        return page
+    }
 
-/**
- * @typedef UserData
- * @type {Object}
- * @property {String} userID The user's ID
- * @property {Array.&lt;String>} unlockedItems The list of unlocked items, categorized by ID
- */
+    getWebpage(id) {
+        return new Promise((resolve, reject) => {
+            let webUI = this.UIs.get(id)
 
-/**
- * Fetches a user's database information.
- * @returns {Promise&lt;UserData>}
- */
-Discord.User.prototype.fetchDBInfo = function() {
-  return new Promise((resolve, reject) => {
-    this.client.dbClient.fetchDBInfo(this.id).then(resolve).catch(reject)
-  })
-}
+            // Check if ID exists
+            if(!webUI || !webUI.type) {
+                reject(new Error('WebUI is not registered.'))
+                return
+            }
+            
+            let generatedPage = this.generatePage(webUI)
 
-/**
- * Sees if a user has an item in their inventory.
- * @returns {Boolean}
- */
-Discord.User.prototype.hasItem = function (itemID) {
-  return new Promise((resolve, reject) => {
-    this.client.dbClient.hasItem(this.id, itemID).then(resolve).catch(reject)
-  })
-}
-
-/**
- * Updates the current status message.
- */
-Discord.Client.prototype.updateStatus = async function(itemID) {
-  // try fetching message
-  let statusChannel = await this.channels.fetch(options.statusChannel)
-  if(statusChannel) {
-    let message = (await statusChannel.messages.fetch({ limit: 1 }).catch(console.error)).first()
-    this.latestStatus = { content: message.content, date: message.createdAt.toLocaleDateString() }
-    return this.latestStatus
-  }
-  return null
-}
-
-const Collection = Discord.Collection
-export { Collection } 
-export default Discord</code></pre>
+            // Check if page was successfully generated
+            if (!generatedPage) {
+                reject(new Error('WebUI was not able to be generated.'))
+                return
+            }
+                
+            resolve(generatedPage)
+        })
+    }
+}</code></pre>
         </article>
     </section>
 
