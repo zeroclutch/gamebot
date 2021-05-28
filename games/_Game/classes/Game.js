@@ -223,7 +223,7 @@ export default class Game {
         // Refresh downtime
         let timeToDowntime = await this.msg.client.getTimeToDowntime()
         let downtime = Math.ceil(timeToDowntime / 60000)
-        if(timeToDowntime > 0 && timeToDowntime <= 5 * 60000) {
+        if(timeToDowntime > 0 && timeToDowntime <= 10 * 60000) {
             const downtime = Math.round(timeToDowntime / 60000)
             this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Games cannot be started right now. For more information, [see our support server.](${options.serverInvite}?ref=downtimeError)`, 'Error!', options.colors.error)
             this.forceStop()

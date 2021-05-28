@@ -313,10 +313,8 @@ export default class Othello extends Game {
     analyzeBoard(side) {
         if(this.game.isEnded) {
             let winner = this.getPlayer(side)
-            this.displayBoard(side).then(() => {
-                this.end(winner)
-                this.over = true
-            })
+            this.end(winner)
+            this.over = true
         }
     }
 
@@ -336,10 +334,5 @@ export default class Othello extends Game {
             
             move++
         } 
-    }
-
-    finish(id) {
-        let winner = this.players.find(player => player.id == id)
-        this.end(winner, `${winner.user} has won!\nTo play games with the community, [join our server](${options.serverInvite}?ref=gameEnd)!`)
     }
 }

@@ -1,10 +1,10 @@
 import GameCommand from '../../../types/command/GameCommand.js'
 
 export default new GameCommand({
-    name: 'timer',
-    usage: 'timer',
+    name: 'resign',
+    usage: 'resign',
     aliases: [],
-    description: 'Shows the timer for the current player',
+    description: 'Resigns for the current player',
     category: 'info',
     permissions: [],
     args: false,
