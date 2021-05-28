@@ -10,7 +10,7 @@ node_modules/
 
 # Generated files
 dist/
-docs/gamebot
+docs/gamebot/
 
 # Output of 'npm pack'
 *.tgz

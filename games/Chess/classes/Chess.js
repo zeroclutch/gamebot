@@ -282,10 +282,9 @@ export default class Chess extends Game {
         if(this.status.isCheckmate) {
             let winner = this.players.find(player => player.side == side)
             this.importGameToLichess(side)
-            this.displayBoard(side).then(() => {
-                this.end(winner)
-                this.over = true
-            })
+            
+            this.end(winner)
+            this.over = true
         }
     }
 

@@ -13,6 +13,9 @@ export default new BotCommand({
     run: function(msg, args) {
         const user = args[0].replace(/\D/g, '')
         const amount = parseInt(args[1])
+        if(isNaN(amount)) {
+            msg.channel.sendMsgEmbed(`Invalid amount!`)
+        }
         msg.client.database.collection('users').findOneAndUpdate(
             {'userID': user},
             { $inc: { balance: amount } },
