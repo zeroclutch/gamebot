@@ -1,4 +1,5 @@
-import options from "../../config/options.js"
+import options from '../../config/options.js'
+import { GAMEBOT_PERMISSIONS, CHANNELS } from '../../config/types.js'
 import { Collection } from '../../discord_mod.js'
 import BotCommand from './BotCommand.js'
 import GameCommand from './GameCommand.js'
@@ -55,15 +56,15 @@ export default class CommandHandler {
 
         // Substitute custom permissions
         if(message.author.id === process.env.OWNER_ID) {
-            userPermissions.push('GOD')
+            userPermissions.push(GAMEBOT_PERMISSIONS.GOD)
         }
 
         if(this.client.moderators.includes(message.author.id)) {
-            userPermissions.push('MOD')
+            userPermissions.push(GAMEBOT_PERMISSIONS.MOD)
         }
 
         if(game && game.leader.id === message.author.id) {
-            userPermissions.push('GAME_LEADER') 
+            userPermissions.push(GAMEBOT_PERMISSIONS.GAME_LEADER) 
         }
 
         return permissions.every(permission => userPermissions.includes(permission))
@@ -147,7 +148,7 @@ export default class CommandHandler {
 
         // Check for empty tag
         if(messageData.prefix === this.client.user.tag && !messageData.name) {
-            message.channel.sendMsgEmbed(`The prefix for this bot is \`${prefix}\`. You can also use ${this.client.user.tag} as a prefix.`)
+            message.channel.sendEmbed(`The prefix for this bot is \`${prefix}\`. You can also use ${this.client.user.tag} as a prefix.`)
             return false
         }
 
@@ -162,11 +163,11 @@ export default class CommandHandler {
         if (command instanceof BotCommand) {} 
         else if (command instanceof GameCommand) {
             if(!game) {
-                message.channel.sendMsgEmbed(`Please start a game before using this command.`, 'Error!', options.colors.error)
+                message.channel.sendEmbed(`Please start a game before using this command.`, 'Error!', options.colors.error)
                 return false
             }
             if(!game.players.has(message.author.id)) {
-                message.channel.sendMsgEmbed(`Only players may use in-game commands.`, 'Error!', options.colors.error)
+                message.channel.sendEmbed(`Only players may use in-game commands.`, 'Error!', options.colors.error)
                 return false
             }
         } else {
@@ -175,19 +176,19 @@ export default class CommandHandler {
 
 
         // Check for dmChannel
-        if (message.channel.type === 'dm' && !command.dmCommand) {
+        if (message.channel.type === CHANNELS.DM && !command.dmCommand) {
             message.channel.send('This command is not available in a DM channel. Please try this again in a server.')
             return false
         } 
         
         if(!(await this.hasPermissions(message, command.permissions, game))) {
             let permissions = command.permissions.map(permission => this.titleCase(permission)).join(', ')
-            message.channel.sendMsgEmbed(`Sorry, you don't have the necessary permissions for this command.\n\nRequired permissions: \`${permissions}\``, 'Error!', options.colors.error)
+            message.channel.sendEmbed(`Sorry, you don't have the necessary permissions for this command.\n\nRequired permissions: \`${permissions}\``, 'Error!', options.colors.error)
             return false
         }
 
         if (command.args && messageData.args.join() === '') {
-            message.channel.sendMsgEmbed(`Incorrect usage of this command. Usage: \`${prefix}${command.usage}\`.`)
+            message.channel.sendEmbed(`Incorrect usage of this command. Usage: \`${prefix}${command.usage}\`.`)
             return
         }
 

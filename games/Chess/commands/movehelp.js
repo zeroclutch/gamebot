@@ -18,19 +18,15 @@ export default new GameCommand({
         } catch (err) {
             // Game hasn't fully initialized
             msg.channel.send({
-                embed: {
+                embeds: [{
                     title: 'Error!',
                     description: 'Please wait for the game to begin before using this command.',
                     color: options.colors.error
-                }
+                }]
             })
             return
         }
         let embed = new MessageEmbed()
-        .attachFiles([{
-            attachment: stream,
-            name: 'image.png'
-        }])
         .addField('Important Note:', `Remember to start all moves with the Gamebot's prefix, ${msg.channel.prefix}.`)
         .addField('How do I enter my moves?', `Gamebot uses [algebraic notation](https://en.wikipedia.org/wiki/Algebraic_notation_(chess)) for chess moves. This looks long, but it's really straightforward and common in Chess! It has two main parts:`)
         .addField('First...', `**Choose which piece you want to move.** Each piece is represented by a letter.
@@ -52,6 +48,12 @@ export default new GameCommand({
     
         if(stream) embed.setImage(`attachment://image.png`)
         
-        msg.channel.send(embed)
+        msg.channel.send({
+            embeds: [embed],
+            files: [{
+                attachment: stream,
+                name: 'image.png'
+            }]
+        })
     }
 })

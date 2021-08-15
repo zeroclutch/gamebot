@@ -23,7 +23,7 @@ export default new BotCommand({
         })
 
         msg.channel.send({
-            embed: {
+            embeds: [{
                 title: 'List of available games',
                 description: `Type \`${msg.channel.prefix}play <game id>\` to start a new game.`,
                 color: options.colors.economy,
@@ -34,7 +34,7 @@ export default new BotCommand({
                 footer: {
                     text: `Type ${msg.channel.prefix}info <game id> to see how to play.`
                 }
-            }
+            }]
         })
     }
   })

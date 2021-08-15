@@ -13,7 +13,7 @@ export default new BotCommand({
     args: false,
     run: function(msg, args) {
         msg.channel.send({
-            embed: {
+            embeds: [{
                 title: 'Support Gamebot\'s development by donating!',
                 description: `[Go to our shop](${process.env.BASE_URL}/shop) and purchase credits or coins to donate!`,
                 //description: 'Donation link coming soon.',
@@ -24,10 +24,10 @@ export default new BotCommand({
                         value: `You can gain ${options.creditIcon} credits and ${options.goldIcon} gold for donating!`
                     },
                 ],
-            }
+            }]
         }).catch(err => {
             console.error(err)
-            msg.channel.sendMsgEmbed('Unable to start a DM with you. Check your Discord settings and try again.', 'Error!', options.colors.error)
+            msg.channel.sendEmbed('Unable to start a DM with you. Check your Discord settings and try again.', 'Error!', options.colors.error)
         })
     }
   })

@@ -325,10 +325,6 @@ export default class CardsAgainstHumanity extends Game {
         })
         const embed = new Discord.MessageEmbed()
         .setTitle('This round\'s black card')
-        .attachFiles([{
-            attachment: stream,
-            name: fileName
-        }])
         .setFooter(this.blackCard.clean)
         .setImage(`attachment://${fileName}`)
         .setColor(4886754)
@@ -337,7 +333,13 @@ export default class CardsAgainstHumanity extends Game {
             game: this.metadata.id,
         })
 
-        this.msg.channel.send(embed).catch(console.error)
+        this.msg.channel.send({
+            embeds: [embed],
+            files: [{
+                attachment: stream,
+                name: fileName
+            }]
+        }).catch(console.error)
         return stream
     }
 
@@ -415,28 +417,28 @@ export default class CardsAgainstHumanity extends Game {
 
         // display the card choices from each player anonymously
         await this.msg.channel.send({
-            embed: {
+            embeds: [{
                 title: 'Choose the best card, Card Czar',
                 description: this.renderCardChoices(),
                 footer: {
                     text: `Type the number of the card to select it.`
                  },
                 color: 4886754
-            }
+            }]
         })
 
         if(this.submittedCards.length == 0) {
-            this.msg.channel.sendMsgEmbed('There were no submissions for this card!', 'Uh oh...')
+            this.msg.channel.sendEmbed('There were no submissions for this card!', 'Uh oh...')
             // display the scores
             this.msg.channel.send({
-                embed: {
+                embeds: [{
                     title: 'Current Standings',
                     description: this.renderLeaderboard(),
                     color: 4886754,
                     footer: {
                         text: `First to ${this.settings.pointsToWin} wins!`
                     }
-                }
+                }]
             })
             this.play()
             return
@@ -452,11 +454,11 @@ export default class CardsAgainstHumanity extends Game {
 
                 // announce winner
                 await this.msg.channel.send({
-                    embed: {
+                    embeds: [{
                         title: '',
                         description: `The winning card is **${winner.card.join(', ')}** which belonged to ${winner.player.user}!\n\n${winner.player.user} has earned a point.`,
                         color: 4886754
-                    }
+                    }]
                 })
 
                 // give the winning player a point
@@ -466,14 +468,14 @@ export default class CardsAgainstHumanity extends Game {
 
                 // display the scores
                 this.msg.channel.send({
-                    embed: {
+                    embeds: [{
                         title: 'Current Standings',
                         description: this.renderLeaderboard(),
                         color: 4886754,
                         footer: {
                             text: `First to ${this.settings.pointsToWin} wins!`
                         }
-                    }
+                    }]
                 })
 
                 if(winningPlayer.score >= this.settings.pointsToWin) {
@@ -486,23 +488,23 @@ export default class CardsAgainstHumanity extends Game {
             // if time ran out
             if(collected.size == 0) {
                 this.msg.channel.send({
-                    embed: {
+                    embeds: [{
                         title: 'Time\'s up',
                         description: `There was no winner selected.`,
                         color: 13632027
-                    }
+                    }]
                 })
 
                 // display the scores
                 this.msg.channel.send({
-                    embed: {
+                    embeds: [{
                         title: 'Current Standings',
                         description: this.renderLeaderboard(),
                         color: 4886754,
                         footer: {
                             text: `First to ${this.settings.pointsToWin} wins!`
                         }
-                    }
+                    }]
                 })
                 await this.play()
             }
@@ -560,10 +562,10 @@ export default class CardsAgainstHumanity extends Game {
         this.pickNextCzar()
 
         await this.msg.channel.send({
-            embed: {
+            embeds: [{
                 description: `The current czar is ${this.czar.user}! Wait until the other players have submitted their cards, then choose the best one.`,
                 color: 4886754
-            }
+            }]
         })
 
         // draw cards 
@@ -581,20 +583,20 @@ export default class CardsAgainstHumanity extends Game {
 
             // dm each player with their hand
             await player.user.send('View your hand and select a card.', {
-                embed: {
+                embeds: [{
                     title: `Cards Against Humanity - Your Current Hand`,
                     description: this.renderPlayerHand(player),
                     color: 4886754
-                }
+                }]
             }).then(async m => {
                 await player.user.send('View your hand and select a card.',{
-                    embed: {
+                    embeds: [{
                         description: `Remember, type your card number in <#${this.channel.id}>, NOT in this channel!`,
                         color: options.colors.warning,
                         footer:  {
                             text: 'This is due to a recent change in Gamebot. For more info, see our support server.'
                         }
-                    }
+                    }]
                 })
                 player.currentHandID = m.id
                 player.currentHand = m.url
@@ -627,7 +629,7 @@ export default class CardsAgainstHumanity extends Game {
             let player = this.players.get(m.author.id)
             let cardRemoved = parseInt(m.content) - 1
             // tell user which card they selected
-            player.dmChannel.sendMsgEmbed(`You have selected: ${player.cards[cardRemoved]}\n\n**Return to game chat: <#${this.channel.id}>**`)
+            player.dmChannel.sendEmbed(`You have selected: ${player.cards[cardRemoved]}\n\n**Return to game chat: <#${this.channel.id}>**`)
 
             // save selection for one card
             this.submittedCards.push({
@@ -639,11 +641,11 @@ export default class CardsAgainstHumanity extends Game {
             // update in chat
             this.msg.channel.messages.fetch(this.lastMessageID).then(message => {
                 message.edit('', {
-                    embed: {
+                    embeds: [{
                         title: 'Submission status',
                         description: this.renderSubmissionStatus(),
                         color: 4513714
-                    }
+                    }]
                 })
             })
 
@@ -668,10 +670,10 @@ export default class CardsAgainstHumanity extends Game {
                 if(reason == 'time' && !player.submitted && this.czar.user.id != player.user.id) {
                     player.submitted = 'time'
                     player.dmChannel.send({
-                        embed: {
+                        embeds: [{
                             description: `Time has run out. **Return to game chat <#${this.channel.id}>.**`,
                             color: options.colors.info
-                        }
+                        }]
                     })
                 }
 
@@ -682,11 +684,11 @@ export default class CardsAgainstHumanity extends Game {
             // update in chat
             this.msg.channel.messages.fetch(this.lastMessageID).then(message => {
                 message.edit('', {
-                    embed: {
+                    embeds: [{
                         title: 'Submission status',
                         description: this.renderSubmissionStatus(),
                         color: 4513714
-                    }
+                    }]
                 })
             })
 
@@ -698,7 +700,7 @@ export default class CardsAgainstHumanity extends Game {
         })
 
         // send an embed to main channel with links to each player hand [Go to hand](m.url)
-        this.msg.channel.sendMsgEmbed(this.renderSubmissionStatus(), 'Submission status').then(m => {
+        this.msg.channel.sendEmbed(this.renderSubmissionStatus(), 'Submission status').then(m => {
             this.lastMessageID = m.id
         }).catch(err => {
             console.error(err)

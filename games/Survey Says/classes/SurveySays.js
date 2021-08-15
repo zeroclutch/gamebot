@@ -91,13 +91,13 @@ export default class SurveySays extends Game {
         }
 
         // Notify players
-        await this.channel.sendMsgEmbed(`The current guesser is ${this.guesser.user}!\n\nYour question is: **${this.question.question}**`)
+        await this.channel.sendEmbed(`The current guesser is ${this.guesser.user}!\n\nYour question is: **${this.question.question}**`)
 
         // Await response
         let collected = await this.channel.awaitMessages(filter, {max: 1, time: this.options['Timer'], errors: ['time']})
         .catch(err => {
             if(this.ending) return
-            this.msg.channel.sendMsgEmbed('You ran out of time. The guess is set to 50%', 'Uh oh...', options.colors.error)
+            this.msg.channel.sendEmbed('You ran out of time. The guess is set to 50%', 'Uh oh...', options.colors.error)
         })
         if(this.ending) return
         return collected ? parseInt(collected.first().content.replace('%','')) : 50
@@ -137,7 +137,7 @@ export default class SurveySays extends Game {
                     return
                 }
                 if(allPlayersSubmitted) 
-                    this.channel.sendMsgEmbed('Drumroll please...')
+                    this.channel.sendEmbed('Drumroll please...')
                 resolve(submitted)
             })
         })
@@ -153,11 +153,11 @@ export default class SurveySays extends Game {
             if(response == answer) this.players.get(id).score++
         }
         await this.channel.send({
-            embed: {
+            embeds: [{
                 description: `The actual number was \`${actualNumber}%\`!\n\n${this.renderLeaderboard()}`,
                 color: options.colors.info,
                 image: { url: 'attachment://image.png' }
-            },
+            }],
             files: [{
                attachment: `games/Survey Says/assets/${answer}.png`,
                name: 'image.png'
@@ -186,11 +186,11 @@ export default class SurveySays extends Game {
             submissionList += `${icons[submitted.get(id) || 'none']} **${player.user}**\n`
         })
         return {
-            embed: {
+            embeds: [{
                 title: `Current guess: ${guess}% - ${this.question.question}`,
                 description: submissionList + 'Type `more` if you thing the actual number is higher, or `less` if you think that it is lower.',
                 color: options.colors.info,
-            }
+            }]
         }
     }
 
