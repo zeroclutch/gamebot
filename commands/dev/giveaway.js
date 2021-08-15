@@ -1,5 +1,6 @@
 import options from './../../config/options.js'
 import Discord from './../../discord_mod.js'
+import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
@@ -8,7 +9,7 @@ export default new BotCommand({
     aliases: [],
     description: 'Start a giveaway in a channel.',
     category: 'dev',
-    permissions: ['GOD'],
+    permissions: [GAMEBOT_PERMISSIONS.GOD],
     dmCommand: true,
     args: false,
     run: async function(msg, args) {
@@ -23,7 +24,7 @@ export default new BotCommand({
         const collection = msg.client.database.collection('users')
 
         // send reaction message
-        await channel.sendMsgEmbed(message, 'A giveaway is starting!').then(message => {
+        await channel.sendEmbed(message, 'A giveaway is starting!').then(message => {
             message.react(reaction)
             reactionMessage = message
         })
@@ -53,20 +54,20 @@ export default new BotCommand({
                 })
 
                 reactionMessage.edit({
-                    embed: {
+                    embeds: [{
                         title: 'The giveaway is now over!',
                         description: 'If you participated, your credits should have been rewarded.',
                         color: 4513714
-                    }
+                    }]
                 })
             } catch (err) {
                 console.error(err)
                 reactionMessage.edit({
-                    embed: {
+                    embeds: [{
                         title: 'The giveaway is now over!',
                         description: 'If you participated, your credits should be rewarded shortly.',
                         color: 4513714
-                    }
+                    }]
                 })
             }
         });

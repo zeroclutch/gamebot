@@ -1,4 +1,7 @@
 import colors from 'colors'
+import Discord from 'discord.js-light';
+const { Util } = Discord;
+import util from 'util'
 colors.enable()
 
 let tests = 0,
@@ -15,7 +18,7 @@ const test = async (name, f) => {
     })
     .catch((error) => {
         console.error(`Test suite "`.red + name.blue + `" stopped with error:`.red)
-        console.error(error.toString().red)
+        console.error(util.inspect(error))
         console.error('\n\n')
         process.exitCode = 1
     })

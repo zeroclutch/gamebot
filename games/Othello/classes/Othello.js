@@ -106,11 +106,11 @@ export default class Othello extends Game {
             } catch (err) {
                 // Game hasn't fully initialized
                 msg.channel.send({
-                    embed: {
+                    embeds: [{
                         title: 'Error!',
                         description: 'Please wait for the game to begin before using this command.',
                         color: options.colors.error
-                    }
+                    }]
                 })
                 return
             }
@@ -121,10 +121,6 @@ export default class Othello extends Game {
             let placeableSquares = this.board.getPlaceableSquares(this.side.toUpperCase()).map(s => '`' + this.channel.prefix + columns[s._colIndex] + rows[s._rowIndex] + '`')
 
             let embed = new Discord.MessageEmbed()
-            .attachFiles([{
-                attachment: stream,
-                name: 'image.png'
-            }])
             .addField('Important Note:', `Remember to start all moves with the Gamebot's prefix, ${this.channel.prefix}.`)
             .addField('How do I enter my moves?', `Find the square you want to place your tile in. Look for its column letter, and look for its row number. For example, the top left square is h1, and the bottom right one is a8. Then, type ${this.channel.prefix}<letter><number>, and replace <letter> and <number> with your tile's letter and number.`)
             .addField('Possible moves', `The possible moves right now are: ${placeableSquares.join(',')}`)
@@ -133,7 +129,13 @@ export default class Othello extends Game {
 
             if(stream) embed.setImage(`attachment://image.png`)
             
-            msg.channel.send(embed)
+            msg.channel.send({
+                embeds: [embed],
+                files: [{
+                    attachment: stream,
+                    name: 'image.png'
+                }]
+            })
         }
     }
 
@@ -141,18 +143,18 @@ export default class Othello extends Game {
         if(msg.content.toLowerCase().startsWith(`${this.channel.prefix}timer`)) {
             if(this.thisTurnEndsAt > -1) {
                 msg.channel.send({
-                    embed: {
+                    embeds: [{
                         description: `${this.getPlayer(this.side).user} has ${Math.floor((this.thisTurnEndsAt - Date.now()) / 1000)} seconds left.`,
                         color: options.colors.info
-                    }
+                    }]
                 })
             } else {
                 msg.channel.send({
-                    embed: {
+                    embeds: [{
                         title: 'Error!',
                         description: 'Please wait for the game to begin before using this command.',
                         color: options.colors.error
-                    }
+                    }]
                 })
             }
         }
@@ -240,10 +242,6 @@ export default class Othello extends Game {
         let getPieces = (s) => pieceCount[s] > pieceCount[s == PIECE_TYPES.BLACK ? PIECE_TYPES.WHITE : PIECE_TYPES.BLACK] ? pieceCount[s] + ' ⭐️' : pieceCount[s] 
 
         let embed = new Discord.MessageEmbed()
-        .attachFiles([{
-            attachment: stream,
-            name: 'image.png'
-        }])
         .setDescription(`You have ${this.options['Timer']} seconds to make a move.`)
         .setFooter(`Type ${this.channel.prefix}movehelp for help.`)
         .setImage(`attachment://image.png`)
@@ -258,7 +256,14 @@ export default class Othello extends Game {
             game: this.metadata.id,
         })
 
-        await this.channel.send(`${this.getPlayer(side).user}, it's your turn to move as ${side.toLowerCase()}!`, embed).catch(console.error)
+        await this.channel.send({
+            content: `${this.getPlayer(side).user}, it's your turn to move as ${side.toLowerCase()}!`,
+            embeds: [embed],
+            files: [{
+                attachment: stream,
+                name: 'image.png'
+            }]
+        }).catch(console.error)
     }
 
     awaitMove(side) {
@@ -281,11 +286,11 @@ export default class Othello extends Game {
                     resolve(report)
                 } else {
                     this.channel.send({
-                        embed: {
+                        embeds: [{
                             title: 'Invalid move!',
                             description: 'Be sure to enter a valid move.',
                             color: options.colors.error
-                        }
+                        }]
                     })
                 }
             })
@@ -298,11 +303,11 @@ export default class Othello extends Game {
                 } else {
                     // Player loses on time
                     this.channel.send({
-                        embed: {
+                        embeds: [{
                             title: 'Time ran out!',
                             description: `${this.getPlayer(side).user} ran out of time and lost.`,
                             color: options.colors.error
-                        }
+                        }]
                     })
                     this.end(this.getPlayer(side == 'White' ? 'Black' : 'White'))
                 }

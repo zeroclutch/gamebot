@@ -169,10 +169,6 @@ export default class Chess extends Game {
     async displayBoard(side) {
         let stream = await this.renderBoard(side)
         let embed = new Discord.MessageEmbed()
-        .attachFiles([{
-            attachment: stream,
-            name: 'image.png'
-        }])
         .setDescription(`You have ${this.options['Timer']} seconds to make a move.`)
         .addField('ℹ️', 'To make a move, enter the bot prefix followed by a valid move in algebraic notation.', true)
         .addField('⏰', `Type ${this.channel.prefix}timer to see the move time remaining.`, true)
@@ -185,7 +181,14 @@ export default class Chess extends Game {
             game: this.metadata.id,
         })
 
-        await this.channel.send(`${this.getPlayer(side).user}, it's your turn to move as ${side.toLowerCase()}!`, embed).catch(console.error)
+        await this.channel.send({
+            content: `${this.getPlayer(side).user}, it's your turn to move as ${side.toLowerCase()}!`,
+            embeds: [embed],
+            files: [{
+                attachment: stream,
+                name: 'image.png'
+            }]
+        }).catch(console.error)
     }
 
     awaitMove(side) {
@@ -205,11 +208,11 @@ export default class Chess extends Game {
                     resolve(true)
                 } else {
                     this.channel.send({
-                        embed: {
+                        embeds: [{
                             title: 'Invalid move!',
                             description: 'Be sure to enter your move in algebraic notation.',
                             color: options.colors.error
-                        }
+                        }]
                     })
                 }
             })
@@ -221,11 +224,11 @@ export default class Chess extends Game {
                 } else {
                     // Player loses on time
                     this.channel.send({
-                        embed: {
+                        embeds: [{
                             title: 'Time ran out!',
                             description: `${this.getPlayer(side).user} ran out of time and lost.`,
                             color: options.colors.error
-                        }
+                        }]
                     })
                     this.end(this.getPlayer(side == 'White' ? 'Black' : 'White'))
                 }
@@ -264,11 +267,11 @@ export default class Chess extends Game {
 
     importGameToLichess(winner) {
         this.lichessClient.importGame(this.getPGN(winner)).then(res => this.channel.send({
-            embed: {
+            embeds: [{
                 title: 'View the computer analysis and game recap.',
                 description: `The moves and computer analysis are available at ${res.data.url}.`,
                 color: options.colors.info
-            }
+            }]
         }))
     }
 

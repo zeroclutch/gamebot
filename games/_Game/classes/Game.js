@@ -225,11 +225,11 @@ export default class Game {
         let downtime = Math.ceil(timeToDowntime / 60000)
         if(timeToDowntime > 0 && timeToDowntime <= 10 * 60000) {
             const downtime = Math.round(timeToDowntime / 60000)
-            this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Games cannot be started right now. For more information, [see our support server.](${options.serverInvite}?ref=downtimeError)`, 'Error!', options.colors.error)
+            this.msg.channel.sendEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Games cannot be started right now. For more information, [see our support server.](${options.serverInvite}?ref=downtimeError)`, 'Error!', options.colors.error)
             this.forceStop()
             return
         } else if(timeToDowntime > 0) {
-            this.msg.channel.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Any active games will be automatically ended. For more information, [see our support server.](${options.serverInvite}?ref=downtimeWarning)`, 'Warning!', options.colors.warning)
+            this.msg.channel.sendEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Any active games will be automatically ended. For more information, [see our support server.](${options.serverInvite}?ref=downtimeWarning)`, 'Warning!', options.colors.warning)
         }
 
         this.stage = 'join'
@@ -264,11 +264,11 @@ export default class Game {
         return new Promise(async (resolve, reject) => {
             // allow players to join
             await this.msg.channel.send({
-                embed: {
+                embeds: [{
                     title: `${this.msg.author.tag} is starting a ${this.metadata.name} game!`,
                     description: `Type \`${this.channel.prefix}join\` to join in the next **120 seconds**.\n\n${this.leader}, type \`${this.channel.prefix}start\` to begin once everyone has joined.`,
                     color: options.colors.info
-                }
+                }]
             })
 
             // Add gameMaster
@@ -298,9 +298,9 @@ export default class Game {
                 if(size >= this.metadata.playerCount.min) {
                     let players = []
                     this.players.forEach(player => { players.push(player.user) })
-                    this.msg.channel.sendMsgEmbed(`${players.join(", ")} joined the game!`, 'Time\'s up!')
+                    this.msg.channel.sendEmbed(`${players.join(", ")} joined the game!`, 'Time\'s up!')
                 } else {
-                    this.msg.channel.sendMsgEmbed(`Not enough players joined the game!`, 'Time\'s up!')
+                    this.msg.channel.sendEmbed(`Not enough players joined the game!`, 'Time\'s up!')
                     this.forceStop()
                     return
                 }
@@ -375,14 +375,14 @@ export default class Game {
             }
             optionsDisplay += `\nType \`${this.channel.prefix}start\` to start the game.`
             optionMessage.edit({
-                embed: {
+                embeds: [{
                     title: 'Configure Settings',
                     description: optionsDisplay,
                     color: options.colors.info,
                     footer: {
                         text: 'Type an option\'s number to edit the value.'
                     }
-                }
+                }]
             })
 
             const filter = m => m.author.id == this.gameMaster.id && ((!isNaN(m.content) && parseInt(m.content) <= this.gameOptions.length && parseInt(m.content) > 0) || m.content.toLowerCase() == this.channel.prefix + 'start')
@@ -396,11 +396,11 @@ export default class Game {
                 message.delete()
                 if(message.content == `${this.channel.prefix}start`) {
                     optionMessage.edit({
-                        embed: {
+                        embeds: [{
                             title: 'Options saved!',
                             description: 'The game is starting...',
                             color: options.colors.info
-                        }
+                        }]
                     })
                     isConfigured = true
                     return
@@ -427,18 +427,17 @@ export default class Game {
 
                     // send option info
                     await optionMessage.edit({
-                        embed: {
+                        embeds: [{
                             title: `Edit option: ${option.friendlyName}`,
                             description: this.renderOptionInfo(option),
                             color: options.colors.info,
                             footer: {
                                 text: optionData[option.type].footer
                             }
-
-                        }
+                        }]
                     }).catch(err => {
                         console.error(err)
-                        this.channel.sendMsgEmbed(`Something went wrong when editing the message. Type \`${this.channel.prefix}start\` to begin the game.`, 'Error!', options.colors.error).delete(5000)
+                        this.channel.sendEmbed(`Something went wrong when editing the message. Type \`${this.channel.prefix}start\` to begin the game.`, 'Error!', options.colors.error).delete(5000)
                     })
 
                     // await a response for the option
@@ -452,7 +451,7 @@ export default class Game {
                         // add custom filter options
                         if(option.filter) {
                             if(!option.filter(message)) {
-                                this.msg.channel.sendMsgEmbed('You have entered an invalid value. Please read the instructions and try again.', 'Error!', options.colors.error).then(m => m.delete(2000))
+                                this.msg.channel.sendEmbed('You have entered an invalid value. Please read the instructions and try again.', 'Error!', options.colors.error).then(m => m.delete(2000))
                                 return
                             }
                         }
@@ -483,14 +482,14 @@ export default class Game {
                             const index = parseInt(message.content) - 1
                             const newChoice = option.choices[index]
                             if(!newChoice) {
-                                this.msg.channel.sendMsgEmbed('You entered an invalid value.', 'Error!', options.colors.error).then(m => m.delete(2000))
+                                this.msg.channel.sendEmbed('You entered an invalid value.', 'Error!', options.colors.error).then(m => m.delete(2000))
                             } else {
                                 option.value = newChoice
                             }
                         }
                     })
                     .catch(err => {
-                        this.channel.sendMsgEmbed(`Please select an option! Type \`${this.channel.prefix}start\` to start the game.`, 'Error!', options.colors.error)
+                        this.channel.sendEmbed(`Please select an option! Type \`${this.channel.prefix}start\` to start the game.`, 'Error!', options.colors.error)
                     })
                     // on timeout restart this
                 }
@@ -498,21 +497,21 @@ export default class Game {
                 // time has run out
                 if(err.size === 0) {
                     optionMessage.edit({
-                        embed: {
+                        embeds: [{
                             title: 'Time has run out!',
                             description: 'The game is starting...',
                             color: options.colors.error
-                        }
+                        }]
                     })
                     isConfigured = true
                 } else {
                     console.error(err)
                     optionMessage.edit({
-                        embed: {
+                        embeds: [{
                             title: 'Error!',
                             description: `An unknown error occurred when loading into the game. The game is now starting. Please report this to Gamebot support in our [support server](${options.serverInvite}?ref=gameLoadInError).`,
                             color: options.colors.error
-                        }
+                        }]
                     })
                 }
             })
@@ -533,21 +532,21 @@ export default class Game {
     async setLeader(member) {
         if(typeof member == 'string') {
             member = await this.msg.guild.members.fetch(member).catch(async () => {
-                await this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
+                await this.msg.channel.sendEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
                 return false
             })
             if(member === false) return
         }
 
         if(!member || this.leader.id == member.id || !this.players.has(member.id)) {
-            await this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
+            await this.msg.channel.sendEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
             return
         }
 
         this.gameMaster = this.players.get(member.id)
 
         if(message !== null) {
-            await this.channel.sendMsgEmbed(message || this.settings.defaultUpdatePlayerMessage).catch(console.error)
+            await this.channel.sendEmbed(message || this.settings.defaultUpdatePlayerMessage).catch(console.error)
         }
 
     }
@@ -561,25 +560,25 @@ export default class Game {
         if(typeof member === 'string') {
             member = await this.msg.guild.members.fetch(member).catch(async err => {
                 console.error(err)
-                await this.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
+                await this.channel.sendEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
                 return false
             })
             if(member === false) return
         }
 
         if(!member || this.players.has(member.id) || (member.bot && !this.client.isTestingMode)) {
-            await this.msg.channel.sendMsgEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
+            await this.msg.channel.sendEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
             return
         }
 
         let futureSize = this.players.size + this.playersToAdd.length - this.playersToKick.length
         if(futureSize >= this.metadata.playerCount.max) {
-            this.channel.sendMsgEmbed(`The game can't have more than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! ${member.user} could not be added.`).catch(console.error)
+            this.channel.sendEmbed(`The game can't have more than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! ${member.user} could not be added.`).catch(console.error)
             return
         }
 
         if(message !== null) {
-            await this.channel.sendMsgEmbed(message || this.settings.defaultUpdatePlayerMessage).catch(console.error)
+            await this.channel.sendEmbed(message || this.settings.defaultUpdatePlayerMessage).catch(console.error)
         }
         
         this.playersToAdd.push(member)
@@ -593,7 +592,7 @@ export default class Game {
     async removePlayer(member, message) {
         if(typeof member == 'string') {
             member = await this.msg.guild.members.fetch(member).catch(async () => {
-                await this.channel.sendMsgEmbed('Invalid user.', 'Error!', options.colors.error).catch(console.error)
+                await this.channel.sendEmbed('Invalid user.', 'Error!', options.colors.error).catch(console.error)
                 return false
             })
             if(member === false) return
@@ -601,27 +600,27 @@ export default class Game {
 
         if(this.leader.id == member.id) {
             await this.channel.send({
-                embed: {
+                embeds: [{
                     title: 'Error!',
                     description: 'The leader cannot leave the game.',
                     color: options.colors.error
-                }
+                }]
             }).catch(console.error)
         }
         
         if(!this.players.has(member.id) || !member || (member.bot && !this.client.isTestingMode)) {
-            await this.channel.sendMsgEmbed('Invalid user.', 'Error!', options.colors.error).catch(console.error)
+            await this.channel.sendEmbed('Invalid user.', 'Error!', options.colors.error).catch(console.error)
             return
         }
 
         let futureSize = this.players.size + this.playersToAdd.length - this.playersToKick.length
         if(futureSize <= this.metadata.playerCount.min) {
-            this.channel.sendMsgEmbed(`The game can't have fewer than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! ${member.user} could not be removed.`).catch(console.error)
+            this.channel.sendEmbed(`The game can't have fewer than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! ${member.user} could not be removed.`).catch(console.error)
             return
         }
 
         if(message !== null) {
-            await this.channel.sendMsgEmbed(message || this.settings.defaultUpdatePlayerMessage).catch(console.error)
+            await this.channel.sendEmbed(message || this.settings.defaultUpdatePlayerMessage).catch(console.error)
         }
         
         this.playersToKick.push(member)
@@ -632,7 +631,7 @@ export default class Game {
      */
     updatePlayers() {
         this.playersToKick.forEach(member => {
-            this.msg.channel.sendMsgEmbed(`${member.user} was removed from the game!`).catch(console.error)
+            this.msg.channel.sendEmbed(`${member.user} was removed from the game!`).catch(console.error)
             this.players.delete(member.id)
         })
         this.playersToKick = []
@@ -658,25 +657,25 @@ export default class Game {
                 })
             }).then(async dmChannel => {
                 if(this.settings.isDmNeeded){
-                    await dmChannel.sendMsgEmbed(`You have joined a ${this.metadata.name} game in <#${this.msg.channel.id}>.`).catch(console.error)
+                    await dmChannel.sendEmbed(`You have joined a ${this.metadata.name} game in <#${this.msg.channel.id}>.`).catch(console.error)
                 }
-                this.msg.channel.sendMsgEmbed(`${member.user} was added to the game!`).catch(console.error)
+                this.msg.channel.sendEmbed(`${member.user} was added to the game!`).catch(console.error)
             }).catch(err => {
                 // Remove errored player
                 if(this.players.has(member.id)) this.players.delete(member.id)
 
                 // Filter out privacy errors
                 if(err.message != 'Cannot send messages to this user') {
-                    this.msg.channel.sendMsgEmbed(`An unknown error occurred, and ${member.user} could not be added.`, `Error: Player could not be added.`, options.colors.error).catch(console.error)
+                    this.msg.channel.sendEmbed(`An unknown error occurred, and ${member.user} could not be added.`, `Error: Player could not be added.`, options.colors.error).catch(console.error)
                     console.error(err)
                 }
 
                 // Notify user
                 if(member.id == this.gameMaster.id) {
-                    this.msg.channel.sendMsgEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error).catch(console.error)
+                    this.msg.channel.sendEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error).catch(console.error)
                     this.forceStop()
                 } else {
-                    this.msg.channel.sendMsgEmbed(`${member.user} must change their privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: Player could not be added.`, options.colors.error).catch(console.error)
+                    this.msg.channel.sendEmbed(`${member.user} must change their privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: Player could not be added.`, options.colors.error).catch(console.error)
                 }
             })
         })
@@ -730,7 +729,7 @@ export default class Game {
         }
 
         // Send a message in the game channel (this.msg.channel) that the game is over.
-        this.msg.channel.sendMsgEmbed(endPhrase, 'Game over!', options.colors.economy).then(msg => {
+        this.msg.channel.sendEmbed(endPhrase, 'Game over!', options.colors.economy).then(msg => {
             this.clearCollectors(this.collectors).catch(console.error)
             // Remove all event listeners created during this game.
             this.msg.channel.gamePlaying = false
@@ -739,11 +738,11 @@ export default class Game {
 
         if(this.metadata.unlockables) {
             this.channel.send({
-                embed: {
+                embeds: [{
                     title: `This game contains unlockable content!`,
                     description: `Check out the [Gamebot shop for more](${process.env.BASE_URL}/shop)!`,
                     color: options.colors.economy
-                }
+                }]
             }).catch(console.error)
         }
 

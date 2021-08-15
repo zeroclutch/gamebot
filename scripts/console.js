@@ -14,12 +14,12 @@ export const config = client => {
             log: (...args) => {
                 stdout.log(...args)
                 if(!client.readyAt) return
-                if(channel) channel.sendMsgEmbed(util.inspect(...args))
+                if(channel) channel.sendEmbed(util.inspect(...args))
             },
             error: (...args) => {
                 stdout.log(...args)
                 if(!client.readyAt) return
-                if(channel) channel.sendMsgEmbed(util.inspect(...args), 'Error', options.colors.error)
+                if(channel) channel.sendEmbed(util.inspect(...args), 'Error', options.colors.error)
             }
         }
     }).catch(stdout.error)

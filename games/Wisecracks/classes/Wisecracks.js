@@ -89,11 +89,11 @@ export default class Wisecracks extends Game {
         return new Promise((resolve, reject) => {
             this.msg.client.webUIClient.createWebUI(player.user, response => {
                 player.user.send({
-                    embed: {
+                    embeds: [{
                         title: 'Successfully submitted!',
                         description: `You have entered: ${response}\n\n**Return to game channel:** ${this.channel}`,
                         color: options.colors.info
-                    }
+                    }]
                 })
                 resolve(response)
             }, {
@@ -109,19 +109,19 @@ export default class Wisecracks extends Game {
                 player.user.createDM()
                 .then(channel => {
                     channel.send({
-                    embed: {
+                    embeds: [{
                         description: `[**Click here** to enter your response](${url}), ${player.user}! It will be sent in ${this.msg.channel}.`,
                         color: 5301186
-                    }
+                    }]
                     }).then(m => {
-                        this.msg.channel.sendMsgEmbed(`${player.user}, [click here to go to your DMs directly.](${m.url}) The link to enter your response is in your DMs!`)
+                        this.msg.channel.sendEmbed(`${player.user}, [click here to go to your DMs directly.](${m.url}) The link to enter your response is in your DMs!`)
                     }).catch(err => {
                             this.msg.channel.send({
-                                embed: {
+                                embeds: [{
                                     title: 'There was an error sending you a DM!',
                                     description: `Make sure you have DMs from server members enabled in your Privacy settings.`,
                                     color: options.colors.error
-                                }
+                                }]
                             })
                             console.error(err)
                         }
@@ -129,11 +129,11 @@ export default class Wisecracks extends Game {
                 })
             }).catch(err => {
                 this.msg.channel.send({
-                    embed: {
+                    embeds: [{
                         title: 'Error!',
                         description: `There was an error loading the response page.`,
                         color: 5301186
-                    }
+                    }]
                 })
                 reject(err)
             })
@@ -153,14 +153,14 @@ export default class Wisecracks extends Game {
             leaderboard += `${player.user}: ${player.score} points${lastLine ? '' : '\n'}`
         }
         return {
-            embed: {
+            embeds: [{
                 title: 'Current standings',
                 description: leaderboard,
                 color: options.colors.info,
                 footer: {
                     text: `First to ${this.options['Points to Win']} wins!`
                 }
-            }
+            }]
         }
     }
 
@@ -185,14 +185,14 @@ export default class Wisecracks extends Game {
         // Get prompt
         this.prompt = this.promptList.get()
         this.channel.send({
-            embed: {
+            embeds: [{
                 title: 'The prompt is...',
                 description: this.prompt.escaped,
                 color: options.colors.info,
                 footer: {
                     text: 'Two players have to submit their responses to this by clicking the link below.'
                 }
-            }
+            }]
         })
         // Allow players to submit their Wisecracks™
         let submitted = []
@@ -203,14 +203,14 @@ export default class Wisecracks extends Game {
             if(submitted.length == players.length) {
                 // Vote on Wisecracks
                 this.channel.send({
-                    embed: {
+                    embeds: [{
                         title: this.prompt.raw,
                         description: `${submitted.map((submission, i) => `**[${i + 1}]** ${submission.response || '**No response.**'}`).join('\n')}\n\nEveryone else, vote for your favorite answer!`,
                         footer: {
                             text: 'Type the number of the response to vote.'
                         },
                         color: options.colors.info
-                    }
+                    }]
                 })
                 let votes = []
                 // Only allow vote-eligible players to submit once
@@ -246,14 +246,14 @@ export default class Wisecracks extends Game {
 
                     // Show results
                     this.channel.send({
-                        embed: {
+                        embeds: [{
                             title: 'The winner is...',
                             description: winner == 'tie' ? `It was a tie between ${submitted[0].player.user} and ${submitted[1].player.user}!` : `${winner.player.user} for **${winner.response}**`,
                             footer: {
                                 text: 'They earned one point.'
                             },
                             color: options.colors.info
-                        }
+                        }]
                     })
 
                     if(winner === 'tie') {

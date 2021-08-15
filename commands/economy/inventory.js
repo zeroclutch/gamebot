@@ -18,7 +18,7 @@ export default new BotCommand({
         msg.author.fetchDBInfo().then(async info => {
             // check if user has items
             if(info.unlockedItems.length == 0) {
-                msg.channel.sendMsgEmbed(`View available items in the shop by typing \`${msg.channel.prefix}shop\`.`, 'You do not have any items in your inventory!', 13632027)
+                msg.channel.sendEmbed(`View available items in the shop by typing \`${msg.channel.prefix}shop\`.`, 'You do not have any items in your inventory!', 13632027)
                 return
             }
 
@@ -55,7 +55,7 @@ export default new BotCommand({
             } else {
                 const categoryItems = inventoryItems.filter(item => item.type.toLowerCase() == itemType.toLowerCase())
                 if(categoryItems.length == 0) {
-                    msg.channel.sendMsgEmbed(`View available items in the shop by typing \`${msg.channel.prefix}shop\`. Make sure you are spelling the category correctly.`, 'You do not have any items in this category!', 13632027)
+                    msg.channel.sendEmbed(`View available items in the shop by typing \`${msg.channel.prefix}shop\`. Make sure you are spelling the category correctly.`, 'You do not have any items in this category!', 13632027)
                     return
                 }
                 // make a new embed 

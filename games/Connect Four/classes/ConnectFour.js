@@ -90,7 +90,7 @@ export default class ConnectFour extends Game {
      */
     columnIsFull(column) {
         if(!this.board[0][column]) return false
-        this.msg.channel.sendMsgEmbed('That column is full!', 'Error', options.colors.error).catch(console.error)
+        this.msg.channel.sendEmbed('That column is full!', 'Error', options.colors.error).catch(console.error)
         return true
     }
 
@@ -128,7 +128,7 @@ export default class ConnectFour extends Game {
         let collected = await this.channel.awaitMessages(filter, { max: 1, time: this.timeLimit, errors: ['time'] })
         .catch(err => {
             if(this.ending) return
-            this.channel.sendMsgEmbed('You ran out of time!', 'Uh oh...', options.colors.error)
+            this.channel.sendEmbed('You ran out of time!', 'Uh oh...', options.colors.error)
             this.forceStop()
         })
         if(this.ending) return
@@ -208,7 +208,7 @@ export default class ConnectFour extends Game {
             let column = -1
             do {
                 if(this.ending) return
-                await this.channel.sendMsgEmbed(`First to ${this.options['Connect More?']} in a row wins!\n${this.renderBoard()}\n\n${player.user} ${ICONS[player.id]}, select a column between 1-${this.board[0].length} in ${Math.floor(this.timeLimit/1000)} seconds!`).catch(console.error)
+                await this.channel.sendEmbed(`First to ${this.options['Connect More?']} in a row wins!\n${this.renderBoard()}\n\n${player.user} ${ICONS[player.id]}, select a column between 1-${this.board[0].length} in ${Math.floor(this.timeLimit/1000)} seconds!`).catch(console.error)
                 column = await this.allowSelection(player).catch(console.error)
             } while(this.columnIsFull(column))
             this.dropTile(player.id, column)

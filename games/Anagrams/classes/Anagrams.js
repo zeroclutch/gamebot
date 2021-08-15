@@ -147,19 +147,19 @@ export default class Anagrams extends Game {
             this.word = this.options['Custom Word'].toUpperCase()
         }
         this.channel.send({
-            embed: {
+            embeds: [{
                 title: 'Anagrams',
                 description: `The game will start in 5 seconds.\n\nTo earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible. You don't have to use all the letters, and longer words are worth more points.\n\n**The letters are: \`Loading...\`**`,
                 color: options.colors.info
-            }
+            }]
         }).then(async message => {
             await this.sleep(5000)
             message.edit({
-                embed: {
+                embeds: [{
                     title: 'Anagrams',
                     description: `To earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible. You don't have to use all the letters, and longer words are worth more points.\n\n**The letters are: ${this.emojify(this.word)}**`,
                     color: options.colors.info
-                }
+                }]
             })
         }).then(() => {
             // create a collector on the main channel
@@ -186,7 +186,7 @@ export default class Anagrams extends Game {
                 this.words.push(word)
                 player.words.push(word)
                 player.score += score
-                this.channel.sendMsgEmbed(`<@${message.author.id}> got **${word}** for **${score}** points.\n\nThe letters are: ${this.emojify(this.word)}`, isPangram(word) ? 'PANGRAM!' : '', isPangram(word) ? options.colors.economy : options.colors.info)
+                this.channel.sendEmbed(`<@${message.author.id}> got **${word}** for **${score}** points.\n\nThe letters are: ${this.emojify(this.word)}`, isPangram(word) ? 'PANGRAM!' : '', isPangram(word) ? options.colors.economy : options.colors.info)
             })
 
             setTimeout(() => {
@@ -205,24 +205,24 @@ export default class Anagrams extends Game {
         } else {
             this.word = this.options['Custom Word'].toUpperCase()
         }
-        this.channel.sendMsgEmbed('The game will start in 5 seconds. Check your direct messages to see the letters you have to unscramble!')
+        this.channel.sendEmbed('The game will start in 5 seconds. Check your direct messages to see the letters you have to unscramble!')
         this.players.forEach(player => {
             // Alert each user the game is starting
             player.dmChannel.send({
-                embed: {
+                embeds: [{
                     title: 'Anagrams',
                     description: `To earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible.\n\n**The letters are: \`Loading...\`**`,
                     color: options.colors.info
-                }
+                }]
             }).then(async message => {
                 // Wait 5 seconds before start
                 await this.sleep(5000)
                 message.edit({
-                    embed: {
+                    embeds: [{
                         title: 'Anagrams',
                         description: `To earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible.\n\n**The letters are: ${this.emojify(this.word)}**`,
                         color: options.colors.info
-                    }
+                    }]
                 })
                 // create a collector on each DM channel
                  //this.validateWord(m.content, this.word) && !player.words.includes(word)
@@ -241,11 +241,11 @@ export default class Anagrams extends Game {
                     let word = message.content.toUpperCase()
                     let score = this.getWordScore(word)
                     player.dmChannel.send({
-                        embed: {
+                        embeds: [{
                             description: `You got **${word}** for **${score}** points.\n\nThe letters are: \`${this.word}\``,
                             title: isPangram(word) ? 'PANGRAM!' : '', 
                             color: isPangram(word) ? options.colors.economy : options.colors.info
-                        }
+                        }]
                     })
                     player.score += this.getWordScore(word)
                     player.words.push(word)
@@ -294,11 +294,11 @@ export default class Anagrams extends Game {
         fields.push({ name: 'Pangram', value: `The pangram was ${this.pangram}.` })
 
         this.channel.send({
-            embed: {
+            embeds: [{
                 color: options.colors.info,
                 title,
                 fields
-            }
+            }]
         }).then(() => {
             this.end()
         })
