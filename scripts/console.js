@@ -10,17 +10,16 @@ export const stdout = {
 export const config = client => {
     // Cache logging channel
     client.channels.fetch(options.loggingChannel, true).then(channel => {
-        console = {
-            log: (...args) => {
-                stdout.log(...args)
-                if(!client.readyAt) return
-                if(channel) channel.sendEmbed(util.inspect(...args))
-            },
-            error: (...args) => {
-                stdout.log(...args)
-                if(!client.readyAt) return
-                if(channel) channel.sendEmbed(util.inspect(...args), 'Error', options.colors.error)
-            }
+        console.log = (...args) => {
+            stdout.log(...args)
+            if(!client.readyAt) return
+            if(channel) channel.sendEmbed(util.inspect(...args))
+        }
+
+        console.error = (...args) => {
+            stdout.error(...args)
+            if(!client.readyAt) return
+            if(channel) channel.sendEmbed(util.inspect(...args), 'Error', options.colors.error)
         }
     }).catch(stdout.error)
 }
