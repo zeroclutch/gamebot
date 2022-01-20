@@ -21,7 +21,13 @@ export const GAMEBOT_PERMISSIONS = {
 
 export const GAME_OPTIONS = {
     FREE: 'free',
-    CHECKBOX: 'checkbox',
+    CHECKBOX: 'checkboxes',
     RADIO: 'radio',
     NUMBER: 'number'
+}
+
+export const BUTTONS = {
+    JOIN: 'game_join',
+    START: 'game_start',
+    RESET: 'game_reset'
 }

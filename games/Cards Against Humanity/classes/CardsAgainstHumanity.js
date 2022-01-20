@@ -445,7 +445,7 @@ export default class CardsAgainstHumanity extends Game {
         }
         // let the Card Czar choose one
         const filter = m => (!isNaN(m.content) &&  m.author.id == this.czar.user.id && parseInt(m.content) <= this.submittedCards.length && parseInt(m.content) > 0)
-        this.msg.channel.awaitMessages(filter, { max: 1, time: this.settings.timeLimit })
+        this.msg.channel.awaitMessages({ filter, max: 1, time: this.settings.timeLimit })
         .then(async collected => {
             if(this.ending) return
             collected.forEach(async m => {
