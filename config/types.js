@@ -1,3 +1,5 @@
+import options from './options.js'
+
 export const CHANNELS = {
     'DM':                   'DM', // - a DM channel
     'GROUP_DM':             'GROUP_DM', // - a group DM channel
@@ -30,4 +32,11 @@ export const BUTTONS = {
     JOIN: 'game_join',
     START: 'game_start',
     RESET: 'game_reset'
+}
+
+export const REPLIES = {
+    DISALLOWED_ACTION: {
+        embeds: [{ description: `You can't click that!`, color: options.colors.error }],
+        ephemeral: true
+    }
 }

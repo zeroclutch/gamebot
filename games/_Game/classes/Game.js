@@ -1,5 +1,5 @@
 import options from '../../../config/options.js'
-import { BUTTONS, GAME_OPTIONS } from '../../../config/types.js'
+import { BUTTONS, GAME_OPTIONS, REPLIES } from '../../../config/types.js'
 import Discord from '../../../discord_mod.js'
 
 /**
@@ -319,10 +319,7 @@ export default class Game {
                     })
                 } else {
                     // A disallowed action was executed
-                    await i.reply({
-                        embeds: [{ description: `You can't click that!`, color: options.colors.error }],
-                        ephemeral: true
-                    })
+                    await i.reply( REPLIES.DISALLOWED_ACTION )
                 }
 
             })
@@ -452,7 +449,16 @@ export default class Game {
 
                 const buttonFilter = i => i.user.id === this.leader.id && i.customId === BUTTONS.START
 
-                let buttonCollector = optionMessage.createMessageComponentCollector({ filter: buttonFilter, max: 1, time: 60000 })
+                let buttonCollector = optionMessage.createMessageComponentCollector({ filter: buttonFilter, time: 60000 })
+
+                buttonCollector.on('collect', async i => {
+                    if(i.user.id === this.leader.id && i.customId === BUTTONS.START) {
+                        buttonCollector.stop('limit')
+                    } else {
+                        await i.reply( REPLIES.DISALLOWED_ACTION )
+                    }
+                })
+
                 buttonCollector.once('end', async (collected, reason) => {
                     if(this.ending) return
                     if(reason === 'limit') {

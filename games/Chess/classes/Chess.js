@@ -171,8 +171,8 @@ export default class Chess extends Game {
         let embed = new Discord.MessageEmbed()
         .setDescription(`You have ${this.options['Timer']} seconds to make a move.`)
         .addField('ℹ️', 'To make a move, enter the bot prefix followed by a valid move in algebraic notation.', true)
-        .addField('⏰', `Type ${this.channel.prefix}timer to see the move time remaining.`, true)
-        .addField('🏳', `Type ${this.channel.prefix}resign to give up.`, true)
+        .addField('⏰', `Type \`${this.channel.prefix}timer\` to see the move time remaining.`, true)
+        .addField('🏳', `Type \`${this.channel.prefix}resign\` to give up.`, true)
         .setFooter(`Type ${this.channel.prefix}movehelp for help.`)
         .setImage(`attachment://image.png`)
         .setColor({ 'White': '#fffffe', 'Black': '#000001' }[side])
@@ -195,13 +195,37 @@ export default class Chess extends Game {
         return new Promise((resolve, reject) => {
             this.lastTurnStartedAt = Date.now() + parseInt(this.options['Timer']) * 1000
 
-            const filter = m => m.content.startsWith(this.channel.prefix) && this.players.has(m.author.id) && m.author.id == this.getPlayer(side).user.id
-            let collector = this.channel.createMessageCollector(filter, { time: parseInt(this.options['Timer']) * 1000 })
+            const filter = m => m.content.startsWith(this.channel.prefix) && this.players.has(m.author.id) && m.author.id === this.getPlayer(side).user.id
+            let collector = this.channel.createMessageCollector({ filter, time: parseInt(this.options['Timer']) * 1000 })
             
             collector.on('collect', m => {
                 if(this.ending || this.over) return
                 let move = m.content.replace(this.channel.prefix, '')
-                if(this.status.notatedMoves[move]) {
+                // Search for move 
+                let moveData = this.status.notatedMoves[move]
+
+                if(!moveData && move.length === 4) {
+                    let moveArr = move.toLowerCase().split('')
+                    moveArr[1] = parseInt(moveArr[1])
+                    moveArr[3] = parseInt(moveArr[3])
+
+                    // Search for moves made using non-algebraic notation
+                    for(let notatedMove in this.status.notatedMoves) {
+                        let square = this.status.notatedMoves[notatedMove]
+
+                        // Compare rank and file
+                        if(square.src.rank  === moveArr[1] &&
+                           square.dest.rank === moveArr[3] &&
+                           square.src.file  === moveArr[0] &&
+                           square.dest.file === moveArr[2]) {
+                            // Update moves if we've found it
+                            move = notatedMove
+                            moveData = square
+                        }
+                    }
+                }
+
+                if(moveData) {
                     this.gameClient.move(move)
                     this.moves.push(move)
                     collector.stop('submitted')
@@ -210,7 +234,7 @@ export default class Chess extends Game {
                     this.channel.send({
                         embeds: [{
                             title: 'Invalid move!',
-                            description: 'Be sure to enter your move in algebraic notation.',
+                            description: `Type \`${this.channel.prefix}movehelp\` for help.`,
                             color: options.colors.error
                         }]
                     })
