@@ -19,7 +19,7 @@ export default new BotCommand({
             msg.client.getTimeToDowntime().then(timeToDowntime => {
                 let downtime = Math.ceil(timeToDowntime / 60000)
                 msg.channel.sendEmbed(`Downtime currently set for ${downtime} minute(s). Would you like to disable the current downtime message? Enter \`yes\` or \`no\`.`)
-                msg.channel.awaitMessages(m => (m.content.toLowerCase() == 'yes' || m.content.toLowerCase() == 'no') && m.author.id == msg.author.id, {max: 1, time: 30000 }).then(collected => {
+                msg.channel.awaitMessages({ max: 1, time: 30000, filter: m => (m.content.toLowerCase() == 'yes' || m.content.toLowerCase() == 'no') && m.author.id == msg.author.id }).then(collected => {
                     const message = collected.first().content.toLowerCase()
                     if(message == 'yes') {
                         collection.findOneAndUpdate(

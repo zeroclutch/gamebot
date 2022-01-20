@@ -94,7 +94,7 @@ export default class SurveySays extends Game {
         await this.channel.sendEmbed(`The current guesser is ${this.guesser.user}!\n\nYour question is: **${this.question.question}**`)
 
         // Await response
-        let collected = await this.channel.awaitMessages(filter, {max: 1, time: this.options['Timer'], errors: ['time']})
+        let collected = await this.channel.awaitMessages({filter, max: 1, time: this.options['Timer'], errors: ['time']})
         .catch(err => {
             if(this.ending) return
             this.msg.channel.sendEmbed('You ran out of time. The guess is set to 50%', 'Uh oh...', options.colors.error)

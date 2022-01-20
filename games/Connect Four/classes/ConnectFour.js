@@ -125,7 +125,7 @@ export default class ConnectFour extends Game {
             return number <= this.board[0].length && number >= 1
         }
 
-        let collected = await this.channel.awaitMessages(filter, { max: 1, time: this.timeLimit, errors: ['time'] })
+        let collected = await this.channel.awaitMessages({ filter, max: 1, time: this.timeLimit, errors: ['time'] })
         .catch(err => {
             if(this.ending) return
             this.channel.sendEmbed('You ran out of time!', 'Uh oh...', options.colors.error)

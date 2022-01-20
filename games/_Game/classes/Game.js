@@ -1,4 +1,5 @@
 import options from '../../../config/options.js'
+import { BUTTONS, GAME_OPTIONS } from '../../../config/types.js'
 import Discord from '../../../discord_mod.js'
 
 /**
@@ -262,35 +263,76 @@ export default class Game {
      */
     join() {
         return new Promise(async (resolve, reject) => {
-            // allow players to join
-            await this.msg.channel.send({
-                embeds: [{
-                    title: `${this.msg.author.tag} is starting a ${this.metadata.name} game!`,
-                    description: `Type \`${this.channel.prefix}join\` to join in the next **120 seconds**.\n\n${this.leader}, type \`${this.channel.prefix}start\` to begin once everyone has joined.`,
-                    color: options.colors.info
-                }]
+            // Add game leader
+            await this.addPlayer(this.leader.id, null)
+            await this.updatePlayers(true)
+
+            // Construct join message
+            const joinButtonRow = new Discord.MessageActionRow()
+            .addComponents(
+                new Discord.MessageButton()
+                    .setCustomId(BUTTONS.JOIN)
+                    .setLabel('Join')
+                    .setStyle('SUCCESS'),
+                new Discord.MessageButton()
+                    .setCustomId(BUTTONS.START)
+                    .setLabel('Start Game (Leader)')
+                    .setStyle('PRIMARY'),
+            )
+
+            const joinEmbed = {
+                title: `${this.msg.author.tag} is starting a ${this.metadata.name} game!`,
+                description: `Click "Join" below to join in the next **120 seconds**.\n\n${this.leader}, select "Start Game" to begin once everyone has joined.`,
+                fields: [{
+                    name: 'Joined Players',
+                    value: this.players.reduce((str, p) => str += `<@${p.user.id}>, `, '').slice(0, -2) || 'None'
+                }],
+                color: options.colors.info
+            }
+
+            let joinMessage = await this.msg.channel.send({
+                embeds: [ joinEmbed ],
+                components: [ joinButtonRow ]
             })
-
-            // Add gameMaster
-            await this.addPlayer(this.gameMaster.id, null)
-            this.updatePlayers()
-
-            const filter = m => (m.content.startsWith(`${this.channel.prefix}join`) && !this.players.has(m.author.id)) || (m.author.id == this.gameMaster.id && m.content.startsWith(`${this.channel.prefix}start`))
-            const collector = this.channel.createMessageCollector(filter, { time: 120000 })
+            
+            // Collect all interactions
+            const collector = joinMessage.createMessageComponentCollector({ time: 120000 })
             this.collectors.push(collector)
-            collector.on('collect', async m => {
+            collector.on('collect', async i => {
+                // End all collectors when game is force stopped
                 if(this.ending) return
-                if(m.content.startsWith(`${this.channel.prefix}start`)) {
+                
+                // Start button
+                if(i.customId === BUTTONS.START && i.user.id === this.msg.author.id) {
                     collector.stop()
                     return
+                } else if(i.customId === BUTTONS.JOIN && !this.players.has(i.user.id) ) {
+                    await this.addPlayer(i.user.id, null)
+                    await this.updatePlayers(true)
+                    
+                    // Update player list
+                    joinEmbed.fields[0].value = this.players.reduce((str, p) => str += `<@${p.user.id}>, `, '').slice(0, -2) || 'None'
+                    
+                    await i.update({
+                        embeds: [ joinEmbed ],
+                        components: [ joinButtonRow ]
+                    })
+                } else {
+                    // A disallowed action was executed
+                    await i.reply({
+                        embeds: [{ description: `You can't click that!`, color: options.colors.error }],
+                        ephemeral: true
+                    })
                 }
-                await this.addPlayer(m.author.id, null)
-                this.updatePlayers()
-                m.delete()
+
             })
 
-            collector.on('end', collected => {
+            collector.once('end', collected => {
+                // End all collectors when game is force stopped
                 if(this.ending) return
+
+                joinMessage.edit({ components: [] })
+
                 // check if there are enough players
                 let size = this.players.size
                 if(this.playersToAdd)  size += this.playersToAdd.length
@@ -324,15 +366,15 @@ export default class Game {
      */
     renderOptionInfo (option) {
         let response = ''
-        if(option.type == 'checkboxes') {
+        if(option.type === GAME_OPTIONS.CHECKBOX) {
             option.choices.forEach((choice, index) => {
                 response += `${option.value.includes(choice) ? '**✓**' : '☐'} ${index + 1}: ${choice}\n`
             })
-        } else if (option.type == 'radio') {
+        } else if (option.type === GAME_OPTIONS.RADIO) {
             option.choices.forEach((choice, index) => {
                 response += `${option.value == choice ? '🔘' : '⚪️'} ${index + 1}: ${choice}\n`
             })
-        } else if (option.type == 'free') {
+        } else if (option.type === GAME_OPTIONS.FREE) {
             response = `**Current value:** ${option.value}`
         } else {
             response = `**Current value:** ${option.value}`
@@ -348,63 +390,99 @@ export default class Game {
      */
 
     /**
-     * Allow the game leader to set options, and outputs the options to `this.options`.
-     * @returns {Object<String,ConfiguredOption>} The configured options, with their key as the option friendly name, and value as the configured value.
+     * Convert the gameOptions list to a concise key-value options list
+     * @returns {Object<String,ConfiguredOption>}
      */
-    async configureOptions () {
-        let isConfigured = false
-        let optionMessage
-        for(let i = 0; i < this.gameOptions.length; i++) {
-            // configure options
-            let option = this.gameOptions[i]
-            Object.defineProperty(option, 'value', {
-                value: option.default,
-                enumerable: true,
-                writable: true
-            })
-        }
+    generateConfiguredOptionList() {
+        // add to options
+        this.options = {}
+        this.gameOptions.forEach(option => {
+            this.options[option.friendlyName] = option.value 
+        })
+        return this.options
+    }
 
-        await this.channel.send('Loading options...').then(m => optionMessage = m)
-        do {
-            // Display options
-            let optionsDisplay = ''
+    /**
+     * Allow the game leader to set options, and outputs the options to `this.options`.
+     * @returns {Promise<Object<String,ConfiguredOption>>} The configured options, with their key as the option friendly name, and value as the configured value.
+     */
+    configureOptions() {
+        return new Promise(async (resolve, reject) => {
+            let isConfigured = false
+            let optionMessage
             for(let i = 0; i < this.gameOptions.length; i++) {
-                // write to options display
+                // configure options
                 let option = this.gameOptions[i]
-                optionsDisplay += `**${i + 1}.** ${option.friendlyName}: ${typeof option.value == 'object' ? option.value.join(', ') : option.value }\n`
+                Object.defineProperty(option, 'value', {
+                    value: option.default,
+                    enumerable: true,
+                    writable: true
+                })
             }
-            optionsDisplay += `\nType \`${this.channel.prefix}start\` to start the game.`
-            optionMessage.edit({
-                embeds: [{
-                    title: 'Configure Settings',
-                    description: optionsDisplay,
-                    color: options.colors.info,
-                    footer: {
-                        text: 'Type an option\'s number to edit the value.'
-                    }
-                }]
-            })
 
-            const filter = m => m.author.id == this.gameMaster.id && ((!isNaN(m.content) && parseInt(m.content) <= this.gameOptions.length && parseInt(m.content) > 0) || m.content.toLowerCase() == this.channel.prefix + 'start')
-            await this.channel.awaitMessages(filter, {
-                time: 60000,
-                max: 1,
-                errors: ['time'],
-            }).then(async collected => {
-                if(this.ending) return
-                const message = collected.first()
-                message.delete()
-                if(message.content == `${this.channel.prefix}start`) {
-                    optionMessage.edit({
-                        embeds: [{
-                            title: 'Options saved!',
-                            description: 'The game is starting...',
-                            color: options.colors.info
-                        }]
-                    })
+            const optionsButtonRow = new Discord.MessageActionRow()
+                .addComponents(
+                    new Discord.MessageButton()
+                        .setCustomId(BUTTONS.START)
+                        .setLabel('Confirm Settings (Leader)')
+                        .setStyle('PRIMARY'),
+                )
+
+            await this.channel.send('Loading options...').then(m => optionMessage = m)
+            do {
+                // Display options
+                let optionsDisplay = ''
+                for(let i = 0; i < this.gameOptions.length; i++) {
+                    // write to options display
+                    let option = this.gameOptions[i]
+                    optionsDisplay += `**${i + 1}.** ${option.friendlyName}: ${typeof option.value == 'object' ? option.value.join(', ') : option.value }\n`
+                }
+                optionsDisplay += `\nClick "Confirm Settings" below to start the game.`
+                optionMessage.edit({
+                    embeds: [{
+                        title: 'Configure Settings',
+                        description: optionsDisplay,
+                        color: options.colors.info,
+                        footer: {
+                            text: 'Type an option\'s number to edit the value.'
+                        }
+                    }],
+                    components: [ optionsButtonRow ]
+                })
+
+                const buttonFilter = i => i.user.id === this.leader.id && i.customId === BUTTONS.START
+
+                let buttonCollector = optionMessage.createMessageComponentCollector({ filter: buttonFilter, max: 1, time: 60000 })
+                buttonCollector.once('end', async (collected, reason) => {
+                    if(this.ending) return
+                    if(reason === 'limit') {
+                        optionMessage.edit({
+                            embeds: [{
+                                title: 'Options saved!',
+                                description: 'The game is starting...',
+                                color: options.colors.info
+                            }],
+                            components: []
+                        })
+                    } else {
+                        // Handle timeout on awaitMessages.catch()
+                    }
+                    // Single exit point of method
                     isConfigured = true
-                    return
-                } else {
+                    resolve(this.generateConfiguredOptionList())
+                })
+
+                const messageFilter = m => m.author.id === this.leader.id && ((!isNaN(m.content) && parseInt(m.content) <= this.gameOptions.length && parseInt(m.content) > 0) || m.content.toLowerCase() === this.channel.prefix + 'start')
+                //const filter = m => m.author.id != this.client.user.id
+                await this.channel.awaitMessages({ 
+                    filter: messageFilter,
+                    time: 60000,
+                    max: 1,
+                    errors: ['time'],
+                }).then(async collected => {
+                    if(this.ending) return
+                    const message = collected.first()
+                    message.delete()
                     let option = this.gameOptions[parseInt(message.content) - 1]
                     const optionData = {
                         'checkboxes': {
@@ -441,8 +519,10 @@ export default class Game {
                     })
 
                     // await a response for the option
-                    await this.channel.awaitMessages(m => (optionData[option.type].filter)(m), {
-                        time: 60000, max: 1
+                    await this.channel.awaitMessages({
+                        filter: m => (optionData[option.type].filter)(m),
+                        time: 60000,
+                        max: 1
                     }).then(collected => {
                         if(this.ending) return
                         const message = collected.first()
@@ -491,37 +571,31 @@ export default class Game {
                     .catch(err => {
                         this.channel.sendEmbed(`Please select an option! Type \`${this.channel.prefix}start\` to start the game.`, 'Error!', options.colors.error)
                     })
-                    // on timeout restart this
-                }
-            }).catch(err => {
-                // time has run out
-                if(err.size === 0) {
-                    optionMessage.edit({
-                        embeds: [{
-                            title: 'Time has run out!',
-                            description: 'The game is starting...',
-                            color: options.colors.error
-                        }]
-                    })
-                    isConfigured = true
-                } else {
-                    console.error(err)
-                    optionMessage.edit({
-                        embeds: [{
-                            title: 'Error!',
-                            description: `An unknown error occurred when loading into the game. The game is now starting. Please report this to Gamebot support in our [support server](${options.serverInvite}?ref=gameLoadInError).`,
-                            color: options.colors.error
-                        }]
-                    })
-                }
-            })
-        } while(!isConfigured)
-        // add to options
-        this.options = {}
-        this.gameOptions.forEach(option => {
-            this.options[option.friendlyName] = option.value 
+                }).catch(err => {
+                    // time has run out
+                    if(err.size === 0) {
+                        optionMessage.edit({
+                            embeds: [{
+                                title: 'Time has run out!',
+                                description: 'The game is starting...',
+                                color: options.colors.error
+                            }],
+                            components: []
+                        })
+                        isConfigured = true
+                    } else {
+                        console.error(err)
+                        optionMessage.edit({
+                            embeds: [{
+                                title: 'Error!',
+                                description: `An unknown error occurred when loading into the game. The game is now starting. Please report this to Gamebot support in our [support server](${options.serverInvite}?ref=gameLoadInError).`,
+                                color: options.colors.error
+                            }]
+                        })
+                    }
+                })
+            } while(!isConfigured)
         })
-        return this.options
     }
 
     /**
@@ -573,7 +647,7 @@ export default class Game {
 
         let futureSize = this.players.size + this.playersToAdd.length - this.playersToKick.length
         if(futureSize >= this.metadata.playerCount.max) {
-            this.channel.sendEmbed(`The game can't have more than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! ${member.user} could not be added.`).catch(console.error)
+            await this.channel.sendEmbed(`The game can't have more than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! ${member.user} could not be added.`).catch(console.error)
             return
         }
 
@@ -628,16 +702,17 @@ export default class Game {
 
     /**
      * Update players who are queued to join or leave the game.
+     * @param {Boolean} updateQuietly Sends a message in chat if not explicitly false
      */
-    updatePlayers() {
-        this.playersToKick.forEach(member => {
-            this.msg.channel.sendEmbed(`${member.user} was removed from the game!`).catch(console.error)
+    async updatePlayers(updateQuietly=false) {
+        for(let member of this.playersToKick) {
+            if(!updateQuietly) await this.msg.channel.sendEmbed(`${member.user} was removed from the game!`).catch(console.error)
             this.players.delete(member.id)
-        })
+        }
         this.playersToKick = []
 
-        this.playersToAdd.forEach(member => {
-            member.user.createDM().then(dmChannel => {
+        for(let member of this.playersToAdd) {
+            await member.user.createDM().then(dmChannel => {
                 return new Promise(resolve => {
                     let player = { user: member.user, dmChannel }
                     // Construct default player object
@@ -659,26 +734,26 @@ export default class Game {
                 if(this.settings.isDmNeeded){
                     await dmChannel.sendEmbed(`You have joined a ${this.metadata.name} game in <#${this.msg.channel.id}>.`).catch(console.error)
                 }
-                this.msg.channel.sendEmbed(`${member.user} was added to the game!`).catch(console.error)
-            }).catch(err => {
+                if(!updateQuietly) await this.msg.channel.sendEmbed(`${member.user} was added to the game!`).catch(console.error)
+            }).catch(async err => {
                 // Remove errored player
                 if(this.players.has(member.id)) this.players.delete(member.id)
 
                 // Filter out privacy errors
                 if(err.message != 'Cannot send messages to this user') {
-                    this.msg.channel.sendEmbed(`An unknown error occurred, and ${member.user} could not be added.`, `Error: Player could not be added.`, options.colors.error).catch(console.error)
+                    await this.msg.channel.sendEmbed(`An unknown error occurred, and ${member.user} could not be added.`, `Error: Player could not be added.`, options.colors.error).catch(console.error)
                     console.error(err)
                 }
 
                 // Notify user
                 if(member.id == this.gameMaster.id) {
-                    this.msg.channel.sendEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error).catch(console.error)
+                    await this.msg.channel.sendEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error).catch(console.error)
                     this.forceStop()
                 } else {
-                    this.msg.channel.sendEmbed(`${member.user} must change their privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: Player could not be added.`, options.colors.error).catch(console.error)
+                    await this.msg.channel.sendEmbed(`${member.user} must change their privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: Player could not be added.`, options.colors.error).catch(console.error)
                 }
             })
-        })
+        }
         this.playersToAdd = []
     }
     
