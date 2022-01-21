@@ -8,7 +8,6 @@ export default new GameCommand({
     permissions: ['GAME_LEADER'],
     args: false,
     run: function(msg, args, game) {
-        game.forceStop()
-        msg.client.gameManager.games.delete(msg.channel.id)
+        msg.client.gameManager.stop(msg.channel)
     }
 })

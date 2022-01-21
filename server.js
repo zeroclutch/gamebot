@@ -260,12 +260,15 @@ app.post('/response/:ui_id', (req, res) => {
     return
   }
 
-  let data = JSON.stringify({...req.body, id: UI_ID})
+  let data = {...req.body, id: UI_ID}
 
-  manager.broadcastEval(function(client) {
+  manager.broadcastEval(function(client, context) {
+    let [UI, data] = context
     if(client.shard.ids[0] == UI.shard) {
       client.webUIClient.receive(data)
     }
+  }, {
+    context: [UI, data]
   })
   .then(value => {
     // Return the success webpage

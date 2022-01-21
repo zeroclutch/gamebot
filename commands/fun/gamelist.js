@@ -15,11 +15,13 @@ export default new BotCommand({
     args: false,
     run: function(msg, args) {
         let games = []
-        msg.client.games.keyArray().forEach((metadata, index) => {
+        let index = 0
+        msg.client.games.forEach((value, metadata) => {
             games.push({
                 name: `${index + 1}. ${metadata.name} | ID: \`${metadata.id}\``,
                 value: metadata.about
             })
+            index++
         })
 
         msg.channel.send({

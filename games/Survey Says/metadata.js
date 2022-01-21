@@ -3,7 +3,7 @@ export default {
     "name": "Survey Says",
     "playerCount": {
         "min": 3,
-        "max": 18
+        "max": 12
     },
     "genre": "Party",
     "about": "The wacky game that tells you just how weird people are.",

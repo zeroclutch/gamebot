@@ -202,7 +202,7 @@ export default class ConnectFour extends Game {
             index++
             let player = this.players.get(this.players.keyAt(index % this.players.size))
             if(index === this.board.height * this.board.width) {
-                this.forceStop()
+                this.end()
             }
 
             // Allow a player to view the board and place a tile

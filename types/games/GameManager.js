@@ -44,7 +44,7 @@ export default class GameManager {
      */
     stop(channel) {
       let game = this.games.get(channel.id)
-      if(game) game.forceStop()
+      if(game) game.end()
       this.games.delete(channel.id)
     }
 }
