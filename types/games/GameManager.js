@@ -15,8 +15,8 @@ export default class GameManager {
      */
     start(game, msg, ...gameOptions) {
       let channel = msg.channel
-    // check if game is playing in channel
-    if(this.games.has(channel.id)) {
+      // check if game is playing in channel
+      if(this.games.has(channel.id)) {
         channel.sendEmbed(`A game is already playing in this channel! End that game first by using the \`${options.prefix}end\` command.`, 'Uh oh...', 13632027)
         return
       }
@@ -30,9 +30,18 @@ export default class GameManager {
       this.games.set(channel.id, gameInstance)
 
       // run initialization of game
-      gameInstance.init()
+      gameInstance.init().catch(async (err) => {
+        this.client.emit('error', err, this.client, msg)
+
+        // End game on error to prevent channel freezing
+        this.stop(channel)
+      })
     }
 
+    /**
+     * Stop a game from playing in a given channel.
+     * @param {Discord.TextChannel} channel Channel that has a game playing
+     */
     stop(channel) {
       let game = this.games.get(channel.id)
       if(game) game.forceStop()

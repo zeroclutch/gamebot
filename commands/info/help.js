@@ -17,9 +17,9 @@ export default new BotCommand({
         // find help for a specific command
         if (helpCmd && (helpCmd.category !== 'dev' || msg.author.id == process.env.OWNER_ID) && (helpCmd.category !== 'mod' || msg.client.moderators.includes(msg.author.id))) {
             msg.channel.sendEmbed(`**__HELP:__**
-                    \nCommand: \`${prefix}${helpCmd.name}\`
+                    \nCommand: \`${msg.channel.prefix}${helpCmd.name}\`
                     \nDescription: ${helpCmd.description}
-                    \nUsage: \`${prefix}${helpCmd.usage}\`
+                    \nUsage: \`${msg.channel.prefix}${helpCmd.usage}\`
                     \nAliases: \`${(helpCmd.aliases.join(", ")||'None')}\``)
             // find list of commands
         } else {

@@ -129,10 +129,12 @@ export default class ConnectFour extends Game {
         .catch(err => {
             if(this.ending) return
             this.channel.sendEmbed('You ran out of time!', 'Uh oh...', options.colors.error)
-            this.forceStop()
+            if(this.players.size === 2) {
+                this.end(this.players.find(p => p.user.id !== player.user.id))
+            }
         })
-        if(this.ending) return
-        let column = parseInt(collected.first().content) - 1
+        let column
+        if(collected) column = parseInt(collected.first().content) - 1
         return column
     }
 
@@ -195,12 +197,11 @@ export default class ConnectFour extends Game {
     }
 
     async play() {
-        let players = this.players.array()
         let index = -1
         do {
             index++
-            let player = players[index % players.length]
-            if(index == this.board.height * this.board.width) {
+            let player = this.players.get(this.players.keyAt(index % this.players.size))
+            if(index === this.board.height * this.board.width) {
                 this.forceStop()
             }
 
