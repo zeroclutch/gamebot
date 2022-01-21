@@ -100,7 +100,7 @@ export default class Game {
         this.playersToKick = []
 
         /**
-         * Helper field that is only true when `this.forceStop()` is called. This should be used to prevent the game from continuing when unexpectedly ended.
+         * Helper field that notifies collectors that the game is over.
          * @type {Boolean}
          * @example
          * const collector = this.channel.createMessageCollector(options)
@@ -220,7 +220,7 @@ export default class Game {
             if(timeToDowntime > 0 && timeToDowntime <= 10 * 60000) {
                 const downtime = Math.round(timeToDowntime / 60000)
                 this.msg.channel.sendEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Games cannot be started right now. For more information, [see our support server.](${options.serverInvite}?ref=downtimeError)`, 'Error!', options.colors.error)
-                this.forceStop()
+                this.end()
                 return
             } else if(timeToDowntime > 0) {
                 this.msg.channel.sendEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Any active games will be automatically ended. For more information, [see our support server.](${options.serverInvite}?ref=downtimeWarning)`, 'Warning!', options.colors.warning)
@@ -338,7 +338,7 @@ export default class Game {
                         this.msg.channel.sendEmbed(`${players.join(", ")} joined the game!`, 'Time\'s up!')
                     } else {
                         this.msg.channel.sendEmbed(`Not enough players joined the game!`, 'Time\'s up!')
-                        this.forceStop()
+                        this.end()
                         return
                     }
                     // continue playing
@@ -645,6 +645,10 @@ export default class Game {
      */
     async addPlayer(member, message) {
         if(typeof member === 'string') {
+            // Validate string
+            if(member.length !== 18) return false
+
+            // Search user
             member = await this.msg.guild.members.fetch(member).catch(async err => {
                 console.error(err)
                 await this.channel.sendEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
@@ -653,7 +657,7 @@ export default class Game {
             if(member === false) return
         }
 
-        if(!member || this.players.has(member.id) || (member.bot && !this.client.isTestingMode)) {
+        if(!member || this.players.has(member.id) || (member.user.bot && !this.client.isTestingMode)) {
             await this.msg.channel.sendEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
             return
         }
@@ -695,7 +699,7 @@ export default class Game {
             }).catch(console.error)
         }
         
-        if(!this.players.has(member.id) || !member || (member.bot && !this.client.isTestingMode)) {
+        if(!this.players.has(member.id) || !member || (member.user.bot && !this.client.isTestingMode)) {
             await this.channel.sendEmbed('Invalid user.', 'Error!', options.colors.error).catch(console.error)
             return
         }
@@ -765,7 +769,7 @@ export default class Game {
                 // Notify user
                 if(member.id == this.gameMaster.id) {
                     await this.msg.channel.sendEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error).catch(console.error)
-                    this.forceStop()
+                    this.end()
                 } else {
                     await this.msg.channel.sendEmbed(`${member.user} must change their privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: Player could not be added.`, options.colors.error).catch(console.error)
                 }
@@ -800,11 +804,12 @@ export default class Game {
         })
 
         if(!endPhrase) {
-            if(winners instanceof Array) {
+            if(winners instanceof Array && winners.length > 1) {
                 // Multiple winners
                 endPhrase = winners.map(winner => winner.user.toString()).join(',') + ' are the winners!'
             } else if (winners instanceof Object) {
                 // Single winner
+                if(winners instanceof Array) winners = winners[0]
                 endPhrase = `${winners.user} is the winner!`
             } else {
                 // No winner
@@ -836,13 +841,5 @@ export default class Game {
                 }]
             }).catch(console.error)
         }
-    }
-
-    /**
-     * Force ends a game. This will be called by the end command.
-     */
-    forceStop() {
-        this.ending = true
-        this.end()
     }
 }

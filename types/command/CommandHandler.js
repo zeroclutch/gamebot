@@ -196,9 +196,10 @@ export default class CommandHandler {
             if (['dev', 'economy'].includes(command.category)) {
                 await this.client.dbClient.createDBInfo(message.author.id)
             }
-            command.run(message, messageData.args, game)
+            
+            // Run as promise so we can always catch the error without awaiting
+            command.runPromise(message, messageData.args, game).catch(err => this.client.emit('error', err, this.client, message))
         } catch (err) {
-            console.log('new error occurred!!!')
             this.client.emit('error', err, this.client, message)
         }
     

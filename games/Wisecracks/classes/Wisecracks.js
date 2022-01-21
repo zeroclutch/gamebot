@@ -41,10 +41,10 @@ export default class Wisecracks extends Game {
 
         this.timeLimit = 60000
 
-        this.playerList = this.players.array()
+        // Add players to array
+        this.playerList = Array.from(this.players.values())
         
-        this.submissions = [
-        ]
+        this.submissions = []
     }
 
     /**
@@ -57,7 +57,7 @@ export default class Wisecracks extends Game {
         }
         this.promptList = new PromptList(list)
 
-        this.playerList = this.scramble(this.players.array())
+        this.playerList = this.scramble(Array.from(this.players.values()))
         return
     }
 
@@ -149,7 +149,7 @@ export default class Wisecracks extends Game {
     }
 
     displayLeaderboard() {
-        let players = this.players.array()
+        let players = Array.from(this.players.values())
         let leaderboard = ''
         for(let i = 0; i < players.length; i++) {
             let lastLine = i == players.length - 1
@@ -172,13 +172,17 @@ export default class Wisecracks extends Game {
      * @returns {object} Returns the winning player if there is one
      */
     hasWinner () {
-        let arr = this.players.array()
+        let arr = Array.from(this.players.values())
+        let winners = []
         for(let i = 0; i < this.players.size; i++) {
             if(arr[i].score >= parseInt(this.options['Points to Win'])) {
-                return arr[i]
+                winners.push(arr[i])
             }
         }
-        return false
+        if(winners.length > 0)
+            return winners
+        else
+            return false
     }
 
     playNextRound() {

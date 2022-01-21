@@ -8,22 +8,14 @@ const getError = err => {
         'Missing Permissions': `I'm missing some permissions. Gamebot needs have 'Embed Links' enabled in this channel to work.`,
     }
 
-    return ERROR_MESSAGES[err.message] || `An unknown error occurred. Please report the error with the code in the [Gamebot support server](${options.serverInvite}).`
+    return ERROR_MESSAGES[err.message] || `An unknown error occurred. Please report the error with the code in the Gamebot support server: ${options.serverInvite}.`
 }
 
 export const handler = (err, client, message, game) => {
     const ERROR_CODE = Buffer.from(`${Math.random()}`).toString('base64').slice(3,12)
     if(message) {
-        const errorEmbed = {
-            description: getError(err),
-            footer: {
-                text: `Code: ${ERROR_CODE}`
-            },
-            color: options.colors.error
-        }
-
         message.channel.send({
-            content: `Error [Code ${ERROR_CODE}]: ${getError(err)}`
+            content: `**Error [Code ${ERROR_CODE}]:** ${getError(err)}`
         })
         // could cause infinite loop if error is with sending
     }

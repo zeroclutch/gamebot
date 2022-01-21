@@ -33,7 +33,9 @@ export const BUTTONS = {
     START: 'game_start',
     RESET: 'game_reset',
     SELECT: 'card_select',
-    VIEW_HAND: 'card_view_hand'
+    VIEW_HAND: 'card_view_hand',
+    MORE: 'more',
+    LESS: 'less',
 }
 
 export const REPLIES = {
