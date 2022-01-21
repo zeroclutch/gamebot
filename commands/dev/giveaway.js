@@ -39,7 +39,7 @@ export default new BotCommand({
         reactionMessage.react(reactionEmoji)
 
         const filter = r => r.emoji.id == reaction
-        const collector = reactionMessage.createReactionCollector(filter, { time });
+        const collector = reactionMessage.createReactionCollector({ filter, time });
         let collectedUsers = []
         collector.on('collect', async (r, user) => {
             // avoid duplicates 

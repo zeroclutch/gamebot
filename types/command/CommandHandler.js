@@ -198,6 +198,7 @@ export default class CommandHandler {
             }
             command.run(message, messageData.args, game)
         } catch (err) {
+            console.log('new error occurred!!!')
             this.client.emit('error', err, this.client, message)
         }
     

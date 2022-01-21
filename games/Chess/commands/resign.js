@@ -9,7 +9,7 @@ export default new GameCommand({
     permissions: [],
     args: false,
     run: function(msg, args, game) {
-        let winner = game.players.find(player => player.id !== msg.author.id) 
+        let winner = game.players.find(player => player.user.id !== msg.author.id) 
         if(game.moves.length > 2) {
             game.importGameToLichess(winner.side)
         }

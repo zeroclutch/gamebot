@@ -87,56 +87,60 @@ export default class Wisecracks extends Game {
     getWisecracks(player) {
         const duration = 120
         return new Promise((resolve, reject) => {
-            this.msg.client.webUIClient.createWebUI(player.user, response => {
-                player.user.send({
-                    embeds: [{
-                        title: 'Successfully submitted!',
-                        description: `You have entered: ${response}\n\n**Return to game channel:** ${this.channel}`,
-                        color: options.colors.info
-                    }]
-                })
-                resolve(response)
-            }, {
-                message: `Enter your response to the prompt: <b>${this.prompt.raw}</b>`,
-                duration
-            }).then(url => {
-                // Set timer 120 seconds
-                setTimeout(() => {
-                    if(this.ending) reject()
-                    resolve()
-                }, duration * 1000)
+            try {
+                this.msg.client.webUIClient.createWebUI(player.user, response => {
+                    player.user.send({
+                        embeds: [{
+                            title: 'Successfully submitted!',
+                            description: `You have entered: ${response}\n\n**Return to game channel:** ${this.channel}`,
+                            color: options.colors.info
+                        }]
+                    })
+                    resolve(response)
+                }, {
+                    message: `Enter your response to the prompt: <b>${this.prompt.raw}</b>`,
+                    duration
+                }).then(url => {
+                    // Set timer 120 seconds
+                    setTimeout(() => {
+                        if(this.ending) reject()
+                        resolve()
+                    }, duration * 1000)
 
-                player.user.createDM()
-                .then(channel => {
-                    channel.send({
-                    embeds: [{
-                        description: `[**Click here** to enter your response](${url}), ${player.user}! It will be sent in ${this.msg.channel}.`,
-                        color: 5301186
-                    }]
-                    }).then(m => {
-                        this.msg.channel.sendEmbed(`${player.user}, [click here to go to your DMs directly.](${m.url}) The link to enter your response is in your DMs!`)
-                    }).catch(err => {
-                            this.msg.channel.send({
-                                embeds: [{
-                                    title: 'There was an error sending you a DM!',
-                                    description: `Make sure you have DMs from server members enabled in your Privacy settings.`,
-                                    color: options.colors.error
-                                }]
-                            })
-                            console.error(err)
-                        }
-                    )
+                    player.user.createDM()
+                    .then(channel => {
+                        channel.send({
+                        embeds: [{
+                            description: `[**Click here** to enter your response](${url}), ${player.user}! It will be sent in ${this.msg.channel}.`,
+                            color: 5301186
+                        }]
+                        }).then(m => {
+                            this.msg.channel.sendEmbed(`${player.user}, [click here to go to your DMs directly.](${m.url}) The link to enter your response is in your DMs!`)
+                        }).catch(err => {
+                                this.msg.channel.send({
+                                    embeds: [{
+                                        title: 'There was an error sending you a DM!',
+                                        description: `Make sure you have DMs from server members enabled in your Privacy settings.`,
+                                        color: options.colors.error
+                                    }]
+                                })
+                                console.error(err)
+                            }
+                        )
+                    })
+                }).catch(err => {
+                    this.msg.channel.send({
+                        embeds: [{
+                            title: 'Error!',
+                            description: `There was an error loading the response page.`,
+                            color: 5301186
+                        }]
+                    })
+                    reject(err)
                 })
-            }).catch(err => {
-                this.msg.channel.send({
-                    embeds: [{
-                        title: 'Error!',
-                        description: `There was an error loading the response page.`,
-                        color: 5301186
-                    }]
-                })
+            } catch (err) {
                 reject(err)
-            })
+            }
         })
     }
 
@@ -214,12 +218,14 @@ export default class Wisecracks extends Game {
                 })
                 let votes = []
                 // Only allow vote-eligible players to submit once
-                let collector = this.channel.createMessageCollector(
-                    m => !votes.includes(m.author.id)
+                let collector = this.channel.createMessageCollector({
+                    filter: m => !votes.includes(m.author.id)
                     && m.author.id !== players[0].user.id && m.author.id !== players[1].user.id 
                     && this.players.has(m.author.id)
-                    && !isNaN(m.content) && (m.content === '1' || m.content === '2'), {time: 120000}
-                )
+                    && !isNaN(m.content) && (m.content === '1' || m.content === '2'), 
+                    time: 120000
+                })
+                
                 collector.on('collect', message => {
                     if(this.ending) return
                     votes.push(message.author.id)

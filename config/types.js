@@ -31,7 +31,9 @@ export const GAME_OPTIONS = {
 export const BUTTONS = {
     JOIN: 'game_join',
     START: 'game_start',
-    RESET: 'game_reset'
+    RESET: 'game_reset',
+    SELECT: 'card_select',
+    VIEW_HAND: 'card_view_hand'
 }
 
 export const REPLIES = {

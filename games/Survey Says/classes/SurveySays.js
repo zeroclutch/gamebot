@@ -114,32 +114,36 @@ export default class SurveySays extends Game {
         const filter = m => (m.content.toLowerCase() == 'more' || m.content.toLowerCase() == 'less') && this.players.has(m.author.id) && !submitted.has(m.author.id) && m.author.id !== this.guesser.user.id
 
         return new Promise((resolve, reject) => {
-            const collector = this.channel.createMessageCollector(filter, {max: 99, time: this.options['Timer']})
+            try {
+                const collector = this.channel.createMessageCollector({ filter, max: 99, time: this.options['Timer']})
 
-            collector.on('collect', m => {
-                if(this.ending) return
-                // Update submitted list
-                submitted.set(m.author.id, m.content.toLowerCase())
-                m.delete()
-                // Update submission message
-                submissionList.edit(this.renderSubmissionList(submitted, guess))
+                collector.on('collect', m => {
+                    if(this.ending) return
+                    // Update submitted list
+                    submitted.set(m.author.id, m.content.toLowerCase())
+                    m.delete()
+                    // Update submission message
+                    submissionList.edit(this.renderSubmissionList(submitted, guess))
 
-                if(submitted.size == this.players.size - 1) {
-                    allPlayersSubmitted = true;
+                    if(submitted.size == this.players.size - 1) {
+                        allPlayersSubmitted = true;
+                        resolve(submitted)
+                        collector.stop('submitted')
+                    }
+                })
+                // Resolve listener once collector ends
+                collector.on('end', collected => {
+                    if(this.ending) {
+                        resolve(false)
+                        return
+                    }
+                    if(allPlayersSubmitted) 
+                        this.channel.sendEmbed('Drumroll please...')
                     resolve(submitted)
-                    collector.stop('submitted')
-                }
-            })
-            // Resolve listener once collector ends
-            collector.on('end', collected => {
-                if(this.ending) {
-                    resolve(false)
-                    return
-                }
-                if(allPlayersSubmitted) 
-                    this.channel.sendEmbed('Drumroll please...')
-                resolve(submitted)
-            })
+                })
+            } catch (err) {
+                reject(err)
+            }
         })
     }
 

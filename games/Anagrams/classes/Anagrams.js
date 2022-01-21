@@ -165,10 +165,8 @@ export default class Anagrams extends Game {
             // create a collector on the main channel
             const filter = m => !m.author.bot  || m.client.isTestingMode
             const ROUND_LENGTH = 60000
-            const collector = this.channel.createMessageCollector(filter, {time: ROUND_LENGTH})
+            const collector = this.channel.createMessageCollector({filter, time: ROUND_LENGTH})
             const isPangram = word => word.length == this.word.length
-
-            this.collectors.push(collector)
 
             collector.on('collect', message => {
                 if(this.ending) return
@@ -232,7 +230,7 @@ export default class Anagrams extends Game {
                         console.log(m.content)
                         return true
                     }
-                    let collector = channel.createMessageCollector(filter, { time: 15000 })
+                    let collector = channel.createMessageCollector({ filter, time: 15000 })
                     collector.on('collect', m => console.log(`Collected ${m.content}`))
                     collector.on('end', collected => console.log(`Collected ${collected.size} items`));
                     
@@ -280,15 +278,6 @@ export default class Anagrams extends Game {
                 value: player.words && player.words.length > 0 ? player.words.join(', ') : 'No words submitted.'
             })
         })
-        let title
-        if(winner.length == 1) {
-            title = `The winner is ${winner[0].user.tag}! `
-        } else {
-            title = 'The winners are '
-            winner.forEach(winningPlayer => {
-                title += winningPlayer.user.tag + ', '
-            })
-        }
 
         // Add pangram
         fields.push({ name: 'Pangram', value: `The pangram was ${this.pangram}.` })
@@ -296,11 +285,11 @@ export default class Anagrams extends Game {
         this.channel.send({
             embeds: [{
                 color: options.colors.info,
-                title,
+                title: 'Scoreboard',
                 fields
             }]
         }).then(() => {
-            this.end()
+            this.end(winner)
         })
     }
     
