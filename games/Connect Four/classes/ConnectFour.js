@@ -90,7 +90,7 @@ export default class ConnectFour extends Game {
      */
     columnIsFull(column) {
         if(!this.board[0][column]) return false
-        this.msg.channel.sendMsgEmbed('That column is full!', 'Error', options.colors.error).catch(console.error)
+        this.msg.channel.sendEmbed('That column is full!', 'Error', options.colors.error).catch(console.error)
         return true
     }
 
@@ -125,14 +125,16 @@ export default class ConnectFour extends Game {
             return number <= this.board[0].length && number >= 1
         }
 
-        let collected = await this.channel.awaitMessages(filter, { max: 1, time: this.timeLimit, errors: ['time'] })
+        let collected = await this.channel.awaitMessages({ filter, max: 1, time: this.timeLimit, errors: ['time'] })
         .catch(err => {
             if(this.ending) return
-            this.channel.sendMsgEmbed('You ran out of time!', 'Uh oh...', options.colors.error)
-            this.forceStop()
+            this.channel.sendEmbed('You ran out of time!', 'Uh oh...', options.colors.error)
+            if(this.players.size === 2) {
+                this.end(this.players.find(p => p.user.id !== player.user.id))
+            }
         })
-        if(this.ending) return
-        let column = parseInt(collected.first().content) - 1
+        let column
+        if(collected) column = parseInt(collected.first().content) - 1
         return column
     }
 
@@ -195,20 +197,19 @@ export default class ConnectFour extends Game {
     }
 
     async play() {
-        let players = this.players.array()
         let index = -1
         do {
             index++
-            let player = players[index % players.length]
-            if(index == this.board.height * this.board.width) {
-                this.forceStop()
+            let player = this.players.get(this.players.keyAt(index % this.players.size))
+            if(index === this.board.height * this.board.width) {
+                this.end()
             }
 
             // Allow a player to view the board and place a tile
             let column = -1
             do {
                 if(this.ending) return
-                await this.channel.sendMsgEmbed(`First to ${this.options['Connect More?']} in a row wins!\n${this.renderBoard()}\n\n${player.user} ${ICONS[player.id]}, select a column between 1-${this.board[0].length} in ${Math.floor(this.timeLimit/1000)} seconds!`).catch(console.error)
+                await this.channel.sendEmbed(`First to ${this.options['Connect More?']} in a row wins!\n${this.renderBoard()}\n\n${player.user} ${ICONS[player.id]}, select a column between 1-${this.board[0].length} in ${Math.floor(this.timeLimit/1000)} seconds!`).catch(console.error)
                 column = await this.allowSelection(player).catch(console.error)
             } while(this.columnIsFull(column))
             this.dropTile(player.id, column)

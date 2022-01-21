@@ -11,18 +11,18 @@ export default new GameCommand({
     run: function(msg, args, game) {
         if(game.lastTurnStartedAt > -1) {
             msg.channel.send({
-                embed: {
+                embeds: [{
                     description: `${game.getPlayer(game.side).user} has ${Math.floor((Date.now() - game.lastTurnStartedAt) / 1000)} seconds left.`,
                     color: options.colors.info
-                }
+                }]
             })
         } else {
             msg.channel.send({
-                embed: {
+                embeds: [{
                     title: 'Error!',
                     description: 'Please wait for the game to begin before using this command.',
                     color: options.colors.error
-                }
+                }]
             })
         }
     }

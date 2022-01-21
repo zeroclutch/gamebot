@@ -23,9 +23,9 @@ export default new BotCommand({
             'content-type': 'application/json'
           }
         })
-          .then(e => msg.channel.sendMsgEmbed(`<@${userID}> has voted, and can claim.`))
+          .then(e => msg.channel.sendEmbed(`<@${userID}> has voted, and can claim.`))
           .catch(e =>{
-            msg.channel.sendMsgEmbed(`There was an error with fake voting.`)
+            msg.channel.sendEmbed(`There was an error with fake voting.`)
             console.log(e)
           })
     }

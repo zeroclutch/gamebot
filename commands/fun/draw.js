@@ -13,7 +13,7 @@ export default new BotCommand({
   run: function (msg, args) {
     // Check permissions
     msg.client.webUIClient.createWebUI(msg.member || msg.author, data => msg.channel.send({
-      embed: {
+      embeds: [{
         color: 5301186,
         author: {
           name: `${msg.author.tag}'s drawing`,
@@ -22,7 +22,7 @@ export default new BotCommand({
         image: {
           url: 'attachment://file.png'
         }
-      },
+      }],
       files: [{
         name: 'file.png',
         attachment: Buffer.from(data, 'base64')
@@ -34,28 +34,28 @@ export default new BotCommand({
       msg.author.createDM()
       .then(channel => {
         channel.send({
-          embed: {
+          embeds: [{
             description: `[**Click here** for your drawing page](${url}), ${msg.author}! It will be sent in ${msg.channel}.`,
             color: 5301186
-          }
+          }]
         }).then(m => {
-          msg.channel.sendMsgEmbed(`${msg.author}, [click here to go to your DMs directly.](${m.url}) Your drawing link is in your DMs!`)
+          msg.channel.sendEmbed(`${msg.author}, [click here to go to your DMs directly.](${m.url}) Your drawing link is in your DMs!`)
         }).catch(err =>
           msg.channel.send({
-            embed: {
+            embeds: [{
               title: 'There was an error sending you a DM!',
               description: `Make sure you have DMs from server members enabled in your Privacy settings.`,
               color: options.colors.error
-            }
+            }]
         }))
       })
     }).catch(err => {
       msg.channel.send({
-        embed: {
+        embeds: [{
           title: 'Error!',
           description: `There was an error loading the drawing page.`,
           color: 5301186
-        }
+        }]
       })
       console.error(err)
     })

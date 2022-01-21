@@ -121,43 +121,47 @@ export default class Chess extends Game {
         side = side.toLowerCase()
         // Render board using canvas
         return new Promise(async (resolve, reject) => {
-            const canvas = createCanvas(288, 288)
-            const ctx = canvas.getContext('2d')
+            try {
+                const canvas = createCanvas(288, 288)
+                const ctx = canvas.getContext('2d')
 
-            // Draw border
-            let border = await loadImage(`./games/Chess/assets/border/${side}-border.jpg`)
-            ctx.drawImage(border, 0, 0, canvas.width, canvas.height)
+                // Draw border
+                let border = await loadImage(`./games/Chess/assets/border/${side}-border.jpg`)
+                ctx.drawImage(border, 0, 0, canvas.width, canvas.height)
 
-            // Draw everything at half scale to reduce image size
-            ctx.scale(0.5, 0.5)
+                // Draw everything at half scale to reduce image size
+                ctx.scale(0.5, 0.5)
 
-            // Draw board
-            let board = await loadImage(`./games/Chess/assets/boards/${this.options['Board Style']}.jpg`)
-            ctx.drawImage(board, 32, 32, 512, 512)
+                // Draw board
+                let board = await loadImage(`./games/Chess/assets/boards/${this.options['Board Style']}.jpg`)
+                ctx.drawImage(board, 32, 32, 512, 512)
 
-            // Draw pieces
-            const files = side == 'white' ? 'abcdefgh' : 'hgfedcba'
-            const ranks = side == 'white' ? '87654321' : '12345678'
-            for(let i = 0; i < this.status.board.squares.length; i++) {
-                let square = this.status.board.squares[i]
-                if(square.piece) {
-                    let x = files.indexOf(square.file) * 64 + 32
-                    let y = ranks.indexOf(`${square.rank}`) * 64 + 32
+                // Draw pieces
+                const files = side == 'white' ? 'abcdefgh' : 'hgfedcba'
+                const ranks = side == 'white' ? '87654321' : '12345678'
+                for(let i = 0; i < this.status.board.squares.length; i++) {
+                    let square = this.status.board.squares[i]
+                    if(square.piece) {
+                        let x = files.indexOf(square.file) * 64 + 32
+                        let y = ranks.indexOf(`${square.rank}`) * 64 + 32
 
-                    if(square.piece.type == 'king' && square.piece.side.name == side && (this.status.isCheck || this.status.isCheckmate)) {
-                        let check = await loadImage(`./games/Chess/assets/pieces/check.png`)
-                        ctx.drawImage(check, x, y, 64, 64)
+                        if(square.piece.type == 'king' && square.piece.side.name == side && (this.status.isCheck || this.status.isCheckmate)) {
+                            let check = await loadImage(`./games/Chess/assets/pieces/check.png`)
+                            ctx.drawImage(check, x, y, 64, 64)
+                        }
+
+                        let piece = await loadImage(`./games/Chess/assets/pieces/${this.options['Piece Style'].toLowerCase()}/${square.piece.side.name}_${square.piece.type}.png`)
+                        ctx.drawImage(piece, x, y, 64, 64)
                     }
-
-                    let piece = await loadImage(`./games/Chess/assets/pieces/${this.options['Piece Style'].toLowerCase()}/${square.piece.side.name}_${square.piece.type}.png`)
-                    ctx.drawImage(piece, x, y, 64, 64)
                 }
+                resolve(canvas.createJPEGStream({
+                    quality: 1,
+                    chromaSubsampling: false,
+                    progressive: true
+                }))
+            } catch (err) {
+                reject(err)
             }
-            resolve(canvas.createJPEGStream({
-                quality: 1,
-                chromaSubsampling: false,
-                progressive: true
-              }))
         })
 
     }
@@ -169,14 +173,10 @@ export default class Chess extends Game {
     async displayBoard(side) {
         let stream = await this.renderBoard(side)
         let embed = new Discord.MessageEmbed()
-        .attachFiles([{
-            attachment: stream,
-            name: 'image.png'
-        }])
         .setDescription(`You have ${this.options['Timer']} seconds to make a move.`)
         .addField('ℹ️', 'To make a move, enter the bot prefix followed by a valid move in algebraic notation.', true)
-        .addField('⏰', `Type ${this.channel.prefix}timer to see the move time remaining.`, true)
-        .addField('🏳', `Type ${this.channel.prefix}resign to give up.`, true)
+        .addField('⏰', `Type \`${this.channel.prefix}timer\` to see the move time remaining.`, true)
+        .addField('🏳', `Type \`${this.channel.prefix}resign\` to give up.`, true)
         .setFooter(`Type ${this.channel.prefix}movehelp for help.`)
         .setImage(`attachment://image.png`)
         .setColor({ 'White': '#fffffe', 'Black': '#000001' }[side])
@@ -185,51 +185,86 @@ export default class Chess extends Game {
             game: this.metadata.id,
         })
 
-        await this.channel.send(`${this.getPlayer(side).user}, it's your turn to move as ${side.toLowerCase()}!`, embed).catch(console.error)
+        await this.channel.send({
+            content: `${this.getPlayer(side).user}, it's your turn to move as ${side.toLowerCase()}!`,
+            embeds: [embed],
+            files: [{
+                attachment: stream,
+                name: 'image.png'
+            }]
+        }).catch(console.error)
     }
 
     awaitMove(side) {
         return new Promise((resolve, reject) => {
-            this.lastTurnStartedAt = Date.now() + parseInt(this.options['Timer']) * 1000
+            try {
+                this.lastTurnStartedAt = Date.now() + parseInt(this.options['Timer']) * 1000
 
-            const filter = m => m.content.startsWith(this.channel.prefix) && this.players.has(m.author.id) && m.author.id == this.getPlayer(side).user.id
-            let collector = this.channel.createMessageCollector(filter, { time: parseInt(this.options['Timer']) * 1000 })
-            
-            collector.on('collect', m => {
-                if(this.ending || this.over) return
-                let move = m.content.replace(this.channel.prefix, '')
-                if(this.status.notatedMoves[move]) {
-                    this.gameClient.move(move)
-                    this.moves.push(move)
-                    collector.stop('submitted')
-                    resolve(true)
-                } else {
-                    this.channel.send({
-                        embed: {
-                            title: 'Invalid move!',
-                            description: 'Be sure to enter your move in algebraic notation.',
-                            color: options.colors.error
+                const filter = m => m.content.startsWith(this.channel.prefix) && this.players.has(m.author.id) && m.author.id === this.getPlayer(side).user.id
+                let collector = this.channel.createMessageCollector({ filter, time: parseInt(this.options['Timer']) * 1000 })
+                
+                collector.on('collect', m => {
+                    if(this.ending || this.over) return
+                    let move = m.content.replace(this.channel.prefix, '')
+                    // Search for move 
+                    let moveData = this.status.notatedMoves[move]
+
+                    if(!moveData && move.length === 4) {
+                        let moveArr = move.toLowerCase().split('')
+                        moveArr[1] = parseInt(moveArr[1])
+                        moveArr[3] = parseInt(moveArr[3])
+
+                        // Search for moves made using non-algebraic notation
+                        for(let notatedMove in this.status.notatedMoves) {
+                            let square = this.status.notatedMoves[notatedMove]
+
+                            // Compare rank and file
+                            if(square.src.rank  === moveArr[1] &&
+                            square.dest.rank === moveArr[3] &&
+                            square.src.file  === moveArr[0] &&
+                            square.dest.file === moveArr[2]) {
+                                // Update moves if we've found it
+                                move = notatedMove
+                                moveData = square
+                            }
                         }
-                    })
-                }
-            })
-            collector.on('end', (collected, reason) => {
-                if(this.ending || this.over) return
-                // Handle time
-                if(reason == 'submitted') {
-                    // Player made their move
-                } else {
-                    // Player loses on time
-                    this.channel.send({
-                        embed: {
-                            title: 'Time ran out!',
-                            description: `${this.getPlayer(side).user} ran out of time and lost.`,
-                            color: options.colors.error
-                        }
-                    })
-                    this.end(this.getPlayer(side == 'White' ? 'Black' : 'White'))
-                }
-            })
+                    }
+
+                    if(moveData) {
+                        this.gameClient.move(move)
+                        this.moves.push(move)
+                        collector.stop('submitted')
+                        resolve(true)
+                    } else {
+                        this.channel.send({
+                            embeds: [{
+                                title: 'Invalid move!',
+                                description: `Type \`${this.channel.prefix}movehelp\` for help.`,
+                                color: options.colors.error
+                            }]
+                        })
+                    }
+                })
+                collector.on('end', (collected, reason) => {
+                    if(this.ending || this.over) return
+                    // Handle time
+                    if(reason == 'submitted') {
+                        // Player made their move
+                    } else {
+                        // Player loses on time
+                        this.channel.send({
+                            embeds: [{
+                                title: 'Time ran out!',
+                                description: `${this.getPlayer(side).user} ran out of time and lost.`,
+                                color: options.colors.error
+                            }]
+                        })
+                        this.end(this.getPlayer(side == 'White' ? 'Black' : 'White'))
+                    }
+                })
+            } catch (err) {
+                reject(err)
+            }
         })
     }
 
@@ -264,11 +299,11 @@ export default class Chess extends Game {
 
     importGameToLichess(winner) {
         this.lichessClient.importGame(this.getPGN(winner)).then(res => this.channel.send({
-            embed: {
+            embeds: [{
                 title: 'View the computer analysis and game recap.',
                 description: `The moves and computer analysis are available at ${res.data.url}.`,
                 color: options.colors.info
-            }
+            }]
         }))
     }
 

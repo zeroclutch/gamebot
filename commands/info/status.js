@@ -16,17 +16,17 @@ export default new BotCommand({
     const usersInDB = await msg.client.database.collection('users').stats()
 
     // try fetching message
-    await msg.client.shard.broadcastEval(`this.updateStatus()`)
+    await msg.client.shard.broadcastEval(client => client.updateStatus())
 
-    const message = (await msg.client.shard.broadcastEval(`this.latestStatus`)).filter(m => m && m.content && m.date)[0]
+    const message = (await msg.client.shard.broadcastEval(client => client.latestStatus)).filter(m => m && m.content && m.date)[0]
     const statusUpdate = message ? `\`${message.date}\`: ${message.content}\n\n*See more updates in the [support server](${options.serverInvite}?ref=statusCommand).*` : 'No status update available.'
     
-    msg.client.shard.broadcastEval('this.channels.cache.filter(c => c.game).size').then(games => {
+    msg.client.shard.broadcastEval(client => client.channels.cache.filter(c => c.game).size).then(games => {
       const onlineShards = games.length
       const totalShards = msg.client.shard.count
 
       msg.channel.send({
-        embed: {
+        embeds: [{
           title: 'Gamebot Status', 
           fields: [
             {name: 'Latest Status Update', value: statusUpdate},
@@ -39,7 +39,7 @@ export default new BotCommand({
           ],
           color: options.colors.info,
           thumbnail: { url: msg.client.user.avatarURL({dynamic: true}) }
-        }
+        }]
       })
     })
     .catch(console.error)

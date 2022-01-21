@@ -1,5 +1,6 @@
 // create Collection<Game> of all the games
 import options from './../../config/options.js'
+import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
@@ -8,7 +9,7 @@ export default new BotCommand({
   aliases: ['db'],
   description: 'Starts a new game with no minimum player count.',
   category: 'dev',
-  permissions: ['GOD'],
+  permissions: [GAMEBOT_PERMISSIONS.GOD],
   dmCommand: false,
   args: true,
   run: function(msg, args) {
@@ -21,11 +22,11 @@ export default new BotCommand({
 
     // check if game is playing in channel
     if(msg.channel.gamePlaying) {
-      msg.channel.sendMsgEmbed(`A game is already playing in this channel! End that game first by using the \`${msg.channel.prefix}end\` command.`, 'Uh oh...', 13632027)
+      msg.channel.sendEmbed(`A game is already playing in this channel! End that game first by using the \`${msg.channel.prefix}end\` command.`, 'Uh oh...', 13632027)
       return
     }
     if(!game) {
-      msg.channel.sendMsgEmbed(`Game not found. Make sure you typed the game ID correctly. You can see the game IDs by typing \`${msg.channel.prefix}gamelist\``, 'Error!', 13632027)
+      msg.channel.sendEmbed(`Game not found. Make sure you typed the game ID correctly. You can see the game IDs by typing \`${msg.channel.prefix}gamelist\``, 'Error!', 13632027)
       return
     }
 

@@ -14,6 +14,6 @@ export const GAME_STATES = {
     ENDING: {
 
     }
-},
+}
 
 export const CLIENT_STATES = { /* Handled by Discord.JS */ }

@@ -3,7 +3,7 @@ export default {
     "name": "Anagrams",
     "playerCount": {
         "min": 1,
-        "max": 20
+        "max": 12
     },
     "genre": "Word",
     "about": "Unscramble words faster than your friends!",
