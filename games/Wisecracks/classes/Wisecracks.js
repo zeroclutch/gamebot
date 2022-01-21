@@ -41,10 +41,10 @@ export default class Wisecracks extends Game {
 
         this.timeLimit = 60000
 
-        this.playerList = this.players.array()
+        // Add players to array
+        this.playerList = Array.from(this.players.values())
         
-        this.submissions = [
-        ]
+        this.submissions = []
     }
 
     /**
@@ -57,7 +57,7 @@ export default class Wisecracks extends Game {
         }
         this.promptList = new PromptList(list)
 
-        this.playerList = this.scramble(this.players.array())
+        this.playerList = this.scramble(Array.from(this.players.values()))
         return
     }
 
@@ -87,56 +87,60 @@ export default class Wisecracks extends Game {
     getWisecracks(player) {
         const duration = 120
         return new Promise((resolve, reject) => {
-            this.msg.client.webUIClient.createWebUI(player.user, response => {
-                player.user.send({
-                    embed: {
-                        title: 'Successfully submitted!',
-                        description: `You have entered: ${response}\n\n**Return to game channel:** ${this.channel}`,
-                        color: options.colors.info
-                    }
-                })
-                resolve(response)
-            }, {
-                message: `Enter your response to the prompt: <b>${this.prompt.raw}</b>`,
-                duration
-            }).then(url => {
-                // Set timer 120 seconds
-                setTimeout(() => {
-                    if(this.ending) reject()
-                    resolve()
-                }, duration * 1000)
+            try {
+                this.msg.client.webUIClient.createWebUI(player.user, response => {
+                    player.user.send({
+                        embeds: [{
+                            title: 'Successfully submitted!',
+                            description: `You have entered: ${response}\n\n**Return to game channel:** ${this.channel}`,
+                            color: options.colors.info
+                        }]
+                    })
+                    resolve(response)
+                }, {
+                    message: `Enter your response to the prompt: <b>${this.prompt.raw}</b>`,
+                    duration
+                }).then(url => {
+                    // Set timer 120 seconds
+                    setTimeout(() => {
+                        if(this.ending) reject()
+                        resolve()
+                    }, duration * 1000)
 
-                player.user.createDM()
-                .then(channel => {
-                    channel.send({
-                    embed: {
-                        description: `[**Click here** to enter your response](${url}), ${player.user}! It will be sent in ${this.msg.channel}.`,
-                        color: 5301186
-                    }
-                    }).then(m => {
-                        this.msg.channel.sendMsgEmbed(`${player.user}, [click here to go to your DMs directly.](${m.url}) The link to enter your response is in your DMs!`)
-                    }).catch(err => {
-                            this.msg.channel.send({
-                                embed: {
-                                    title: 'There was an error sending you a DM!',
-                                    description: `Make sure you have DMs from server members enabled in your Privacy settings.`,
-                                    color: options.colors.error
-                                }
-                            })
-                            console.error(err)
-                        }
-                    )
+                    player.user.createDM()
+                    .then(channel => {
+                        channel.send({
+                        embeds: [{
+                            description: `[**Click here** to enter your response](${url}), ${player.user}! It will be sent in ${this.msg.channel}.`,
+                            color: 5301186
+                        }]
+                        }).then(m => {
+                            this.msg.channel.sendEmbed(`${player.user}, [click here to go to your DMs directly.](${m.url}) The link to enter your response is in your DMs!`)
+                        }).catch(err => {
+                                this.msg.channel.send({
+                                    embeds: [{
+                                        title: 'There was an error sending you a DM!',
+                                        description: `Make sure you have DMs from server members enabled in your Privacy settings.`,
+                                        color: options.colors.error
+                                    }]
+                                })
+                                console.error(err)
+                            }
+                        )
+                    })
+                }).catch(err => {
+                    this.msg.channel.send({
+                        embeds: [{
+                            title: 'Error!',
+                            description: `There was an error loading the response page.`,
+                            color: 5301186
+                        }]
+                    })
+                    reject(err)
                 })
-            }).catch(err => {
-                this.msg.channel.send({
-                    embed: {
-                        title: 'Error!',
-                        description: `There was an error loading the response page.`,
-                        color: 5301186
-                    }
-                })
+            } catch (err) {
                 reject(err)
-            })
+            }
         })
     }
 
@@ -145,7 +149,7 @@ export default class Wisecracks extends Game {
     }
 
     displayLeaderboard() {
-        let players = this.players.array()
+        let players = Array.from(this.players.values())
         let leaderboard = ''
         for(let i = 0; i < players.length; i++) {
             let lastLine = i == players.length - 1
@@ -153,14 +157,14 @@ export default class Wisecracks extends Game {
             leaderboard += `${player.user}: ${player.score} points${lastLine ? '' : '\n'}`
         }
         return {
-            embed: {
+            embeds: [{
                 title: 'Current standings',
                 description: leaderboard,
                 color: options.colors.info,
                 footer: {
                     text: `First to ${this.options['Points to Win']} wins!`
                 }
-            }
+            }]
         }
     }
 
@@ -168,13 +172,17 @@ export default class Wisecracks extends Game {
      * @returns {object} Returns the winning player if there is one
      */
     hasWinner () {
-        let arr = this.players.array()
+        let arr = Array.from(this.players.values())
+        let winners = []
         for(let i = 0; i < this.players.size; i++) {
             if(arr[i].score >= parseInt(this.options['Points to Win'])) {
-                return arr[i]
+                winners.push(arr[i])
             }
         }
-        return false
+        if(winners.length > 0)
+            return winners
+        else
+            return false
     }
 
     playNextRound() {
@@ -185,14 +193,14 @@ export default class Wisecracks extends Game {
         // Get prompt
         this.prompt = this.promptList.get()
         this.channel.send({
-            embed: {
+            embeds: [{
                 title: 'The prompt is...',
                 description: this.prompt.escaped,
                 color: options.colors.info,
                 footer: {
                     text: 'Two players have to submit their responses to this by clicking the link below.'
                 }
-            }
+            }]
         })
         // Allow players to submit their Wisecracks™
         let submitted = []
@@ -203,23 +211,25 @@ export default class Wisecracks extends Game {
             if(submitted.length == players.length) {
                 // Vote on Wisecracks
                 this.channel.send({
-                    embed: {
+                    embeds: [{
                         title: this.prompt.raw,
                         description: `${submitted.map((submission, i) => `**[${i + 1}]** ${submission.response || '**No response.**'}`).join('\n')}\n\nEveryone else, vote for your favorite answer!`,
                         footer: {
                             text: 'Type the number of the response to vote.'
                         },
                         color: options.colors.info
-                    }
+                    }]
                 })
                 let votes = []
                 // Only allow vote-eligible players to submit once
-                let collector = this.channel.createMessageCollector(
-                    m => !votes.includes(m.author.id)
+                let collector = this.channel.createMessageCollector({
+                    filter: m => !votes.includes(m.author.id)
                     && m.author.id !== players[0].user.id && m.author.id !== players[1].user.id 
                     && this.players.has(m.author.id)
-                    && !isNaN(m.content) && (m.content === '1' || m.content === '2'), {time: 120000}
-                )
+                    && !isNaN(m.content) && (m.content === '1' || m.content === '2'), 
+                    time: 120000
+                })
+                
                 collector.on('collect', message => {
                     if(this.ending) return
                     votes.push(message.author.id)
@@ -246,14 +256,14 @@ export default class Wisecracks extends Game {
 
                     // Show results
                     this.channel.send({
-                        embed: {
+                        embeds: [{
                             title: 'The winner is...',
                             description: winner == 'tie' ? `It was a tie between ${submitted[0].player.user} and ${submitted[1].player.user}!` : `${winner.player.user} for **${winner.response}**`,
                             footer: {
                                 text: 'They earned one point.'
                             },
                             color: options.colors.info
-                        }
+                        }]
                     })
 
                     if(winner === 'tie') {

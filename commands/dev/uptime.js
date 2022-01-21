@@ -1,11 +1,13 @@
 import BotCommand from '../../types/command/BotCommand.js'
+import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
+
 export default new BotCommand({
     name: 'uptime',
     usage: 'uptime',
     aliases: [],
     description: 'Displays how long the bot has been running',
     category: 'dev',
-    permissions: ['GOD'],
+    permissions: [GAMEBOT_PERMISSIONS.GOD],
     dmCommand: true,
     args: false,
     run: function(msg, args) {
@@ -16,6 +18,6 @@ export default new BotCommand({
         s = (s - secs) / 60;
         let mins = s % 60;
         let hrs = (s - mins) / 60;
-        msg.channel.sendMsgEmbed(`Gamebot has been running for ${hrs} hours, ${mins} minutes, ${secs}.${ms} seconds`)
+        msg.channel.sendEmbed(`Gamebot has been running for ${hrs} hours, ${mins} minutes, ${secs}.${ms} seconds`)
     }
 })

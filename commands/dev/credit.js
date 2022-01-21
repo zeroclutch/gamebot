@@ -1,4 +1,5 @@
 import options from '../../config/options.js'
+import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 import BotCommand from '../../types/command/BotCommand.js'
 
 export default new BotCommand({
@@ -7,24 +8,24 @@ export default new BotCommand({
     aliases: [],
     description: 'Adds to a specified user\'s balance.',
     category: 'dev',
-    permissions: ['GOD'],
+    permissions: [GAMEBOT_PERMISSIONS.GOD],
     dmCommand: true,
     args: true,
     run: function(msg, args) {
         const user = args[0].replace(/\D/g, '')
         const amount = parseInt(args[1])
         if(isNaN(amount)) {
-            msg.channel.sendMsgEmbed(`Invalid amount!`)
+            msg.channel.sendEmbed(`Invalid amount!`)
         }
         msg.client.database.collection('users').findOneAndUpdate(
             {'userID': user},
             { $inc: { balance: amount } },
             { returnOriginal: false }
         ).then(result => {
-            msg.channel.sendMsgEmbed(`<@${user}> now has ${result.value.balance}${options.creditIcon}.`, `User was updated.`)
+            msg.channel.sendEmbed(`<@${user}> now has ${result.value.balance}${options.creditIcon}.`, `User was updated.`)
         }).catch(err => {
             console.error(err)
-            msg.channel.sendMsgEmbed('User not found.')
+            msg.channel.sendEmbed('User not found.')
         })
 
     }

@@ -2,6 +2,7 @@ import GameCommand from '../../../types/command/GameCommand.js'
 
 import { Util } from 'discord.js'
 import util from 'util'
+import { GAMEBOT_PERMISSIONS } from '../../../config/types.js'
 
 let responsify = (response, msg, completed='+ eval completed +') => {
     response = util.inspect(response) 
@@ -21,7 +22,7 @@ export default new GameCommand({
   aliases: ['evg'],
   description: 'Test code',
   category: 'dev',
-  permissions: ['GOD'],
+  permissions: [GAMEBOT_PERMISSIONS.GOD],
   dmCommand: false,
   args: true,
   run: async (msg, args, game) => {
@@ -33,5 +34,5 @@ export default new GameCommand({
         console.error(err)
         responsify(err, msg, '- eval failed -')
     }
-}
+  }
 })

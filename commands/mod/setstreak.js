@@ -27,7 +27,7 @@ export default new BotCommand({
               }
             })
           })
-          .then(e => msg.channel.sendMsgEmbed(`<@${userID}> now has a streak of ${voteStreak}.`))
-          .catch(e => msg.channel.sendMsgEmbed(`There was an error with setting the user's streak.`))
+          .then(e => msg.channel.sendEmbed(`<@${userID}> now has a streak of ${voteStreak}.`))
+          .catch(e => msg.channel.sendEmbed(`There was an error with setting the user's streak.`))
     }
 })

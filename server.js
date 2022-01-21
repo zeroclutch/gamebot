@@ -1,7 +1,11 @@
 // Initialize Discord bot
 import Discord from './discord_mod.js';
 import options from './config/options.js'
-const testMode = process.argv.includes('--title=test') 
+
+// Detect and enable testing
+const testMode = process.argv.includes('--test') 
+
+// Initialize ShardingManager that handles bot shards
 const manager = new Discord.ShardingManager('./bot.js', {
   token: options.token,
   respawn: testMode ? false : true,
@@ -10,12 +14,13 @@ const manager = new Discord.ShardingManager('./bot.js', {
 
 const SPAWN_DELAY = 5000
 
-manager.on('shardCreate', shard => setTimeout(() => shard.send({ testMode }), SPAWN_DELAY))
+manager.on('shardCreate', shard => {
+  setTimeout(() => shard.send({ testMode }), SPAWN_DELAY)
+})
 manager.spawn('auto', SPAWN_DELAY).catch(err => console.error(err))
 
 // Add server dependencies
 import bodyParser from 'body-parser'
-import querystring from 'querystring';
 import express from 'express'
 const app = express()
 
@@ -255,13 +260,16 @@ app.post('/response/:ui_id', (req, res) => {
     return
   }
 
-  let data = JSON.stringify({...req.body, id: UI_ID})
+  let data = {...req.body, id: UI_ID}
 
-  manager.broadcastEval(`
-  if(this.shard.ids[0] == ${UI.shard}) {
-    this.webUIClient.receive(${data})
-  }
-  `)
+  manager.broadcastEval(function(client, context) {
+    let [UI, data] = context
+    if(client.shard.ids[0] == UI.shard) {
+      client.webUIClient.receive(data)
+    }
+  }, {
+    context: [UI, data]
+  })
   .then(value => {
     // Return the success webpage
     res.status(302)

@@ -106,11 +106,11 @@ export default class Othello extends Game {
             } catch (err) {
                 // Game hasn't fully initialized
                 msg.channel.send({
-                    embed: {
+                    embeds: [{
                         title: 'Error!',
                         description: 'Please wait for the game to begin before using this command.',
                         color: options.colors.error
-                    }
+                    }]
                 })
                 return
             }
@@ -121,19 +121,21 @@ export default class Othello extends Game {
             let placeableSquares = this.board.getPlaceableSquares(this.side.toUpperCase()).map(s => '`' + this.channel.prefix + columns[s._colIndex] + rows[s._rowIndex] + '`')
 
             let embed = new Discord.MessageEmbed()
-            .attachFiles([{
-                attachment: stream,
-                name: 'image.png'
-            }])
             .addField('Important Note:', `Remember to start all moves with the Gamebot's prefix, ${this.channel.prefix}.`)
             .addField('How do I enter my moves?', `Find the square you want to place your tile in. Look for its column letter, and look for its row number. For example, the top left square is h1, and the bottom right one is a8. Then, type ${this.channel.prefix}<letter><number>, and replace <letter> and <number> with your tile's letter and number.`)
             .addField('Possible moves', `The possible moves right now are: ${placeableSquares.join(',')}`)
-            .setFooter(`Refer back to this anytime!`)
+            .setFooter({ text: `Refer back to this anytime!` })
             .setColor(options.colors.info)
 
             if(stream) embed.setImage(`attachment://image.png`)
             
-            msg.channel.send(embed)
+            msg.channel.send({
+                embeds: [embed],
+                files: [{
+                    attachment: stream,
+                    name: 'image.png'
+                }]
+            })
         }
     }
 
@@ -141,18 +143,18 @@ export default class Othello extends Game {
         if(msg.content.toLowerCase().startsWith(`${this.channel.prefix}timer`)) {
             if(this.thisTurnEndsAt > -1) {
                 msg.channel.send({
-                    embed: {
+                    embeds: [{
                         description: `${this.getPlayer(this.side).user} has ${Math.floor((this.thisTurnEndsAt - Date.now()) / 1000)} seconds left.`,
                         color: options.colors.info
-                    }
+                    }]
                 })
             } else {
                 msg.channel.send({
-                    embed: {
+                    embeds: [{
                         title: 'Error!',
                         description: 'Please wait for the game to begin before using this command.',
                         color: options.colors.error
-                    }
+                    }]
                 })
             }
         }
@@ -176,57 +178,61 @@ export default class Othello extends Game {
     renderBoard(side) {
         // Render board using canvas
         return new Promise(async (resolve, reject) => {
-            const canvas = createCanvas(288, 288)
-            const ctx = canvas.getContext('2d')
+            try {
+                const canvas = createCanvas(288, 288)
+                const ctx = canvas.getContext('2d')
 
-            // Draw border
-            let border = await loadImage(`./games/Othello/assets/border/border.jpg`)
-            ctx.drawImage(border, 0, 0, canvas.width, canvas.height)
+                // Draw border
+                let border = await loadImage(`./games/Othello/assets/border/border.jpg`)
+                ctx.drawImage(border, 0, 0, canvas.width, canvas.height)
 
-            ctx.scale(0.5, 0.5)
+                ctx.scale(0.5, 0.5)
 
-            // Draw board
-            let board = await loadImage(`./games/Othello/assets/boards/${this.options['Board Style']}.jpg`)
-            ctx.drawImage(board, 32, 32, 512, 512)
+                // Draw board
+                let board = await loadImage(`./games/Othello/assets/boards/${this.options['Board Style']}.jpg`)
+                ctx.drawImage(board, 32, 32, 512, 512)
 
-            let piece = side == 'Black' ? PIECE_TYPES.BLACK : PIECE_TYPES.WHITE
+                let piece = side == 'Black' ? PIECE_TYPES.BLACK : PIECE_TYPES.WHITE
 
-            let placeableSquares = this.board.getPlaceableSquares(piece)
+                let placeableSquares = this.board.getPlaceableSquares(piece)
 
-            // Draw pieces
-            for(let row = 0; row < this.squares.length; row++) {
-                for(let col = 0; col < this.squares[row].length; col++) {
-                    let square = this.squares[row][col]
-                    const padding = 4,
-                        x = (col + 1) * 64,
-                        y = (row + 1) * 64,
-                        width = 32 - padding,
-                        height = 32 - padding,
-                        rotation = 2 * Math.PI
-                    if(placeableSquares.find(s => s._rowIndex === row && s._colIndex === col )) {
-                        ctx.fillStyle = 'rgba(0, 0, 0, .2)'
-                        ctx.beginPath()
-                        ctx.ellipse(x, y, width, height, 0, 0, rotation)
-                        ctx.fill()
-                    } else if(square._pieceType == 'BLACK') {
-                        ctx.fillStyle = 'black'
-                        ctx.beginPath()
-                        ctx.ellipse(x, y, width, height, 0, 0, rotation)
-                        ctx.fill()
-                    } else if(square._pieceType == 'WHITE') {
-                        ctx.fillStyle = 'white'
-                        ctx.beginPath()
-                        ctx.ellipse(x, y, width, height, 0, 0, rotation)
-                        ctx.fill()
+                // Draw pieces
+                for(let row = 0; row < this.squares.length; row++) {
+                    for(let col = 0; col < this.squares[row].length; col++) {
+                        let square = this.squares[row][col]
+                        const padding = 4,
+                            x = (col + 1) * 64,
+                            y = (row + 1) * 64,
+                            width = 32 - padding,
+                            height = 32 - padding,
+                            rotation = 2 * Math.PI
+                        if(placeableSquares.find(s => s._rowIndex === row && s._colIndex === col )) {
+                            ctx.fillStyle = 'rgba(0, 0, 0, .2)'
+                            ctx.beginPath()
+                            ctx.ellipse(x, y, width, height, 0, 0, rotation)
+                            ctx.fill()
+                        } else if(square._pieceType == 'BLACK') {
+                            ctx.fillStyle = 'black'
+                            ctx.beginPath()
+                            ctx.ellipse(x, y, width, height, 0, 0, rotation)
+                            ctx.fill()
+                        } else if(square._pieceType == 'WHITE') {
+                            ctx.fillStyle = 'white'
+                            ctx.beginPath()
+                            ctx.ellipse(x, y, width, height, 0, 0, rotation)
+                            ctx.fill()
+                        }
+
                     }
-
-                }
-            } 
-            resolve(canvas.createJPEGStream({
-                quality: 1,
-                chromaSubsampling: false,
-                progressive: true
-            }))
+                } 
+                resolve(canvas.createJPEGStream({
+                    quality: 1,
+                    chromaSubsampling: false,
+                    progressive: true
+                }))
+            } catch (err) {
+                reject(err)
+            }
         })
     }
 
@@ -237,76 +243,89 @@ export default class Othello extends Game {
     async displayBoard(side) {
         let stream = await this.renderBoard(side)
         let pieceCount = this.board.countByPieceType()
-        let getPieces = (s) => pieceCount[s] > pieceCount[s == PIECE_TYPES.BLACK ? PIECE_TYPES.WHITE : PIECE_TYPES.BLACK] ? pieceCount[s] + ' ⭐️' : pieceCount[s] 
+        let getPieces = (s) => pieceCount[s] +
+                                (pieceCount[s] > pieceCount[PIECE_TYPES.BLACK]
+                                && pieceCount[s] > pieceCount[PIECE_TYPES.WHITE] ? ' ⭐️' : '')
 
+        
         let embed = new Discord.MessageEmbed()
-        .attachFiles([{
-            attachment: stream,
-            name: 'image.png'
-        }])
         .setDescription(`You have ${this.options['Timer']} seconds to make a move.`)
-        .setFooter(`Type ${this.channel.prefix}movehelp for help.`)
+        .setFooter({ text: `Type ${this.channel.prefix}movehelp for help.` })
         .setImage(`attachment://image.png`)
         .setColor({ 'White': '#fffffe', 'Black': '#000001' }[side])
-        .addField('Black ⚫️', getPieces(PIECE_TYPES.BLACK), true)
-        .addField('White ⚪️', getPieces(PIECE_TYPES.WHITE), true)
+        .addField('Black ⚫️', `${getPieces(PIECE_TYPES.BLACK)}`, true)
+        .addField('White ⚪️', `${getPieces(PIECE_TYPES.WHITE)}`, true)
         .addField('Remaining', `${pieceCount[PIECE_TYPES.BLANK]}`, true)
-        .addField('⏰', `Type ${this.channel.prefix}timer to see the move time remaining.`, true)
+        .addField('⏰', `Type \`${this.channel.prefix}timer\` to see the move time remaining.`, true)
+        .addField('🏳', `Type \`${this.channel.prefix}resign\` to give up.`, true)
         .addField('ℹ️', `To make a move, enter the bot prefix followed by the name of the square.`, true)
 
         this.client.logger.log('Generated image', {
             game: this.metadata.id,
         })
 
-        await this.channel.send(`${this.getPlayer(side).user}, it's your turn to move as ${side.toLowerCase()}!`, embed).catch(console.error)
+        await this.channel.send({
+            content: `${this.getPlayer(side).user}, it's your turn to move as ${side.toLowerCase()}!`,
+            embeds: [embed],
+            files: [{
+                attachment: stream,
+                name: 'image.png'
+            }]
+        }).catch(console.error)
     }
 
     awaitMove(side) {
         return new Promise((resolve, reject) => {
-            this.thisTurnEndsAt = Date.now() + parseInt(this.options['Timer']) * 1000
-            const filter = m => m.content.startsWith(this.channel.prefix) && this.players.has(m.author.id) && m.author.id == this.getPlayer(side).user.id
-            let collector = this.channel.createMessageCollector(filter, { time: parseInt(this.options['Timer']) * 1000 })
-            collector.on('collect', m => {
-                if(this.ending || this.over) return
-                let move = m.content.replace(this.channel.prefix, '')
-                const columns = 'hgfedcba'
-                const rows = '12345678'
-                let column = columns.indexOf(move[0])
-                let row = rows.indexOf(move[1])
-                let piece = side == 'Black' ? PIECE_TYPES.BLACK : PIECE_TYPES.WHITE
+            
+            try {
+                this.thisTurnEndsAt = Date.now() + parseInt(this.options['Timer']) * 1000
+                const filter = m => m.content.startsWith(this.channel.prefix)
+                                    && this.players.has(m.author.id) && m.author.id == this.getPlayer(side).user.id
+                let collector = this.channel.createMessageCollector({ filter, time: parseInt(this.options['Timer']) * 1000 })
+                collector.on('collect', m => {
+                    if(this.ending || this.over) return
+                    let move = m.content.replace(this.channel.prefix, '')
+                    const columns = 'hgfedcba'
+                    const rows = '12345678'
+                    let column = columns.indexOf(move[0])
+                    let row = rows.indexOf(move[1])
+                    let piece = side == 'Black' ? PIECE_TYPES.BLACK : PIECE_TYPES.WHITE
 
-                if(column > -1 && row > -1 && this.board.isPlaceableSquare(row, column, piece)) {
-                    let report = this.game.proceed(row, column);
-                    collector.stop('submitted')
-                    resolve(report)
-                } else {
-                    this.channel.send({
-                        embed: {
-                            title: 'Invalid move!',
-                            description: 'Be sure to enter a valid move.',
-                            color: options.colors.error
-                        }
-                    })
-                }
-            })
+                    if(column > -1 && row > -1 && this.board.isPlaceableSquare(row, column, piece)) {
+                        let report = this.game.proceed(row, column);
+                        collector.stop('submitted')
+                        resolve(report)
+                    } else {
+                        this.channel.send({
+                            embeds: [{
+                                title: 'Invalid move!',
+                                description: 'Be sure to enter a valid move.',
+                                color: options.colors.error
+                            }]
+                        })
+                    }
+                })
 
-            collector.on('end', (collected, reason) => {
-                if(this.ending || this.over) return
-                // Handle time
-                if(reason == 'submitted') {
-                    // Player made their move
-                } else {
-                    // Player loses on time
-                    this.channel.send({
-                        embed: {
-                            title: 'Time ran out!',
-                            description: `${this.getPlayer(side).user} ran out of time and lost.`,
-                            color: options.colors.error
-                        }
-                    })
-                    this.end(this.getPlayer(side == 'White' ? 'Black' : 'White'))
-                }
-            })
+                collector.on('end', (collected, reason) => {
+                    if(this.ending || this.over) return
+                    // Handle time
+                    if(reason == 'submitted') {
+                        // Player made their move
+                    } else {
+                        // Player loses on time
+                        this.channel.send({
+                            embeds: [{
+                                title: 'Time ran out!',
+                                description: `${this.getPlayer(side).user} ran out of time and lost.`,
+                                color: options.colors.error
+                            }]
+                        })
+                        this.end(this.getPlayer(side == 'White' ? 'Black' : 'White'))
+                    }
+                })
+            } catch (err) {
+                reject(err)
+            }
         })
     }
 
@@ -319,20 +338,24 @@ export default class Othello extends Game {
     }
 
     async play() {
-        this.setSides()
-        let move = 0;
-        let sides = ['Black', 'White']
-        while(!this.over) {
-            this.side = sides[move % 2]
-            // Display the board
-            await this.displayBoard(this.side)
-            // Move white
-            let status = await this.awaitMove(this.side)
-            if(status.isNextActorPassed)
+        try {
+            this.setSides()
+            let move = 0;
+            let sides = ['Black', 'White']
+            while(!this.over) {
+                this.side = sides[move % 2]
+                // Display the board
+                await this.displayBoard(this.side)
+                // Move white
+                let status = await this.awaitMove(this.side)
+                if(status.isNextActorPassed)
+                    move++
+                this.analyzeBoard(this.side)
+                
                 move++
-            this.analyzeBoard(this.side)
-            
-            move++
-        } 
+            } 
+        } catch(err) {
+            throw err
+        }
     }
 }

@@ -1,4 +1,5 @@
 import options from './../../config/options.js'
+import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
@@ -7,7 +8,7 @@ export default new BotCommand({
     aliases: [],
     description: 'Notify users when downtimes will occur.',
     category: 'dev',
-    permissions: ['GOD'],
+    permissions: [GAMEBOT_PERMISSIONS.GOD],
     dmCommand: true,
     args: false,
     run: function(msg, args) {
@@ -17,17 +18,17 @@ export default new BotCommand({
         if(!args[0]) {
             msg.client.getTimeToDowntime().then(timeToDowntime => {
                 let downtime = Math.ceil(timeToDowntime / 60000)
-                msg.channel.sendMsgEmbed(`Downtime currently set for ${downtime} minute(s). Would you like to disable the current downtime message? Enter \`yes\` or \`no\`.`)
-                msg.channel.awaitMessages(m => (m.content.toLowerCase() == 'yes' || m.content.toLowerCase() == 'no') && m.author.id == msg.author.id, {max: 1, time: 30000 }).then(collected => {
+                msg.channel.sendEmbed(`Downtime currently set for ${downtime} minute(s). Would you like to disable the current downtime message? Enter \`yes\` or \`no\`.`)
+                msg.channel.awaitMessages({ max: 1, time: 30000, filter: m => (m.content.toLowerCase() == 'yes' || m.content.toLowerCase() == 'no') && m.author.id == msg.author.id }).then(collected => {
                     const message = collected.first().content.toLowerCase()
                     if(message == 'yes') {
                         collection.findOneAndUpdate(
                             { type: 'downtime' },
                             { $set: { downtimeStart: -1 } }
                         )
-                        msg.channel.sendMsgEmbed('Downtime cancelled.')
+                        msg.channel.sendEmbed('Downtime cancelled.')
                     } else {
-                        msg.channel.sendMsgEmbed('Downtime not cancelled.')
+                        msg.channel.sendEmbed('Downtime not cancelled.')
                     }
                 })
             })
@@ -39,13 +40,17 @@ export default new BotCommand({
             msg.client.setTimeout(() => {
                 msg.client.emit('downtimeStart')
             }, length);
-            msg.channel.sendMsgEmbed(`Downtime enabled for ${args[0]} minute(s).`)
+            msg.channel.sendEmbed(`Downtime enabled for ${args[0]} minute(s).`)
 
             // Update players currently in game about the oncoming downtime.
-            msg.client.shard.broadcastEval("this.channels.filter(c => c.game).forEach(c => c.sendMsgEmbed(`Gamebot is going to be temporarily offline for maintenance in " + args[0] + " minute" + (args[0] == 1 ? "" : "s") + ". Any active games will be automatically ended. For more information, [see our support server.](" + options.serverInvite + ")`, `Warning!`, " + options.colors.warning + "))")
-
+            msg.client.shard.broadcastEval(function(client) {
+                client.channels.filter(c => c.game)
+                .forEach(c => 
+                    c.sendEmbed("Gamebot is going to be temporarily offline for maintenance in " + args[0] + " minute" + (args[0] == 1 ? "" : "s") + ". Any active games will be automatically ended. For more information, [see our support server.](" + options.serverInvite + ")", `Warning!`, options.colors.warning)
+                )
+            })
         } else {
-            msg.channel.sendMsgEmbed(`Invalid time, set time as a floating point value in minutes.`, 'Error!', options.colors.error)
+            msg.channel.sendEmbed(`Invalid time, set time as a floating point value in minutes.`, 'Error!', options.colors.error)
         }
     }
   })
