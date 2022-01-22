@@ -1,5 +1,6 @@
 // Global dependencies
 import options from '../../../config/options.js'
+import { BUTTONS } from '../../../config/types.js'
 import Discord from '../../../discord_mod.js'
 import metadata from '../metadata.js'
 import fs from 'fs'
@@ -92,7 +93,6 @@ export default class CardsAgainstHumanity extends Game {
     constructor(msg, settings) {
         super(msg, settings)
         this.metadata = metadata
-        this.czars
         this.czarIndex = 0
         this.czar
         this.playerCount = {
@@ -100,16 +100,14 @@ export default class CardsAgainstHumanity extends Game {
             max: 20
         }
         this.submittedCards = []
-        this.lastMessageID
         this.gameStart = false
         this.cardDeck
-        this.collectors = []
         this.playersToKick = []
         this.playersToAdd = []
 
         // get settings
         this.settings.sets = ['Base', 'CAHe1', 'CAHe2', 'CAHe3', 'CAHe4', 'CAHe5', 'CAHe6']
-        this.settings.isDmNeeded = true
+        this.settings.isDmNeeded = false
         // Default options, reconfigured later in this.generateOptions()
         this.gameOptions = []
 
@@ -131,8 +129,6 @@ export default class CardsAgainstHumanity extends Game {
      */
     async gameInit() {
         // create list of possible card czars
-        this.updateCzars()
-
         // update settings
         this.settings.timeLimit   = parseInt(this.options['Timer']) * 1000
         this.settings.pointsToWin = parseInt(this.options['Points to Win'])
@@ -157,15 +153,11 @@ export default class CardsAgainstHumanity extends Game {
         collectors = []
     }
 
-    updateCzars() {
-        this.czars = this.players.array()
-        return this.czars
-    }
 
     pickNextCzar() {
         this.czarIndex++
-        if(!this.czars[this.czarIndex]) this.czarIndex = 0
-        this.czar = this.czars[this.czarIndex]
+        if(!this.players.get(this.players.keyAt(this.czarIndex))) this.czarIndex = 0
+        this.czar = this.players.get(this.players.keyAt(this.czarIndex))
         return this.czar
     }
 
@@ -325,11 +317,7 @@ export default class CardsAgainstHumanity extends Game {
         })
         const embed = new Discord.MessageEmbed()
         .setTitle('This round\'s black card')
-        .attachFiles([{
-            attachment: stream,
-            name: fileName
-        }])
-        .setFooter(this.blackCard.clean)
+        .setFooter({ text: this.blackCard.clean })
         .setImage(`attachment://${fileName}`)
         .setColor(4886754)
 
@@ -337,7 +325,13 @@ export default class CardsAgainstHumanity extends Game {
             game: this.metadata.id,
         })
 
-        this.msg.channel.send(embed).catch(console.error)
+        this.msg.channel.send({
+            embeds: [embed],
+            files: [{
+                attachment: stream,
+                name: fileName
+            }]
+        }).catch(console.error)
         return stream
     }
 
@@ -367,7 +361,7 @@ export default class CardsAgainstHumanity extends Game {
             } else if(player.submitted) {
                 links += `${player.user} ✅ Submitted!\n`
             } else {
-                links += `${player.user} ⛔ Not submitted. | [**VIEW HAND** *(player only)*](${player.currentHand})\n`
+                links += `${player.user} ⛔ Not submitted.\n`
             }
         }
         return links
@@ -415,35 +409,35 @@ export default class CardsAgainstHumanity extends Game {
 
         // display the card choices from each player anonymously
         await this.msg.channel.send({
-            embed: {
+            embeds: [{
                 title: 'Choose the best card, Card Czar',
                 description: this.renderCardChoices(),
                 footer: {
                     text: `Type the number of the card to select it.`
                  },
                 color: 4886754
-            }
+            }]
         })
 
         if(this.submittedCards.length == 0) {
-            this.msg.channel.sendMsgEmbed('There were no submissions for this card!', 'Uh oh...')
+            this.msg.channel.sendEmbed('There were no submissions for this card!', 'Uh oh...')
             // display the scores
             this.msg.channel.send({
-                embed: {
+                embeds: [{
                     title: 'Current Standings',
                     description: this.renderLeaderboard(),
                     color: 4886754,
                     footer: {
                         text: `First to ${this.settings.pointsToWin} wins!`
                     }
-                }
+                }]
             })
             this.play()
             return
         }
         // let the Card Czar choose one
         const filter = m => (!isNaN(m.content) &&  m.author.id == this.czar.user.id && parseInt(m.content) <= this.submittedCards.length && parseInt(m.content) > 0)
-        this.msg.channel.awaitMessages(filter, { max: 1, time: this.settings.timeLimit })
+        this.msg.channel.awaitMessages({ filter, max: 1, time: this.settings.timeLimit })
         .then(async collected => {
             if(this.ending) return
             collected.forEach(async m => {
@@ -452,11 +446,11 @@ export default class CardsAgainstHumanity extends Game {
 
                 // announce winner
                 await this.msg.channel.send({
-                    embed: {
+                    embeds: [{
                         title: '',
                         description: `The winning card is **${winner.card.join(', ')}** which belonged to ${winner.player.user}!\n\n${winner.player.user} has earned a point.`,
                         color: 4886754
-                    }
+                    }]
                 })
 
                 // give the winning player a point
@@ -466,14 +460,14 @@ export default class CardsAgainstHumanity extends Game {
 
                 // display the scores
                 this.msg.channel.send({
-                    embed: {
+                    embeds: [{
                         title: 'Current Standings',
                         description: this.renderLeaderboard(),
                         color: 4886754,
                         footer: {
                             text: `First to ${this.settings.pointsToWin} wins!`
                         }
-                    }
+                    }]
                 })
 
                 if(winningPlayer.score >= this.settings.pointsToWin) {
@@ -486,23 +480,23 @@ export default class CardsAgainstHumanity extends Game {
             // if time ran out
             if(collected.size == 0) {
                 this.msg.channel.send({
-                    embed: {
+                    embeds: [{
                         title: 'Time\'s up',
                         description: `There was no winner selected.`,
                         color: 13632027
-                    }
+                    }]
                 })
 
                 // display the scores
                 this.msg.channel.send({
-                    embed: {
+                    embeds: [{
                         title: 'Current Standings',
                         description: this.renderLeaderboard(),
                         color: 4886754,
                         footer: {
                             text: `First to ${this.settings.pointsToWin} wins!`
                         }
-                    }
+                    }]
                 })
                 await this.play()
             }
@@ -535,7 +529,6 @@ export default class CardsAgainstHumanity extends Game {
         }
 
         await this.reset()
-        this.updateCzars()
         this.stage = 'sleeping'
         await this.sleep(5000)
         this.playGame()
@@ -545,8 +538,8 @@ export default class CardsAgainstHumanity extends Game {
         if(this.ending) return
         this.stage = 'play'
 
-        // choose a black card
-        // only select single-blanks
+        // Choose a black card
+        // Only select single-blanks
         do {
             this.blackCard = new BlackCard(this.cardDeck.draw('black')[0])
         } while(this.blackCard.responses > 1 || !this.blackCard.text || this.blackCard.text.length == 0)
@@ -554,55 +547,81 @@ export default class CardsAgainstHumanity extends Game {
             console.error('Error: card loaded with no text')
         }
         
-        // render and send card image
+        // Render and send card image
         await this.renderCard(this.blackCard.clean)
 
         this.pickNextCzar()
 
         await this.msg.channel.send({
-            embed: {
+            embeds: [{
                 description: `The current czar is ${this.czar.user}! Wait until the other players have submitted their cards, then choose the best one.`,
                 color: 4886754
-            }
+            }]
         })
 
-        // draw cards 
+        // Draw cards 
         for(let item of this.players) {
-            // create reference variables
+            // Create reference variables
             let key = item[0]
             let player = item[1]
 
-            // skip the czar 
+            // Skip the czar 
             if(key == this.czar.user.id) continue
 
-            // refill hand to max limit
+            // Refill hand to max limit
             player.cards = player.cards || []
             player.cards = player.cards.concat(this.cardDeck.draw('white', this.settings.handLimit - player.cards.length))
-
-            // dm each player with their hand
-            await player.user.send('View your hand and select a card.', {
-                embed: {
-                    title: `Cards Against Humanity - Your Current Hand`,
-                    description: this.renderPlayerHand(player),
-                    color: 4886754
-                }
-            }).then(async m => {
-                await player.user.send('View your hand and select a card.',{
-                    embed: {
-                        description: `Remember, type your card number in <#${this.channel.id}>, NOT in this channel!`,
-                        color: options.colors.warning,
-                        footer:  {
-                            text: 'This is due to a recent change in Gamebot. For more info, see our support server.'
-                        }
-                    }
-                })
-                player.currentHandID = m.id
-                player.currentHand = m.url
-                player.dmChannel = m.channel
-            })
         }
-        // create new listener on the main channel
-        let filter = m => {
+
+            const viewHandRow = new Discord.MessageActionRow()
+            .addComponents(
+                new Discord.MessageButton()
+                    .setCustomId(BUTTONS.VIEW_HAND)
+                    .setLabel('View your hand')
+                    .setStyle('PRIMARY'),
+            )
+
+        // send an embed to main channel with links to each player hand [Go to hand](m.url)
+        let submissionStatusMessage = await this.msg.channel.send({
+            embeds: [{
+                title: 'Submission status',
+                description: this.renderSubmissionStatus(),
+                color: options.colors.info
+            }],
+            components: [ viewHandRow ]
+        }).catch(err => {
+            console.error(err)
+        })
+
+        let viewHandCollector = submissionStatusMessage.createMessageComponentCollector({
+            filter: i => this.players.has(i.user.id),
+            time: this.settings.timeLimit
+        })
+
+        viewHandCollector.on('collect', i => {
+            if(this.ending) return
+            if(i.user.id !== this.czar.user.id) {
+                i.reply({
+                    embeds: [{
+                        title: `Cards Against Humanity - Your Current Hand`,
+                        description: this.renderPlayerHand(this.players.get(i.user.id)),
+                        color: options.colors.info
+                    }],
+                    ephemeral: true
+                })
+            } else {
+                i.reply({
+                    embeds: [{
+                        description: 'This round, you are the **Card Czar**. Instead of picking one of your cards, you will select the best response from what the other players choose. Don\'t fret, the Card Czar rotates each round.',
+                        color: options.colors.info
+                    }],
+                    ephemeral: true
+                })
+            }
+        })
+
+        // create message listener on the main channel
+        let messageFilter = m => {
             if(isNaN(m.content) ||
             !this.players.has(m.author.id) ||
             m.author.id == this.czar.user.id ||
@@ -616,18 +635,15 @@ export default class CardsAgainstHumanity extends Game {
         }
         
         // await X messages, depending on how many white cards are needed
-        let collector = this.channel.createMessageCollector(filter, { time: this.settings.timeLimit });
+        let selectionCollector = this.channel.createMessageCollector({ filter: messageFilter, time: this.settings.timeLimit });
 
-        this.collectors.push(collector)
-        collector.on('collect', m => {
+        selectionCollector.on('collect', async m => {
             if(this.ending) return
-
-            m.delete()
 
             let player = this.players.get(m.author.id)
             let cardRemoved = parseInt(m.content) - 1
-            // tell user which card they selected
-            player.dmChannel.sendMsgEmbed(`You have selected: ${player.cards[cardRemoved]}\n\n**Return to game chat: <#${this.channel.id}>**`)
+
+            m.delete().catch(console.error)
 
             // save selection for one card
             this.submittedCards.push({
@@ -637,26 +653,27 @@ export default class CardsAgainstHumanity extends Game {
             player.submitted = true
 
             // update in chat
-            this.msg.channel.messages.fetch(this.lastMessageID).then(message => {
-                message.edit('', {
-                    embed: {
-                        title: 'Submission status',
-                        description: this.renderSubmissionStatus(),
-                        color: 4513714
-                    }
-                })
+            submissionStatusMessage.edit({
+                embeds: [{
+                    title: 'Submission status',
+                    description: this.renderSubmissionStatus(),
+                    color: 4513714
+                }]
             })
 
             // remove cards from hand
             player.cards.splice(cardRemoved, 1, '')
 
             if(this.submittedCards.length == this.players.size - 1) {
-                collector.stop()
+                selectionCollector.stop()
+
+                // Clean up submission status message
+                viewHandCollector.stop()
             }
 
         })
 
-        collector.on('end', (collected, reason) => {
+        selectionCollector.on('end', (collected, reason) => {
             if(this.ending) return
             // check all players at the end
             for(let item of this.players) {
@@ -664,44 +681,26 @@ export default class CardsAgainstHumanity extends Game {
                 let key = item[0]
                 let player = item[1]
 
-                // handle timeout
-                if(reason == 'time' && !player.submitted && this.czar.user.id != player.user.id) {
-                    player.submitted = 'time'
-                    player.dmChannel.send({
-                        embed: {
-                            description: `Time has run out. **Return to game chat <#${this.channel.id}>.**`,
-                            color: options.colors.info
-                        }
-                    })
-                }
-
                 // remove the empty cards
                 player.cards = player.cards.filter(card => card != '')
             }
 
             // update in chat
-            this.msg.channel.messages.fetch(this.lastMessageID).then(message => {
-                message.edit('', {
-                    embed: {
+            this.msg.channel.messages.fetch(submissionStatusMessage.id).then(message => {
+                message.edit({
+                    embeds: [{
                         title: 'Submission status',
                         description: this.renderSubmissionStatus(),
                         color: 4513714
-                    }
+                    }],
+                    components: []
                 })
             })
 
             if(this.stage != 'selection') {
                 CAHDeck.shuffleArray(this.submittedCards)
-                this.clearCollectors(this.collectors)
                 this.runSelection()
             }
-        })
-
-        // send an embed to main channel with links to each player hand [Go to hand](m.url)
-        this.msg.channel.sendMsgEmbed(this.renderSubmissionStatus(), 'Submission status').then(m => {
-            this.lastMessageID = m.id
-        }).catch(err => {
-            console.error(err)
         })
     }
 

@@ -203,12 +203,12 @@ const SnakesAndLadders = class SnakesAndLadders extends Game {
     }
 
     async playSolo() { 
-        this.channel.sendMsgEmbed('Game has started in solo mode!')
+        this.channel.sendEmbed('Game has started in solo mode!')
         // ...
     }
 
     async playTeam() {
-        this.channel.sendMsgEmbed('Game has started in team mode!')
+        this.channel.sendEmbed('Game has started in team mode!')
         // ...
     }
 }

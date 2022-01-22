@@ -16,10 +16,10 @@ export default new BotCommand({
         const helpCmd = msg.client.commands.find(cmd => cmd.name === args.join(" ")) || msg.client.commands.find(cmd => cmd.aliases.includes(args.join(" ")))
         // find help for a specific command
         if (helpCmd && (helpCmd.category !== 'dev' || msg.author.id == process.env.OWNER_ID) && (helpCmd.category !== 'mod' || msg.client.moderators.includes(msg.author.id))) {
-            msg.channel.sendMsgEmbed(`**__HELP:__**
-                    \nCommand: \`${prefix}${helpCmd.name}\`
+            msg.channel.sendEmbed(`**__HELP:__**
+                    \nCommand: \`${msg.channel.prefix}${helpCmd.name}\`
                     \nDescription: ${helpCmd.description}
-                    \nUsage: \`${prefix}${helpCmd.usage}\`
+                    \nUsage: \`${msg.channel.prefix}${helpCmd.usage}\`
                     \nAliases: \`${(helpCmd.aliases.join(", ")||'None')}\``)
             // find list of commands
         } else {
@@ -52,7 +52,7 @@ export default new BotCommand({
                 msg.channel.prefix + 'add <@user>` - Add a user to the game (game leader only).\n`' +
                 msg.channel.prefix + 'join` - Join the game. Only available at the start of each game.\n`' +
                 msg.channel.prefix + 'leave` - Leave the game you are playing in that channel.\n')
-            msg.channel.send(embed)
+            msg.channel.send({ embeds: [embed] })
         }
         return false
     }

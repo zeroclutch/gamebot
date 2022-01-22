@@ -76,7 +76,7 @@ export default new BotCommand({
                 }
 
                 msg.channel.send({
-                    embed: {
+                    embeds: [{
                         title: '**Vote for Gamebot on top.gg here!**',
                         url: 'https://top.gg/bot/620307267241377793/vote',
                         description: `Vote to receive credits each day! After clicking the link and voting, type \`${options.prefix}daily\` to claim your rewards. You can spend your balance by typing \`${options.prefix}shop\`.`,
@@ -93,7 +93,7 @@ export default new BotCommand({
                         footer: {
                             text: info.voteStreak > 0 ? `Your streak expires in ${hoursExpire} hours and ${minutesExpire} minutes.` : 'Extend your vote streak and get bonus rewards each day you vote!'
                         }
-                    }
+                    }]
                 })
             } else if(!info.dailyClaimed) {
                 // user may claim credits, daily not claimed and voted in last 24 hours
@@ -115,7 +115,7 @@ export default new BotCommand({
                 // display vote streak
                 let rewardContent = `Daily reward claimed! - ${reward.credits || ''}${reward.credits ? options.creditIcon : ''}${reward.gold || ''}${reward.gold ? options.goldIcon : ''}`
                 msg.channel.send({
-                    embed: {
+                    embeds: [{
                         title: rewardContent,
                         description: `Thank you for voting on Gamebot! You can vote again in about 12 hours.`,
                         fields: [{
@@ -126,7 +126,7 @@ export default new BotCommand({
                         footer: {
                             text: `Extend your vote streak and get bonus rewards each day you vote!`
                         }
-                    }
+                    }]
                 })
 
                 if(info.firstVote) {
@@ -134,14 +134,14 @@ export default new BotCommand({
                         { userID: msg.author.id },
                         { $inc: { balance: 1000 } })
                     msg.channel.send({
-                        embed: {
+                        embeds: [{
                             title: `First-timer bonus`,
                             description: `You get an extra 1000${options.creditIcon} for your first vote! Buy yourself something nice [in our shop](${process.env.BASE_URL}/shop).`,
                             color: options.colors.economy,
                             footer: {
                                 text: `Type &shop to see our shop at any time.`
                             }
-                        }
+                        }]
                     })
                 }
                 
@@ -152,7 +152,7 @@ export default new BotCommand({
                 const minutesWait = Math.round((msWait / HOUR_LENGTH - hoursWait) * 60)
 
                 msg.channel.send({
-                    embed: {
+                    embeds: [{
                         title: `You've already claimed your rewards!`,
                         description: `You have to wait ${hoursWait} hours and ${minutesWait} minutes before voting again.`,
                         fields: [{
@@ -163,11 +163,11 @@ export default new BotCommand({
                         footer: {
                             text: `Extend your vote streak and get bonus rewards each day you vote!`
                         }
-                    }
+                    }]
                 })
             } else {    
                 // this should never happen
-                msg.channel.sendMsgEmbed(`There seems to be an issue with the ${msg.channel.prefix}daily command. Please submit a bug report in the [support server](${options.serverInvite}).`, 'Error!')
+                msg.channel.sendEmbed(`There seems to be an issue with the ${msg.channel.prefix}daily command. Please submit a bug report in the [support server](${options.serverInvite}).`, 'Error!')
             }
         })
     }

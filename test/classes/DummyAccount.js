@@ -1,4 +1,5 @@
 import Discord from '../../discord_mod.js'
+import { intents } from '../../config/client.js'
 
 export default class DummyAccount {
     /**
@@ -10,7 +11,7 @@ export default class DummyAccount {
     constructor(token, channel) {
         this._channel = channel
         this.token = token
-        this.client = new Discord.Client()
+        this.client = new Discord.Client({ intents })
     }
 
     /**

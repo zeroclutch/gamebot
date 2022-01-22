@@ -10,9 +10,11 @@ let responsify = (response, msg, completed='+ eval completed +') => {
     response.forEach((res, index, arr) => {
         const isFirst = index === 0
         const isLast = index === arr.length - 1
-        const message = `${isFirst ? '**Response**' : ''}\`\`\`js\n${res}\`\`\`${isLast ? `\`\`\`diff\n${completed}\`\`\`\nResponse Time: \`${(Date.now()-msg.createdTimestamp)}ms\`\nType: \`${typeof res}\``
+        const content = `${isFirst ? '**Response**' : ''}\`\`\`js\n${res}\`\`\`${isLast ? `\`\`\`diff\n${completed}\`\`\`\nResponse Time: \`${(Date.now()-msg.createdTimestamp)}ms\`\nType: \`${typeof res}\``
             : ''}`
-        msg.channel.send(message)
+        msg.channel.send({
+            content,
+        })
     })
 }
 

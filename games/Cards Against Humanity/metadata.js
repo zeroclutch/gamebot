@@ -3,7 +3,7 @@ export default {
     "id": "cah",
     "playerCount": {
         "min": 3,
-        "max": 20
+        "max": 12
     },
     "genre": "Card",
     "about": "A party game for horrible people.",

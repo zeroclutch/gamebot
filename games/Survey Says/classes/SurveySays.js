@@ -1,9 +1,11 @@
 import Game from '../../_Game/main.js'
 import options from './../../../config/options.js'
+import { REPLIES } from './../../../config/types.js'
 import metadata from './../metadata.js'
-import { Collection } from './../../../discord_mod.js'
+import Discord from './../../../discord_mod.js'
 import { decrypt } from './../../../types/util/cryptography.js'
 import fs from 'fs'
+import { BUTTONS } from '../../../config/types.js'
 
 let questionList
 decrypt(process.env.PASS_KEY, fs.readFileSync('./games/Survey Says/assets/data.enc', 'utf8'))
@@ -55,7 +57,7 @@ export default class SurveySays extends Game {
      * The play method, which begins the game and continues until a winner is found.
      */
     async play() {
-        while(!this.hasWinner() && !this.ending) {
+        while(!this.getWinners() && !this.ending) {
             this.channel.send('The next round will begin in 5 seconds.')
             this.updatePlayers()
             await this.sleep(5000)
@@ -70,7 +72,7 @@ export default class SurveySays extends Game {
             await this.sleep(3000)
             await this.awardPoints(guess, submitted)
         }
-        this.end(this.getWinners, this.getEndPhrase())
+        this.end(this.getWinners())
     }
 
     /**
@@ -83,7 +85,7 @@ export default class SurveySays extends Game {
     async awaitGuesserResponse() {
         if(this.ending) return
         // Select a new guesser
-        this.guesser = this.players.array()[this.guesserIndex++ % this.players.size]
+        this.guesser = this.players.get(this.players.keyAt(this.guesserIndex++ % this.players.size))
         const filter = m => {
             if(isNaN(m.content) || m.author.id != this.guesser.user.id) return false
             let number = parseInt(m.content.replace('%',''))
@@ -91,73 +93,92 @@ export default class SurveySays extends Game {
         }
 
         // Notify players
-        await this.channel.sendMsgEmbed(`The current guesser is ${this.guesser.user}!\n\nYour question is: **${this.question.question}**`)
+        await this.channel.sendEmbed(`The current guesser is ${this.guesser.user}! You get +1 point if you're within 10% of the real answer.\n\nYour question is: **${this.question.question}**`)
 
         // Await response
-        let collected = await this.channel.awaitMessages(filter, {max: 1, time: this.options['Timer'], errors: ['time']})
+        let collected = await this.channel.awaitMessages({filter, max: 1, time: this.options['Timer'], errors: ['time']})
         .catch(err => {
             if(this.ending) return
-            this.msg.channel.sendMsgEmbed('You ran out of time. The guess is set to 50%', 'Uh oh...', options.colors.error)
+            this.msg.channel.sendEmbed('You ran out of time. The guess is set to 50%', 'Uh oh...', options.colors.error)
         })
         if(this.ending) return
         return collected ? parseInt(collected.first().content.replace('%','')) : 50
     }
 
     async awaitPlayerResponse(guess) {
+        if(this.ending) return
         // Send submission list
-        let submitted = new Collection()
+        let submitted = new Discord.Collection()
         let submissionList = await this.channel.send(this.renderSubmissionList(submitted, guess))
 
         let allPlayersSubmitted = false
 
         // Create message listener on channel
-        const filter = m => (m.content.toLowerCase() == 'more' || m.content.toLowerCase() == 'less') && this.players.has(m.author.id) && !submitted.has(m.author.id) && m.author.id !== this.guesser.user.id
+        const filter = i => this.players.has(i.user.id)
 
         return new Promise((resolve, reject) => {
-            const collector = this.channel.createMessageCollector(filter, {max: 99, time: this.options['Timer']})
+            try {
+                const collector = submissionList.createMessageComponentCollector({ filter, time: this.options['Timer']})
 
-            collector.on('collect', m => {
-                if(this.ending) return
-                // Update submitted list
-                submitted.set(m.author.id, m.content.toLowerCase())
-                m.delete()
-                // Update submission message
-                submissionList.edit(this.renderSubmissionList(submitted, guess))
+                collector.on('collect', i => {
+                    if(this.ending) return
+                    if(!submitted.has(i.user.id) && i.user.id !== this.guesser.user.id) {
+                        // Update submitted list
+                        submitted.set(i.user.id, i.customId)
+                        // Update submission message
+                        i.update(this.renderSubmissionList(submitted, guess))
 
-                if(submitted.size == this.players.size - 1) {
-                    allPlayersSubmitted = true;
+                        if(submitted.size == this.players.size - 1) {
+                            allPlayersSubmitted = true;
+                            resolve(submitted)
+                            collector.stop('submitted')
+                        }
+                    } else {
+                        i.reply(REPLIES.DISALLOWED_ACTION)
+                    }
+                })
+
+                // Resolve listener once collector ends
+                collector.on('end', collected => {
+                    if(this.ending) {
+                        resolve(false)
+                        return
+                    }
+                    if(allPlayersSubmitted) 
+                        this.channel.sendEmbed('Drumroll please...')
                     resolve(submitted)
-                    collector.stop('submitted')
-                }
-            })
-            // Resolve listener once collector ends
-            collector.on('end', collected => {
-                if(this.ending) {
-                    resolve(false)
-                    return
-                }
-                if(allPlayersSubmitted) 
-                    this.channel.sendMsgEmbed('Drumroll please...')
-                resolve(submitted)
-            })
+                })
+            } catch (err) {
+                reject(err)
+            }
         })
     }
 
     async awardPoints(guess, submitted) {
-        let answer = guess < this.question.value ? 'more' : 'less'
+        if(this.ending) return false
+        let answer = guess < this.question.value ? BUTTONS.MORE : BUTTONS.LESS
+        let correctGuessers = []
         let actualNumber = Math.floor(this.question.value * 10) / 10
         if(Math.abs(guess - actualNumber) <= 10) {
+            correctGuessers.push(this.guesser.user.id)
             this.guesser.score++
         }
-        for(let [id, response] of submitted) {
-            if(response == answer) this.players.get(id).score++
+
+        if(submitted) {
+            for(let [id, response] of submitted) {
+                if(response == answer) {
+                    correctGuessers.push(id)
+                    this.players.get(id).score++
+                }
+            }
         }
+
         await this.channel.send({
-            embed: {
-                description: `The actual number was \`${actualNumber}%\`!\n\n${this.renderLeaderboard()}`,
+            embeds: [{
+                description: `The actual number was \`${actualNumber}%\`!\n\n${this.renderLeaderboard(correctGuessers)}`,
                 color: options.colors.info,
                 image: { url: 'attachment://image.png' }
-            },
+            }],
             files: [{
                attachment: `games/Survey Says/assets/${answer}.png`,
                name: 'image.png'
@@ -165,9 +186,14 @@ export default class SurveySays extends Game {
         })
     }
 
-    renderLeaderboard() {
+    renderLeaderboard(correctGuessers) {
         let submissionList = ''
         this.players.forEach((player, id) => {
+            if(correctGuessers && correctGuessers.includes(id)) {
+                submissionList += '✅ '
+            } else {
+                submissionList += '<:red_x:933997651358277672> '
+            }
             submissionList += `**${player.user}**: ${player.score} points\n`
         })
         return submissionList + `First to ${this.options['Points to Win']} points wins!`
@@ -181,46 +207,50 @@ export default class SurveySays extends Game {
             less: '🔻',
             none: '⬜️'
         }
+
         this.players.forEach((player, id) => {
             if(id == this.guesser.user.id) return
             submissionList += `${icons[submitted.get(id) || 'none']} **${player.user}**\n`
         })
+
+        const submissionButtonRow = new Discord.MessageActionRow()
+        .addComponents(
+            new Discord.MessageButton()
+                .setCustomId(BUTTONS.MORE)
+                .setLabel('More')
+                .setStyle('SUCCESS'),
+            new Discord.MessageButton()
+                .setCustomId(BUTTONS.LESS)
+                .setLabel('Less')
+                .setStyle('DANGER'),
+        )
+
         return {
-            embed: {
+            embeds: [{
                 title: `Current guess: ${guess}% - ${this.question.question}`,
-                description: submissionList + 'Type `more` if you thing the actual number is higher, or `less` if you think that it is lower.',
+                description: submissionList + 'Select `More` if you thing the actual number is higher, or select `Less` if you think that it is lower.',
                 color: options.colors.info,
-            }
+            }],
+            components: [ submissionButtonRow ]
         }
     }
 
     /**
-     * Returns true if the game has a winner
-     * @returns {Array<String>} true if there is a winner, or multiple winners
+     * Returns the winners if the game has a winner
+     * @returns {Array<String>|Boolean} the array of winners if there is a winner, or false
      */
-    hasWinner() {
+     getWinners() {
         let winners = []
-        let players = this.players.array()
-        for(let i = 0; i < players.length; i++) {
-            let player = players[i]
+        for(let [i, player] of this.players) {
             if(player.score >= this.options['Points to Win']) {
-                winners.push(player.user)
+                winners.push(player)
             }
         }
-        return winners.length > 0
-    }
 
-    getEndPhrase() {
-        let winners = []
-        let players = this.players.array()
-        for(let i = 0; i < players.length; i++) {
-            let player = players[i]
-            if(player.score >= this.options['Points to Win']) {
-                winners.push(player.user)
-            }
-        }
-        return `The winner${winners.length > 1 ? 's are' : ' is'} ${winners.join(', ')}!\n\nTo play games with the community, [join our server](${options.serverInvite}?ref=gameEnd)!`
-
+        if(winners.length > 0)
+            return winners
+        else
+            return false
     }
 
 }

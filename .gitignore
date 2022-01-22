@@ -8,6 +8,9 @@ yarn-error.log*
 # Dependency directories
 node_modules/
 
+# Generated files
+docs/gamebot/
+
 # Output of 'npm pack'
 *.tgz
 

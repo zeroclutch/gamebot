@@ -15,15 +15,17 @@ export default new BotCommand({
     args: false,
     run: function(msg, args) {
         let games = []
-        msg.client.games.keyArray().forEach((metadata, index) => {
+        let index = 0
+        msg.client.games.forEach((value, metadata) => {
             games.push({
                 name: `${index + 1}. ${metadata.name} | ID: \`${metadata.id}\``,
                 value: metadata.about
             })
+            index++
         })
 
         msg.channel.send({
-            embed: {
+            embeds: [{
                 title: 'List of available games',
                 description: `Type \`${msg.channel.prefix}play <game id>\` to start a new game.`,
                 color: options.colors.economy,
@@ -34,7 +36,7 @@ export default new BotCommand({
                 footer: {
                     text: `Type ${msg.channel.prefix}info <game id> to see how to play.`
                 }
-            }
+            }]
         })
     }
   })
