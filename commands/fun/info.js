@@ -49,7 +49,7 @@ export default new BotCommand({
             }
 
             if(game.unlockables) {
-                message.embed.fields.push({
+                message.embeds[0].fields.push({
                     name: 'Unlockable Content',
                     value: `This game has extra content you can unlock! Type \`${msg.channel.prefix}shop ${game.id}\` to see what's available.`
                 })

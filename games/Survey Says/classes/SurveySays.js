@@ -57,7 +57,7 @@ export default class SurveySays extends Game {
      * The play method, which begins the game and continues until a winner is found.
      */
     async play() {
-        while(!this.hasWinner() && !this.ending) {
+        while(!this.getWinners() && !this.ending) {
             this.channel.send('The next round will begin in 5 seconds.')
             this.updatePlayers()
             await this.sleep(5000)
@@ -72,7 +72,7 @@ export default class SurveySays extends Game {
             await this.sleep(3000)
             await this.awardPoints(guess, submitted)
         }
-        this.end(this.getWinners)
+        this.end(this.getWinners())
     }
 
     /**
@@ -236,17 +236,21 @@ export default class SurveySays extends Game {
     }
 
     /**
-     * Returns true if the game has a winner
-     * @returns {Array<String>} true if there is a winner, or multiple winners
+     * Returns the winners if the game has a winner
+     * @returns {Array<String>|Boolean} the array of winners if there is a winner, or false
      */
-    hasWinner() {
+     getWinners() {
         let winners = []
         for(let [i, player] of this.players) {
             if(player.score >= this.options['Points to Win']) {
-                winners.push(player.user)
+                winners.push(player)
             }
         }
-        return winners.length > 0
+
+        if(winners.length > 0)
+            return winners
+        else
+            return false
     }
 
 }

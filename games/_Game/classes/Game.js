@@ -490,7 +490,7 @@ export default class Game {
                         max: 1,
                         errors: ['time'],
                     }).then(async collected => {
-                        if(this.ending) return
+                        if(this.ending || isConfigured) return
                         const message = collected.first()
                         message.delete()
                         let option = this.gameOptions[parseInt(message.content) - 1]
@@ -582,6 +582,7 @@ export default class Game {
                             this.channel.sendEmbed(`Please select an option! Type \`${this.channel.prefix}start\` to start the game.`, 'Error!', options.colors.error)
                         })
                     }).catch(err => {
+                        if(this.ending || isConfigured) return
                         // time has run out
                         if(err.size === 0) {
                             optionMessage.edit({
