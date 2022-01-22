@@ -32,7 +32,7 @@ export default new GameCommand({
 
         let placeableSquares = game.board.getPlaceableSquares(game.side.toUpperCase()).map(s => '`' + msg.channel.prefix + columns[s._colIndex] + rows[s._rowIndex] + '`')
 
-        let embed = new Discord.RichEmbed()
+        let embed = new MessageEmbed()
         .addField('Important Note:', `Remember to start all moves with the Gamebot's prefix, ${msg.channel.prefix}.`)
         .addField('How do I enter my moves?', `Find the square you want to place your tile in. Look for its column letter, and look for its row number. For example, the top left square is h1, and the bottom right one is a8. Then, type ${msg.channel.prefix}<letter><number>, and replace <letter> and <number> with your tile's letter and number.`)
         .addField('Possible moves', `The possible moves right now are: ${placeableSquares.join(',')}`)

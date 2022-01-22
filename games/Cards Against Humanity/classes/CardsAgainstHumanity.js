@@ -681,17 +681,6 @@ export default class CardsAgainstHumanity extends Game {
                 let key = item[0]
                 let player = item[1]
 
-                // handle timeout
-                if(reason == 'time' && !player.submitted && this.czar.user.id != player.user.id) {
-                    player.submitted = 'time'
-                    player.dmChannel.send({
-                        embeds: [{
-                            description: `Time has run out. **Return to game chat <#${this.channel.id}>.**`,
-                            color: options.colors.info
-                        }]
-                    })
-                }
-
                 // remove the empty cards
                 player.cards = player.cards.filter(card => card != '')
             }
