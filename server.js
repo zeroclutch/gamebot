@@ -1,5 +1,5 @@
 // Initialize Discord bot
-import Discord from './discord_mod.js';
+import Discord from './discord_mod.js'
 import options from './config/options.js'
 
 // Detect and enable testing
@@ -56,13 +56,33 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Update guild count
-let cachedGuilds = '??'
+let cachedGuilds = null
 const updateGuilds = async () => {
-  let guilds = await manager.fetchClientValues('guilds.size')
+  let guilds = await manager.fetchClientValues('guilds.cache.size')
   if(guilds) cachedGuilds = guilds.reduce((prev, val) => prev + val, 0)
 }
-
 setInterval(updateGuilds, 60000)
+
+import axios from 'axios'
+
+// Post DBL stats every 30 minutes
+if(process.env.DBL_TOKEN) {
+  setInterval(async () => {
+    let botId = (await manager.fetchClientValues('user.id'))[0]
+    console.log(botId, cachedGuilds, manager.totalShards, process.env.DBL_TOKEN)
+    if(cachedGuilds)
+      axios.post(`https://top.gg/api/bots/${botId}/stats`,{
+        headers: {
+          'Authentication': process.env.DBL_TOKEN,
+        },
+        body: JSON.stringify({
+          server_count: cachedGuilds || 28000,
+          shard_count: manager.totalShards,
+        })
+      }).then(console.log)
+  }, 1800000)
+}
+
 
 app.get('/docs', (request, response) => {
   response.redirect('/docs/version/' + pkg.version)
@@ -192,8 +212,8 @@ for (const commandFolder of commandFiles) {
     const folder = fs.readdirSync(`./commands/${commandFolder}`)
     for(const file of folder) {
       if(file == '.DS_Store') continue
-      const command = await import(`./commands/${commandFolder}/${file}`)
-      if(command.category !== 'dev' && command.category !== 'mod')
+      const command = (await import(`./commands/${commandFolder}/${file}`)).default
+      if(command.category !== 'dev' && command.category !== 'mod') {
         commands.push({
           name: command.name,
           usage: command.usage,
@@ -203,6 +223,7 @@ for (const commandFolder of commandFiles) {
           permissions: command.permissions,
           args: command.args,
         })
+      }
     }
   }
 }
