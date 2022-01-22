@@ -33,9 +33,6 @@ process.on('message', async message => {
   }
 })
 
-// Discord Bot List dependencies
-import DBL from 'dblapi.js';
-
 // Configure GameManager
 import GameManager from './types/games/GameManager.js'
 client.gameManager = new GameManager(client)
@@ -53,12 +50,6 @@ import { config, stdout } from './scripts/console.js'
 config(client)
 
 client.setMaxListeners(40)
-
-// configure DBL 
-let dbl
-if(process.env.DBL_TOKEN)
-  dbl = new DBL(process.env.DBL_TOKEN)
-client.dbl = dbl
 
 // initialization
 client.login(process.env.DISCORD_BOT_TOKEN)
@@ -83,10 +74,4 @@ client.on('ready', async () => {
   client.updateStatus()
 
   runTests()
-
-  // Post DBL stats every 30 minutes
-  setInterval(() => {
-    if(dbl)
-      dbl.postStats(client.guilds.size, client.shard.ids[0], client.shard.count);
-  }, 1800000);
 });

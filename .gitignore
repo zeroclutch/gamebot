@@ -9,7 +9,6 @@ yarn-error.log*
 node_modules/
 
 # Generated files
-dist/
 docs/gamebot/
 
 # Output of 'npm pack'
