@@ -6,10 +6,12 @@ import options from './config/options.js'
 const testMode = process.argv.includes('--test') 
 
 // Initialize ShardingManager that handles bot shards
+const totalShards = process.env.SHARD_COUNT ? parseInt(process.env.SHARD_COUNT) : 'auto'
 const manager = new Discord.ShardingManager('./bot.js', {
   token: options.token,
   respawn: testMode ? false : true,
-  mode: 'process'
+  mode: 'process',
+  totalShards
 })
 
 const SPAWN_DELAY = 5000
