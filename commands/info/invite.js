@@ -11,7 +11,7 @@ export default new BotCommand({
     dmCommand: true,
     args: false,
     run: function(msg, args) {
-        msg.channel.sendMsgEmbed(`
+        msg.channel.sendEmbed(`
         [**Invite** Gamebot to your server](https://gamebot.rocks/invite?ref=inviteCommand)
         [**Join** the support server](${options.serverInvite}?ref=inviteCommand)
         [**Star** Gamebot on Github](https://github.com/zeroclutch/gamebot)

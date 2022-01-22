@@ -1,5 +1,6 @@
 import Discord from '../../discord_mod.js'
 import DummyAccount from './DummyAccount.js'
+import { intents } from '../../config/client.js'
 
 export default class TestBot {
     /**
@@ -15,7 +16,7 @@ export default class TestBot {
         this.token = token
         this.target = target
         this.accounts = accounts
-        this.client = new Discord.Client()
+        this.client = new Discord.Client({ intents })
     }
 
     get id() {
@@ -29,7 +30,9 @@ export default class TestBot {
         return new Promise(async (resolve, reject) => {
             try {
                 await this.login().catch(reject)
-                this.channel = await this.client.channels.fetch(this._channel)
+                this.channel = await this.client.channels.fetch(this._channel, {
+                    cache: true
+                })
 
                 let clientUser = await this.target.users.fetch(this.client.user.id, true)
                 // Pretend tester isn't a bot
@@ -96,7 +99,10 @@ export default class TestBot {
      */
     awaitMessages(channel=this.channel, responseCount=1, time=10000) {
         return new Promise(async (resolve, reject) => {
-            channel.awaitMessages(m => m.author.id === this.target.user.id && m.channel.id === channel.id, { maxProcessed: responseCount, time, errors: ['time'] })
+            const filter = m => {
+                return m.author.id === this.target.user.id && m.channel.id === channel.id
+            }
+            channel.awaitMessages({ filter, maxProcessed: responseCount, time, errors: ['time'] })
             .then(resolve)
             .catch(err => {
                 if(err.size === 0) {

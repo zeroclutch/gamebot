@@ -12,10 +12,10 @@ export default new BotCommand({
         const collection = msg.client.database.collection('users')
         const userID = args[0].replace(/\D/g, '')
         collection.findOneAndDelete({ userID })
-        .then(() => msg.channel.sendMsgEmbed(`<@${userID}> was wiped from the database.`))
+        .then(() => msg.channel.sendEmbed(`<@${userID}> was wiped from the database.`))
         .catch(err => {
             console.error(err)
-            msg.channel.sendMsgEmbed(`<@${userID}> could not be wiped from the database.`, 'Error!')
+            msg.channel.sendEmbed(`<@${userID}> could not be wiped from the database.`, 'Error!')
         })
     }
 })

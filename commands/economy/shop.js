@@ -12,6 +12,6 @@ export default new BotCommand({
     dmCommand: true,
     args: false,
     run: async function(msg, args) {
-        msg.channel.sendMsgEmbed(`See our online shop at [gamebot.rocks/shop](${process.env.BASE_URL}/shop)`)
+        msg.channel.sendEmbed(`See our online shop at [gamebot.rocks/shop](${process.env.BASE_URL}/shop)`)
     }
   })

@@ -78,8 +78,8 @@ export default class DatabaseClient {
    */
   reconnect() {
     return new Promise((resolve, reject) => {
-      this.databse = null
-      this.initialize.then(resolve)
+      this.database = null
+      this.initialize.then(resolve).catch(reject)
     })
   }
 
@@ -115,7 +115,7 @@ export default class DatabaseClient {
         } else {
           resolve(user)
         }
-      }).catch(error => console.error)
+      }).catch(reject)
     })
   }
 

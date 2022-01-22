@@ -14,4 +14,12 @@ export default class BaseCommand {
         this.permissions = options.permissions || []
         this.args        = options.args        || false
     }
+
+    /**
+     * Similar to run, but always returns a promise.
+     * @return {Promise<T>} The result of the run command
+     */
+    async runPromise(...args) {
+        return await this.run(...args)
+    }
 }

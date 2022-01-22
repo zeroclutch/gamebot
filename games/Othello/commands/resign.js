@@ -1,22 +1,17 @@
 import GameCommand from '../../../types/command/GameCommand.js'
 
 export default new GameCommand({
-    name: 'timer',
-    usage: 'timer',
+    name: 'resign',
+    usage: 'resign',
     aliases: [],
-    description: 'Shows the timer for the current player',
+    description: 'Resigns the game.',
     category: 'info',
     permissions: [],
     args: false,
     run: function(msg, args, game) {
-        let winner = game.players.find(player => player.id !== msg.author.id) 
-        if(game.moves.length > 2) {
-            game.importGameToLichess(winner.side)
-        }
+        let winner = game.players.find(player => player.user.id !== msg.author.id) 
 
-        game.displayBoard(winner.side).then(() => {
-            game.end(winner)
-            game.over = true
-        })
+        game.end(winner)
+        game.over = true
     }
 })

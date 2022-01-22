@@ -1,21 +1,28 @@
 // Initialize Discord bot
-import Discord from './discord_mod.js';
+import Discord from './discord_mod.js'
 import options from './config/options.js'
-const testMode = process.argv.includes('--title=test') 
+
+// Detect and enable testing
+const testMode = process.argv.includes('--test') 
+
+// Initialize ShardingManager that handles bot shards
+const totalShards = process.env.SHARD_COUNT ? parseInt(process.env.SHARD_COUNT) : 'auto'
 const manager = new Discord.ShardingManager('./bot.js', {
   token: options.token,
   respawn: testMode ? false : true,
-  mode: 'worker'
+  mode: 'process',
+  totalShards
 })
 
 const SPAWN_DELAY = 5000
 
-manager.on('shardCreate', shard => setTimeout(() => shard.send({ testMode }), SPAWN_DELAY))
+manager.on('shardCreate', shard => {
+  setTimeout(() => shard.send({ testMode }), SPAWN_DELAY)
+})
 manager.spawn('auto', SPAWN_DELAY).catch(err => console.error(err))
 
 // Add server dependencies
 import bodyParser from 'body-parser'
-import querystring from 'querystring';
 import express from 'express'
 const app = express()
 
@@ -51,13 +58,33 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Update guild count
-let cachedGuilds = '??'
+let cachedGuilds = null
 const updateGuilds = async () => {
-  let guilds = await manager.fetchClientValues('guilds.size')
+  let guilds = await manager.fetchClientValues('guilds.cache.size')
   if(guilds) cachedGuilds = guilds.reduce((prev, val) => prev + val, 0)
 }
-
 setInterval(updateGuilds, 60000)
+
+import axios from 'axios'
+
+// Post DBL stats every 30 minutes
+if(process.env.DBL_TOKEN) {
+  setInterval(async () => {
+    let botId = (await manager.fetchClientValues('user.id'))[0]
+    console.log(botId, cachedGuilds, manager.totalShards, process.env.DBL_TOKEN)
+    if(cachedGuilds)
+      axios.post(`https://top.gg/api/bots/${botId}/stats`,{
+        headers: {
+          'Authentication': process.env.DBL_TOKEN,
+        },
+        body: JSON.stringify({
+          server_count: cachedGuilds || 28000,
+          shard_count: manager.totalShards,
+        })
+      }).then(console.log)
+  }, 1800000)
+}
+
 
 app.get('/docs', (request, response) => {
   response.redirect('/docs/version/' + pkg.version)
@@ -187,8 +214,8 @@ for (const commandFolder of commandFiles) {
     const folder = fs.readdirSync(`./commands/${commandFolder}`)
     for(const file of folder) {
       if(file == '.DS_Store') continue
-      const command = await import(`./commands/${commandFolder}/${file}`)
-      if(command.category !== 'dev' && command.category !== 'mod')
+      const command = (await import(`./commands/${commandFolder}/${file}`)).default
+      if(command.category !== 'dev' && command.category !== 'mod') {
         commands.push({
           name: command.name,
           usage: command.usage,
@@ -198,6 +225,7 @@ for (const commandFolder of commandFiles) {
           permissions: command.permissions,
           args: command.args,
         })
+      }
     }
   }
 }
@@ -255,13 +283,16 @@ app.post('/response/:ui_id', (req, res) => {
     return
   }
 
-  let data = JSON.stringify({...req.body, id: UI_ID})
+  let data = {...req.body, id: UI_ID}
 
-  manager.broadcastEval(`
-  if(this.shard.ids[0] == ${UI.shard}) {
-    this.webUIClient.receive(${data})
-  }
-  `)
+  manager.broadcastEval(function(client, context) {
+    let [UI, data] = context
+    if(client.shard.ids[0] == UI.shard) {
+      client.webUIClient.receive(data)
+    }
+  }, {
+    context: [UI, data]
+  })
   .then(value => {
     // Return the success webpage
     res.status(302)

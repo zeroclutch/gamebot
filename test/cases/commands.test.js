@@ -33,7 +33,7 @@ export default async (client, tester) => {
         assert.strictEqual('Thank you for voting on Gamebot! You can vote again in about 12 hours.', message.embeds[0].description)
 
         message = (await tester.command($ + 'bal')).first()
-        assert.strictEqual(`You have **100**${options.creditIcon}.`, message.embeds[0].description)
+        assert.strictEqual(`You get an extra 1000<:credit:810656538775650344> for your first vote! Buy yourself something nice [in our shop](http://localhost:8080/shop).`, message.embeds[0].description)
     })
 
     await test('run status command', async () => {

@@ -17,11 +17,11 @@ export default new BotCommand({
         const selection = args.join(' ').toLowerCase()
         const game = msg.client.games.findKey((game, meta) => meta.id == selection || meta.name.toLowerCase() == selection)
         if(!game) {
-            msg.channel.sendMsgEmbed('Game not found.', 'Error!', options.colors.error)
+            msg.channel.sendEmbed('Game not found.', 'Error!', options.colors.error)
             return
         } else {
             const message = {
-                embed: {
+                embeds: [{
                     title: `${game.name} [${game.id}]`,
                     description: game.about,
                     color: 4886754,
@@ -45,11 +45,11 @@ export default new BotCommand({
                     footer: {
                         text: `Type ${msg.channel.prefix}play ${game.id} to start a new game!`
                     }
-                }
+                }]
             }
 
             if(game.unlockables) {
-                message.embed.fields.push({
+                message.embeds[0].fields.push({
                     name: 'Unlockable Content',
                     value: `This game has extra content you can unlock! Type \`${msg.channel.prefix}shop ${game.id}\` to see what's available.`
                 })
