@@ -18,7 +18,7 @@ const getCookie = name => {
 
 let developerStatus = getCookie('developer-status')
 if(developerStatus) {
-    gtag = (...args) => { console.log(args) };
+    gtag = (...arguments) => { console.log(arguments) };
 }
 
 document.addEventListener('DOMContentLoaded', () => {
