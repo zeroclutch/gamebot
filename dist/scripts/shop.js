@@ -359,7 +359,7 @@ const getCookie = name => {
 
 let developerStatus = getCookie('developer-status')
 if(developerStatus) {
-    gtag = (...arguments) => { console.log(arguments) };
+    gtag = (...args) => { console.log(arguments) };
 }
 
 const logout = () => {
