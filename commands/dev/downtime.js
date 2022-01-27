@@ -15,7 +15,7 @@ export default new BotCommand({
         const collection = msg.client.database.collection('status')
         const length =  Math.round(parseFloat(args[0]) * 60000)
         const startTime = Date.now() + length
-        if(!args[0]) {
+        if(!args[0] || isNaN(args[0])) {
             msg.client.getTimeToDowntime().then(timeToDowntime => {
                 let downtime = Math.ceil(timeToDowntime / 60000)
                 msg.channel.sendEmbed(`Downtime currently set for ${downtime} minute(s). Would you like to disable the current downtime message? Enter \`yes\` or \`no\`.`)
@@ -37,18 +37,19 @@ export default new BotCommand({
                 { type: 'downtime' },
                 { $set: { downtimeStart: startTime } }
             )
-            msg.client.setTimeout(() => {
+            setTimeout(() => {
                 msg.client.emit('downtimeStart')
             }, length);
             msg.channel.sendEmbed(`Downtime enabled for ${args[0]} minute(s).`)
 
             // Update players currently in game about the oncoming downtime.
-            msg.client.shard.broadcastEval(function(client) {
-                client.channels.filter(c => c.game)
-                .forEach(c => 
-                    c.sendEmbed("Gamebot is going to be temporarily offline for maintenance in " + args[0] + " minute" + (args[0] == 1 ? "" : "s") + ". Any active games will be automatically ended. For more information, [see our support server.](" + options.serverInvite + ")", `Warning!`, options.colors.warning)
+            msg.client.shard.broadcastEval(function(client, context) {
+                const [args, options] = context
+                client.gameManager.games
+                .forEach(game => 
+                    game.channel.sendEmbed("Gamebot is going to be temporarily offline for maintenance in " + args[0] + " minute" + (args[0] == 1 ? "" : "s") + ". Any active games will be automatically ended. For more information, [see our support server.](" + options.serverInvite + ")", `Warning!`, options.colors.warning).catch(console.error)
                 )
-            })
+            }, { context: [ args, options ] })
         } else {
             msg.channel.sendEmbed(`Invalid time, set time as a floating point value in minutes.`, 'Error!', options.colors.error)
         }
