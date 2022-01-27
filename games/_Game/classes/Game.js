@@ -646,9 +646,6 @@ export default class Game {
      */
     async addPlayer(member, message) {
         if(typeof member === 'string') {
-            // Validate string
-            if(member.length !== 18) return false
-
             // Search user
             member = await this.msg.guild.members.fetch(member).catch(async err => {
                 console.error(err)
