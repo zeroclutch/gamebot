@@ -321,7 +321,7 @@ export default class CardsAgainstHumanity extends Game {
         .setImage(`attachment://${fileName}`)
         .setColor(4886754)
 
-        this.client.logger.log('Generated image', {
+        this.client.metrics.log('Generated image', {
             game: this.metadata.id,
         })
 

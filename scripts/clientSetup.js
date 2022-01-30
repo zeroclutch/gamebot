@@ -120,10 +120,38 @@ const database = async client => {
     }
 }
 
+/**
+ * Configure client.log -- deprecated in favor of importing gamebot/logger
+ * @param {Discord.Client} client 
+ * @deprecated
+ */
+const logger = async client => {
+    const send = (data, level) => process.send({
+        data: util.inspect(data),
+        shard: client.shard.ids[0],
+        level,
+        log: true
+    })
+    
+    client.defineProperty(client, 'log', {
+        value: {
+            trace: (...args) => send(args.join(), 'trace'),
+            debug: (...args) => send(args.join(), 'debug'),
+            info:  (...args) => send(args.join(), 'info'),
+            warn:  (...args) => send(args.join(), 'warn'),
+            error: (...args) => send(args.join(), 'error'),
+            fatal: (...args) => send(args.join(), 'fatal'),
+        },
+        enumerable: true,
+        writable: false
+    })
+}
+
 export default {
     commands,
     database,
     events,
     games,
     moderators,
+    logger,
 }

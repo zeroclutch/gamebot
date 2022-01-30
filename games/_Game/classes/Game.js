@@ -208,7 +208,7 @@ export default class Game {
         try {
             this.stage = 'init'
 
-            this.client.logger.log('Game started', {
+            this.client.metrics.log('Game started', {
                 game: this.metadata.game,
                 id: this.metadata.id
             })
@@ -794,7 +794,7 @@ export default class Game {
         this.ending = true
         this.stage = 'over'
 
-        this.client.logger.log('Game ended', {
+        this.client.metrics.log('Game ended', {
             game: this.metadata.game,
             id: this.metadata.id,
             duration: Date.now() - this.msg.createdTimestamp,
