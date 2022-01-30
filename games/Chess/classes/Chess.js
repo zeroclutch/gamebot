@@ -181,7 +181,7 @@ export default class Chess extends Game {
         .setImage(`attachment://image.png`)
         .setColor({ 'White': '#fffffe', 'Black': '#000001' }[side])
 
-        this.client.logger.log('Generated image', {
+        this.client.metrics.log('Generated image', {
             game: this.metadata.id,
         })
 
@@ -293,7 +293,6 @@ export default class Chess extends Game {
             pgn += this.moves[i] + ' '
         }
         pgn += winner
-        console.log(pgn)
         return pgn
     }
 

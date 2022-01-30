@@ -1,4 +1,6 @@
-import Discord from './discord_mod.js'
+import Discord from 'gamebot/discord'
+import logger from 'gamebot/logger'
+
 import { makeCache, intents } from './config/client.js'
 
 const client = new Discord.Client({
@@ -17,7 +19,7 @@ import options from './config/options.js'
 const runTests = async () => {
   // Run tests
   if(client.isTestingMode && client.readyAt && await client.channels.fetch(process.env.TEST_CHANNEL)) {
-    console.log('Loading tests...')
+    logger.log('Loading tests...')
     const {default: test} = await import('./test/index.test.js')
     test(client)
   }
@@ -27,7 +29,7 @@ const runTests = async () => {
 process.on('message', async message => {
   if(message.testMode) {
     // Check if we are testing
-    console.log('Activated testing mode...')
+    logger.info('Activated testing mode...')
     client.isTestingMode = true
     runTests()
   }
@@ -42,36 +44,39 @@ import WebUIClient from './types/webui/WebUIClient.js'
 client.webUIClient = new WebUIClient(client)
 
 // Configure analytics
-import Logger from './types/log/Logger.js'
-client.logger = new Logger()
-
-// configure logging
-import { config, stdout } from './scripts/console.js'
-config(client)
+import Metrics from './types/log/Metrics.js'
+client.metrics = new Metrics()
 
 client.setMaxListeners(40)
 
 // initialization
 client.login(process.env.DISCORD_BOT_TOKEN)
 
-import setup from './scripts/setup.js'
+import clientSetup  from './scripts/clientSetup.js'
+import processSetup from './scripts/processSetup.js'
+
+// Setup process
+;(async () => {
+  await processSetup.events()
+})()
 
 client.on('ready', async () => {
-  // Logged in!
-  console.log(`Logged in as ${client.user.tag} on shard ${client.shard.ids[0]}!`)
 
   // Setup bot
-  await setup.database(client)
-  await setup.games(client)
-  await setup.commands(client)
-  await setup.events(client)
-  await setup.moderators(client)
+  await clientSetup.database(client)
+  await clientSetup.games(client)
+  await clientSetup.commands(client)
+  await clientSetup.events(client)
+  await clientSetup.moderators(client)
 
   // Refresh user activity
   client.user.setActivity(options.activity.game, { type: options.activity.type })
 
   // Update bot system status
   client.updateStatus()
+
+  // Logged in!
+  logger.info(`Logged in as ${client.user.tag} on shard ${client.shard.ids[0]}!`)
 
   runTests()
 });

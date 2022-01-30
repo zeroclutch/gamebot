@@ -47,7 +47,7 @@ export default new BotCommand({
                 const [args, options] = context
                 client.gameManager.games
                 .forEach(game => 
-                    game.channel.sendEmbed("Gamebot is going to be temporarily offline for maintenance in " + args[0] + " minute" + (args[0] == 1 ? "" : "s") + ". Any active games will be automatically ended. For more information, [see our support server.](" + options.serverInvite + ")", `Warning!`, options.colors.warning).catch(console.error)
+                    game.channel.sendEmbed("Gamebot is going to be temporarily offline for maintenance in " + args[0] + " minute" + (args[0] == 1 ? "" : "s") + ". Any active games will be automatically ended. For more information, [see our support server.](" + options.serverInvite + ")", `Warning!`, options.colors.warning).catch(logger.error)
                 )
             }, { context: [ args, options ] })
         } else {

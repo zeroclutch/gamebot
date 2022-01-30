@@ -260,7 +260,7 @@ export default class Othello extends Game {
         .addField('🏳', `Type \`${this.channel.prefix}resign\` to give up.`, true)
         .addField('ℹ️', `To make a move, enter the bot prefix followed by the name of the square.`, true)
 
-        this.client.logger.log('Generated image', {
+        this.client.metrics.log('Generated image', {
             game: this.metadata.id,
         })
 

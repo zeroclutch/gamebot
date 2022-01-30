@@ -1,4 +1,5 @@
 import BotCommand from '../../types/command/BotCommand.js'
+import logger from 'gamebot/logger'
 
 import Discord from '../../discord_mod.js' 
 const { Util } = Discord
@@ -33,7 +34,7 @@ export default new BotCommand({
         response = await eval('(async ()=>{'+args.join(' ')+'})()')
         responsify(response, msg)
     } catch (err) {
-        console.error(err)
+        logger.error(err)
         responsify(err, msg, '- eval failed -')
     }
 }

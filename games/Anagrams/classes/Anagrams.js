@@ -227,7 +227,6 @@ export default class Anagrams extends Game {
                 //console.log(player.dmChannel)
                 player.user.createDM().then(channel => {
                     const filter = m => {
-                        console.log(m.content)
                         return true
                     }
                     let collector = channel.createMessageCollector({ filter, time: 15000 })

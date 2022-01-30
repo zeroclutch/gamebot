@@ -19,7 +19,16 @@ const SPAWN_DELAY = 5000
 manager.on('shardCreate', shard => {
   setTimeout(() => shard.send({ testMode }), SPAWN_DELAY)
 })
-manager.spawn('auto', SPAWN_DELAY).catch(err => console.error(err))
+manager.spawn('auto', SPAWN_DELAY).catch(err => logger.error(err))
+
+// Handle logging with Pino
+import logger from 'gamebot/logger'
+
+process.on('message', async message => {
+  if(message.log) {
+    logger[message.level](message)
+  }
+})
 
 // Add server dependencies
 import bodyParser from 'body-parser'
@@ -47,8 +56,8 @@ const oauth2 = new OAuth2Client()
 oauth2.initialize()
 
 // Create logger
-import Logger from './types/log/Logger.js'
-const logger = new Logger()
+import Metrics from './types/log/Metrics.js'
+const metrics = new Metrics()
 
 import fs from 'fs'
 const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'))
@@ -71,7 +80,7 @@ import axios from 'axios'
 if(process.env.DBL_TOKEN) {
   setInterval(async () => {
     let botId = (await manager.fetchClientValues('user.id'))[0]
-    console.log(botId, cachedGuilds, manager.totalShards, process.env.DBL_TOKEN)
+    logger.info(botId, cachedGuilds, manager.totalShards, process.env.DBL_TOKEN)
     if(cachedGuilds)
       axios.post(`https://top.gg/api/bots/${botId}/stats`,{
         headers: {
@@ -88,7 +97,7 @@ if(process.env.DBL_TOKEN) {
 
 app.get('/docs', (request, response) => {
   response.redirect('/docs/version/' + pkg.version)
-  logger.log('Docs viewed', {
+  metrics.log('Docs viewed', {
     ref: request.query.ref
   })
 })
@@ -105,14 +114,14 @@ app.get('/api/guilds', async (req, res) => {
 })
 
 app.get('/discord', (req,res) => {
-  logger.log('Discord joined', {
+  metrics.log('Discord joined', {
     ref: req.query.ref
   })
   res.redirect('https://discord.gg/7pNEJQC')
 })
 
 app.get('/invite', (req,res) => {
-  logger.log('Invite used', {
+  metrics.log('Invite used', {
     ref: req.query.ref
   })
   res.redirect(`https://discord.com/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&scope=bot&permissions=1547041872`)
@@ -123,9 +132,9 @@ app.get('/api/shopItems', async (req, res) => {
   if(req.query.userID)
     validated = await oauth2.validate(req.query.userID, req.header('authorization'))
   if(validated)
-    shopItems = await shopGenerator.fetchShopItems(req.query.userID).catch(console.error)
+    shopItems = await shopGenerator.fetchShopItems(req.query.userID).catch(logger.error)
   else
-    shopItems = await shopGenerator.fetchShopItems().catch(console.error)
+    shopItems = await shopGenerator.fetchShopItems().catch(logger.error)
   res.send(shopItems)
 })
 
@@ -181,7 +190,7 @@ app.post('/api/purchase', async (req, res) => {
         },
         { returnOriginal: false }
     ).catch(err => {
-      console.error(err)
+      logger.error(err)
       res.status(500)
     })
 
@@ -193,7 +202,7 @@ app.post('/api/purchase', async (req, res) => {
   }
     res.status(200)
     res.send(result)
-    logger.log('Item Purchased', result)
+    metrics.log('Item Purchased', result)
   } else {
     res.status(401)
     res.send({
@@ -265,7 +274,7 @@ app.get('/game/:ui_id', (req, res) => {
   webUIManager.getWebpage(UI_ID).then(webpage => {
     res.send(webpage)
   }).catch(err => {
-    console.error(err)
+    logger.error(err)
     res.status(404).redirect('/404')
   })
 })
@@ -300,7 +309,7 @@ app.post('/response/:ui_id', (req, res) => {
     webUIManager.UIs.delete(UI_ID)
   })
   .catch(err => {
-    console.error(err)
+    logger.error(err)
     res.status(404)
     res.redirect('/404')
   })
@@ -344,11 +353,11 @@ app.post('/voted', async (req, res) => {
         firstVote
       }
     }).then(() => {
-    logger.log('User voted')
+    metrics.log('User voted')
     res.status(200)
     res.send()
   }).catch(err => {
-    console.error(err)
+    logger.error(err)
     res.status(500)
     res.send()
   })
@@ -522,5 +531,5 @@ app.listen(process.env.PORT || 5000, (err) => {
 })
 
 process.on('unhandledRejection', err => {
-  console.error(err.stack, 'error')
+  logger.error(err.stack, 'error')
 })
