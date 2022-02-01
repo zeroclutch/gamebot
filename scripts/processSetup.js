@@ -17,5 +17,5 @@ const events = async () => {
 }
 
 export default {
-    events
+    events,
 }

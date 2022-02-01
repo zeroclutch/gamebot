@@ -6,6 +6,7 @@ import Discord from './../../../discord_mod.js'
 import { decrypt } from './../../../types/util/cryptography.js'
 import fs from 'fs'
 import { BUTTONS } from '../../../config/types.js'
+import logger from 'gamebot/logger'
 
 let questionList
 decrypt(process.env.PASS_KEY, fs.readFileSync('./games/Survey Says/assets/data.enc', 'utf8'))
@@ -67,8 +68,8 @@ export default class SurveySays extends Game {
                 this.question = this.select(this.questionList)
             } while(!this.question || !this.question.question)
 
-            let guess = await this.awaitGuesserResponse().catch(console.error)
-            let submitted = await this.awaitPlayerResponse(guess).catch(console.error)
+            let guess = await this.awaitGuesserResponse().catch(logger.error)
+            let submitted = await this.awaitPlayerResponse(guess).catch(logger.error)
             await this.sleep(3000)
             await this.awardPoints(guess, submitted)
         }

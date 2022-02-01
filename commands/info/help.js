@@ -3,7 +3,7 @@ import options from '../../config/options.js'
 
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
-    name: 'help',
+    name: '                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ',
     usage: 'help',
     aliases: ['commands'],
     description: 'Provides help for users',
