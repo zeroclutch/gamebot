@@ -109,11 +109,13 @@ if(process.env.DBL_TOKEN) {
     let botId = (await manager.fetchClientValues('user.id'))[0]
     logger.info(botId, cachedGuilds, manager.totalShards, process.env.DBL_TOKEN)
     if(cachedGuilds)
-      axios.post(`https://top.gg/api/bots/${botId}/stats`,{
+      axios({
+        url: `https://top.gg/api/bots/${botId}/stats`,
+        method: 'POST',
         headers: {
           'Authentication': process.env.DBL_TOKEN,
         },
-        body: JSON.stringify({
+        data: JSON.stringify({
           server_count: cachedGuilds || 28000,
           shard_count: manager.totalShards,
         })
