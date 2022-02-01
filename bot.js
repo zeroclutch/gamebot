@@ -1,5 +1,5 @@
 import Discord from 'gamebot/discord'
-import logger from 'gamebot/logger'
+import logger, { ready } from 'gamebot/logger'
 
 import { makeCache, intents } from './config/client.js'
 
@@ -19,7 +19,7 @@ import options from './config/options.js'
 const runTests = async () => {
   // Run tests
   if(client.isTestingMode && client.readyAt && await client.channels.fetch(process.env.TEST_CHANNEL)) {
-    logger.log('Loading tests...')
+    logger.info('Loading tests...')
     const {default: test} = await import('./test/index.test.js')
     test(client)
   }
@@ -60,7 +60,8 @@ import processSetup from './scripts/processSetup.js'
   await processSetup.events()
 })()
 
-client.on('ready', async () => {
+client.once('ready', async () => {
+  ready(client)
 
   // Setup bot
   await clientSetup.database(client)
@@ -80,3 +81,6 @@ client.on('ready', async () => {
 
   runTests()
 });
+
+
+export default client

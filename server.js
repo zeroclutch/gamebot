@@ -1,3 +1,26 @@
+// Initialize logger
+import pino from 'pino'
+
+const transport = pino.transport({
+  targets: [
+    {
+        level: 'trace',
+        target: 'pino-pretty',
+    }
+  ]
+})
+
+/**
+ * Creates logger at various priorities -- 60 highest
+ * { '10': 'trace',
+     '20': 'debug',
+     '30': 'info',
+     '40': 'warn',
+     '50': 'error',
+     '60': 'fatal' },
+ */
+const logger = pino(transport)
+
 // Initialize Discord bot
 import Discord from './discord_mod.js'
 import options from './config/options.js'
@@ -17,18 +40,22 @@ const manager = new Discord.ShardingManager('./bot.js', {
 const SPAWN_DELAY = 5000
 
 manager.on('shardCreate', shard => {
+  console.log('created shard once')
+  // Intentional nesting of event handlers
+  // Log messages on each shard through IPC, do not create duplicate listeners
+  if(!shard.hasLogListener) {
+    shard.on('message', async message => {
+      shard.hasLogListener = true
+      if(message.type === 'log') {
+        const [level, ...args] = message.data
+        logger[level](...args)
+      }
+    })
+  }
+
   setTimeout(() => shard.send({ testMode }), SPAWN_DELAY)
 })
 manager.spawn('auto', SPAWN_DELAY).catch(err => logger.error(err))
-
-// Handle logging with Pino
-import logger from 'gamebot/logger'
-
-process.on('message', async message => {
-  if(message.log) {
-    logger[message.level](message)
-  }
-})
 
 // Add server dependencies
 import bodyParser from 'body-parser'
@@ -90,7 +117,7 @@ if(process.env.DBL_TOKEN) {
           server_count: cachedGuilds || 28000,
           shard_count: manager.totalShards,
         })
-      }).then(console.log)
+      }).then(logger.info)
   }, 1800000)
 }
 
@@ -376,7 +403,7 @@ subscriptionManager.init()
 // Chargebee
 // Handle CHECKOUT endpoint
 app.post('/api/checkout/generateHostedPage', async (req, res) => {
-  //console.log(req.body.customerID, req.header('authorization'))
+  //logger.info(req.body.customerID, req.header('authorization'))
   let validated = await oauth2.validate(req.body.customerID, req.header('authorization'))
   if(!validated) {
     res.status(401)
@@ -424,11 +451,11 @@ app.post('/api/checkout/generateHostedPage', async (req, res) => {
   }).request(function(error, result) {
     if(error) {
       //handle error
-      console.log(error)
+      logger.info(error)
       res.status(500)
       res.send({ error: error.message })
     } else {
-      //console.log(result)
+      //logger.info(result)
       subscriptionManager.add(result.hosted_page)
       res.send(result)
     }
@@ -450,12 +477,12 @@ app.post('/api/checkout/confirmHostedPage', async (req, res) => {
   chargebee.hosted_page.retrieve(req.body.hostedPageID).request(async function(error,result) {
     if(error) {
       //handle error
-      console.log(error);
+      logger.info(error);
       res.status(500)
       res.send(error.message)
       return
     } else {
-      //console.log(result.hosted_page.content);
+      //logger.info(result.hosted_page.content);
       // Credit user with their purchase
       let content = result.hosted_page.content;
       if(result.hosted_page.state !== 'succeeded') {
@@ -517,7 +544,7 @@ app.get('*', (req, res) => {
 
 app.on('error', function(err) {
   if (err.code === "ECONNRESET") {
-      console.log("Timeout occurs");
+      logger.info("Timeout occurs");
       return;
   }
   //handle normal errors
@@ -527,7 +554,7 @@ app.on('error', function(err) {
 // Listen on port 5000
 app.listen(process.env.PORT || 5000, (err) => {
   if (err) throw new Error(err)
-  console.log('Server is running on port ' + (process.env.PORT || 5000))
+  logger.info('Server is running on port ' + (process.env.PORT || 5000))
 })
 
 process.on('unhandledRejection', err => {

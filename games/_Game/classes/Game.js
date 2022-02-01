@@ -1,6 +1,7 @@
 import options from '../../../config/options.js'
 import { BUTTONS, GAME_OPTIONS, REPLIES } from '../../../config/types.js'
 import Discord from '../../../discord_mod.js'
+import logger from 'gamebot/logger'
 
 /**
  * The base class for all games, see {@tutorial getting_started} to get started.
@@ -293,6 +294,7 @@ export default class Game {
                     embeds: [ joinEmbed ],
                     components: [ joinButtonRow ]
                 })
+                .catch(err => this.client.emit('error', err, this.client, joinMessage, this))
                 
                 // Collect all interactions
                 const collector = joinMessage.createMessageComponentCollector({ time: 120000 })
@@ -524,7 +526,7 @@ export default class Game {
                                 }
                             }]
                         }).catch(err => {
-                            console.error(err)
+                            logger.error(err)
                             this.channel.sendEmbed(`Something went wrong when editing the message. Type \`${this.channel.prefix}start\` to begin the game.`, 'Error!', options.colors.error).delete(5000)
                         })
 
@@ -595,7 +597,7 @@ export default class Game {
                             })
                             isConfigured = true
                         } else {
-                            console.error(err)
+                            logger.error(err)
                             optionMessage.edit({
                                 embeds: [{
                                     title: 'Error!',
@@ -620,21 +622,21 @@ export default class Game {
     async setLeader(member) {
         if(typeof member == 'string') {
             member = await this.msg.guild.members.fetch(member).catch(async () => {
-                await this.msg.channel.sendEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
+                await this.msg.channel.sendEmbed('Invalid user.', 'Error!', 13632027).catch(logger.error)
                 return false
             })
             if(member === false) return
         }
 
         if(!member || this.leader.id == member.id || !this.players.has(member.id)) {
-            await this.msg.channel.sendEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
+            await this.msg.channel.sendEmbed('Invalid user.', 'Error!', 13632027).catch(logger.error)
             return
         }
 
         this.gameMaster = this.players.get(member.id)
 
         if(message !== null) {
-            await this.channel.sendEmbed(message || this.settings.defaultUpdatePlayerMessage).catch(console.error)
+            await this.channel.sendEmbed(message || this.settings.defaultUpdatePlayerMessage).catch(logger.error)
         }
 
     }
@@ -648,26 +650,26 @@ export default class Game {
         if(typeof member === 'string') {
             // Search user
             member = await this.msg.guild.members.fetch(member).catch(async err => {
-                console.error(err)
-                await this.channel.sendEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
+                logger.error(err)
+                await this.channel.sendEmbed('Invalid user.', 'Error!', 13632027).catch(logger.error)
                 return false
             })
             if(member === false) return
         }
 
         if(!member || this.players.has(member.id) || (member.user.bot && !this.client.isTestingMode)) {
-            await this.msg.channel.sendEmbed('Invalid user.', 'Error!', 13632027).catch(console.error)
+            await this.msg.channel.sendEmbed('Invalid user.', 'Error!', 13632027).catch(logger.error)
             return
         }
 
         let futureSize = this.players.size + this.playersToAdd.length - this.playersToKick.length
         if(futureSize >= this.metadata.playerCount.max) {
-            await this.channel.sendEmbed(`The game can't have more than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! ${member.user} could not be added.`).catch(console.error)
+            await this.channel.sendEmbed(`The game can't have more than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! ${member.user} could not be added.`).catch(logger.error)
             return
         }
 
         if(message !== null) {
-            await this.channel.sendEmbed(message || this.settings.defaultUpdatePlayerMessage).catch(console.error)
+            await this.channel.sendEmbed(message || this.settings.defaultUpdatePlayerMessage).catch(logger.error)
         }
         
         this.playersToAdd.push(member)
@@ -681,7 +683,7 @@ export default class Game {
     async removePlayer(member, message) {
         if(typeof member == 'string') {
             member = await this.msg.guild.members.fetch(member).catch(async () => {
-                await this.channel.sendEmbed('Invalid user.', 'Error!', options.colors.error).catch(console.error)
+                await this.channel.sendEmbed('Invalid user.', 'Error!', options.colors.error).catch(logger.error)
                 return false
             })
             if(member === false) return
@@ -694,22 +696,22 @@ export default class Game {
                     description: 'The leader cannot leave the game.',
                     color: options.colors.error
                 }]
-            }).catch(console.error)
+            }).catch(logger.error)
         }
         
         if(!this.players.has(member.id) || !member || (member.user.bot && !this.client.isTestingMode)) {
-            await this.channel.sendEmbed('Invalid user.', 'Error!', options.colors.error).catch(console.error)
+            await this.channel.sendEmbed('Invalid user.', 'Error!', options.colors.error).catch(logger.error)
             return
         }
 
         let futureSize = this.players.size + this.playersToAdd.length - this.playersToKick.length
         if(futureSize <= this.metadata.playerCount.min) {
-            this.channel.sendEmbed(`The game can't have fewer than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! ${member.user} could not be removed.`).catch(console.error)
+            this.channel.sendEmbed(`The game can't have fewer than ${this.metadata.playerCount.min} player${this.metadata.playerCount.min == 1 ? '' : 's'}! ${member.user} could not be removed.`).catch(logger.error)
             return
         }
 
         if(message !== null) {
-            await this.channel.sendEmbed(message || this.settings.defaultUpdatePlayerMessage).catch(console.error)
+            await this.channel.sendEmbed(message || this.settings.defaultUpdatePlayerMessage).catch(logger.error)
         }
         
         this.playersToKick.push(member)
@@ -721,7 +723,7 @@ export default class Game {
      */
     async updatePlayers(updateQuietly=false) {
         for(let member of this.playersToKick) {
-            if(!updateQuietly) await this.msg.channel.sendEmbed(`${member.user} was removed from the game!`).catch(console.error)
+            if(!updateQuietly) await this.msg.channel.sendEmbed(`${member.user} was removed from the game!`).catch(logger.error)
             this.players.delete(member.id)
         }
         this.playersToKick = []
@@ -751,25 +753,25 @@ export default class Game {
                 })
             }).then(async dmChannel => {
                 if(this.settings.isDmNeeded){
-                    await dmChannel.sendEmbed(`You have joined a ${this.metadata.name} game in <#${this.msg.channel.id}>.`).catch(console.error)
+                    await dmChannel.sendEmbed(`You have joined a ${this.metadata.name} game in <#${this.msg.channel.id}>.`).catch(logger.error)
                 }
-                if(!updateQuietly) await this.msg.channel.sendEmbed(`${member.user} was added to the game!`).catch(console.error)
+                if(!updateQuietly) await this.msg.channel.sendEmbed(`${member.user} was added to the game!`).catch(logger.error)
             }).catch(async err => {
                 // Remove errored player
                 if(this.players.has(member.id)) this.players.delete(member.id)
 
                 // Filter out privacy errors
                 if(err.message != 'Cannot send messages to this user') {
-                    await this.msg.channel.sendEmbed(`An unknown error occurred, and ${member.user} could not be added.`, `Error: Player could not be added.`, options.colors.error).catch(console.error)
-                    console.error(err)
+                    await this.msg.channel.sendEmbed(`An unknown error occurred, and ${member.user} could not be added.`, `Error: Player could not be added.`, options.colors.error).catch(logger.error)
+                    logger.error(err)
                 }
 
                 // Notify user
                 if(member.id == this.gameMaster.id) {
-                    await this.msg.channel.sendEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error).catch(console.error)
+                    await this.msg.channel.sendEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error).catch(logger.error)
                     this.end()
                 } else {
-                    await this.msg.channel.sendEmbed(`${member.user} must change their privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: Player could not be added.`, options.colors.error).catch(console.error)
+                    await this.msg.channel.sendEmbed(`${member.user} must change their privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: Player could not be added.`, options.colors.error).catch(logger.error)
                 }
             })
         }
@@ -828,7 +830,7 @@ export default class Game {
             // Remove all event listeners created during this game.
             this.msg.channel.gamePlaying = false
             this.msg.channel.game = undefined
-        }).catch(console.error)
+        }).catch(logger.error)
 
         if(this.metadata.unlockables) {
             this.channel.send({
@@ -837,7 +839,7 @@ export default class Game {
                     description: `Check out the [Gamebot shop for more](${process.env.BASE_URL}/shop)!`,
                     color: options.colors.economy
                 }]
-            }).catch(console.error)
+            }).catch(logger.error)
         }
     }
 }

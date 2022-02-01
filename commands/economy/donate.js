@@ -1,4 +1,5 @@
 import options from './../../config/options.js'
+import logger from 'gamebot/logger'
 import url from 'url';
 
 import BotCommand from '../../types/command/BotCommand.js'
@@ -26,7 +27,7 @@ export default new BotCommand({
                 ],
             }]
         }).catch(err => {
-            console.error(err)
+            logger.error(err)
             msg.channel.sendEmbed('Unable to start a DM with you. Check your Discord settings and try again.', 'Error!', options.colors.error)
         })
     }

@@ -1,5 +1,6 @@
 import mongodb from 'mongodb';
 const { MongoClient: MongoClient } = mongodb;
+import logger from 'gamebot/logger'
 
 export default class DatabaseClient {
 
@@ -32,7 +33,7 @@ export default class DatabaseClient {
       return
     }
      return await this.connect().catch(err => {
-      console.error(err)
+      logger.error(err)
       this.initialize()
     })
   }
@@ -67,7 +68,7 @@ export default class DatabaseClient {
           return
         }
         resolve(true)
-        console.log(`Database client ${this.label} connected to database`);
+        logger.info(`Database client ${this.label} connected to database`);
         this.database = this.client.db(process.env.MONGO_DB_NAME)
       })
     })
@@ -154,7 +155,7 @@ export default class DatabaseClient {
       }
     })
     .catch(err => {
-      console.error(err)
+      logger.error(err)
     })
     return isItemUnlocked
   }

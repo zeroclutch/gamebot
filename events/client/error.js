@@ -1,4 +1,5 @@
 import options from '../../config/options.js'
+import logger from 'gamebot/logger'
 
 export const eventName = 'error'
 
@@ -16,10 +17,14 @@ export const handler = (err, client, message, game) => {
     if(message) {
         message.channel.send({
             content: `**Error [Code ${ERROR_CODE}]:** ${getError(err)}`
-        })
+        }).catch(logger.error)
         // could cause infinite loop if error is with sending
     }
-    console.error(`Client on shard ${client.shard.ids[0]} received error ${ERROR_CODE}`)
-    console.error(err)
+
+    logger.error(`Client on shard ${client.shard.ids[0]} received error ${ERROR_CODE}`)
+    logger.error(err)
+    if(game) {
+        logger.error(`Game: ${game?.metadata?.id}`)
+    }
 }
 

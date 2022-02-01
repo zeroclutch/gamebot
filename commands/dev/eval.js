@@ -34,7 +34,7 @@ export default new BotCommand({
         response = await eval('(async ()=>{'+args.join(' ')+'})()')
         responsify(response, msg)
     } catch (err) {
-        logger.error(err)
+        //logger.error(err)
         responsify(err, msg, '- eval failed -')
     }
 }

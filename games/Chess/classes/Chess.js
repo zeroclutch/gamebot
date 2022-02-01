@@ -1,6 +1,7 @@
 import Game from '../../_Game/main.js'
 import options from '../../../config/options.js'
 import metadata from '../metadata.js'
+import logger from 'gamebot/logger'
 
 import chess from 'chess'
 import canvas from 'canvas'
@@ -56,7 +57,7 @@ export default class Chess extends Game {
                     boards.push(map.boards.find(item => item.itemID === id).friendlyName)
                 }
             })
-        }).catch(console.error)
+        }).catch(logger.error)
         return { pieces, boards }
     }
 
@@ -192,7 +193,7 @@ export default class Chess extends Game {
                 attachment: stream,
                 name: 'image.png'
             }]
-        }).catch(console.error)
+        }).catch(logger.error)
     }
 
     awaitMove(side) {
