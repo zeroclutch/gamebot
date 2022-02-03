@@ -50,8 +50,8 @@ export default new BotCommand({
                     const count = inventoryItems.filter(item => item.type == itemType).length
                     embed.addField(`${itemType} - ${count} item${count == 1 ? '' : 's'}`, inventoryItems.filter(item => item.type == itemType).map(item => { return item.friendlyName }).join(', '))
                 })
-                embed.setFooter(`To see a list of your items for a category, type ${msg.channel.prefix}inventory <category name>`)
-                await msg.channel.send({ embed })
+                embed.setFooter({text: `To see a list of your items for a category, type ${msg.channel.prefix}inventory <category name>`})
+                await msg.channel.send({ embeds: [embed] })
             } else {
                 const categoryItems = inventoryItems.filter(item => item.type.toLowerCase() == itemType.toLowerCase())
                 if(categoryItems.length == 0) {
@@ -73,7 +73,7 @@ export default new BotCommand({
                 embed.setDescription(description)
 
                 let message
-                await msg.channel.send({ embed })
+                await msg.channel.send({ embeds: [embed] })
             }
         })
     }
