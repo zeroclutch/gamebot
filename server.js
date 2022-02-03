@@ -40,7 +40,6 @@ const manager = new Discord.ShardingManager('./bot.js', {
 const SPAWN_DELAY = 5000
 
 manager.on('shardCreate', shard => {
-  console.log('created shard once')
   // Intentional nesting of event handlers
   // Log messages on each shard through IPC, do not create duplicate listeners
   if(!shard.hasLogListener) {
