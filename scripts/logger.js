@@ -19,10 +19,10 @@ export const ready = (c) => {
      '60': 'fatal' },
  */
 export default {
-    trace(...args) { client?.shard.send({ type: 'log', data: ['trace', ...args] })},
-    debug(...args) { client?.shard.send({ type: 'log', data: ['debug', ...args] })},
-    info (...args) { client?.shard.send({ type: 'log', data: ['info' , ...args] })},
-    warn (...args) { client?.shard.send({ type: 'log', data: ['warn' , ...args] })},
-    error(...args) { client?.shard.send({ type: 'log', data: ['error', ...args] })},
-    fatal(...args) { client?.shard.send({ type: 'log', data: ['fatal', ...args] })},
+    trace(...args) { try { client?.shard.send({ type: 'log', data: ['trace', ...args] }) } catch (err) { console.error(err) } },
+    debug(...args) { try { client?.shard.send({ type: 'log', data: ['debug', ...args] }) } catch (err) { console.error(err) } },
+    info (...args) { try { client?.shard.send({ type: 'log', data: ['info' , ...args] }) } catch (err) { console.error(err) } },
+    warn (...args) { try { client?.shard.send({ type: 'log', data: ['warn' , ...args] }) } catch (err) { console.error(err) } },
+    error(...args) { try { client?.shard.send({ type: 'log', data: ['error', ...args] }) } catch (err) { console.error(err) } },
+    fatal(...args) { try { client?.shard.send({ type: 'log', data: ['fatal', ...args] }) } catch (err) { console.error(err) } },
 }
