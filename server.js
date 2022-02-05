@@ -1,14 +1,14 @@
 // Initialize logger
-import pino from 'pino'
+//import pino from 'pino'
 
-const transport = pino.transport({
+/*const transport = pino.transport({
   targets: [
     {
         level: 'trace',
         target: 'pino-pretty',
     }
   ]
-})
+})*/
 
 /**
  * Creates logger at various priorities -- 60 highest
@@ -19,7 +19,16 @@ const transport = pino.transport({
      '50': 'error',
      '60': 'fatal' },
  */
-const logger = pino(transport)
+//const logger = pino(transport)
+
+let logger = {
+  trace: console.log,
+  debug: console.log,
+  info: console.log,
+  warn: console.log,
+  error: console.error,
+  fatal: console.error,
+}
 
 // Initialize Discord bot
 import Discord from './discord_mod.js'
