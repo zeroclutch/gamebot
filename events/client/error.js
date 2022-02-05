@@ -13,18 +13,24 @@ const getError = err => {
 }
 
 export const handler = (err, client, message, game) => {
-    const ERROR_CODE = Buffer.from(`${Math.random()}`).toString('base64').slice(3,12)
-    if(message) {
-        message.channel.send({
-            content: `**Error [Code ${ERROR_CODE}]:** ${getError(err)}`
-        }).catch(logger.error)
-        // could cause infinite loop if error is with sending
-    }
+    try {
+        const ERROR_CODE = Buffer.from(`${Math.random()}`).toString('base64').slice(3,12)
+        if(message) {
+            message.channel.send({
+                content: `**Error [Code ${ERROR_CODE}]:** ${getError(err)}`
+            }).catch(logger.error)
+            // could cause infinite loop if error is with sending
+        }
 
-    logger.error(`Client on shard ${client.shard.ids[0]} received error ${ERROR_CODE}`)
-    logger.error(err)
-    if(game) {
-        logger.error(`Game: ${game?.metadata?.id}`)
+        logger.error(`Client on shard ${client.shard.ids[0]} received error ${ERROR_CODE}`)
+        logger.error(err)
+        if(game) {
+            logger.error(`Game: ${game?.metadata?.id}`)
+        }
+    } catch(err2) {
+        console.error('There was an error handling the error.')
+        console.error('Initial error', err)
+        console.error('Logger error', err2)
     }
 }
 

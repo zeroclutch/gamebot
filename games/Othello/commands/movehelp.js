@@ -36,7 +36,7 @@ export default new GameCommand({
         .addField('Important Note:', `Remember to start all moves with the Gamebot's prefix, ${msg.channel.prefix}.`)
         .addField('How do I enter my moves?', `Find the square you want to place your tile in. Look for its column letter, and look for its row number. For example, the top left square is h1, and the bottom right one is a8. Then, type ${msg.channel.prefix}<letter><number>, and replace <letter> and <number> with your tile's letter and number.`)
         .addField('Possible moves', `The possible moves right now are: ${placeableSquares.join(',')}`)
-        .setFooter(`Refer back to this anytime!`)
+        .setFooter({ text: `Refer back to this anytime!`})
         .setColor(options.colors.info)
 
         if(stream) embed.setImage(`attachment://image.png`)
