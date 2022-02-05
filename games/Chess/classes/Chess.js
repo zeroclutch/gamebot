@@ -178,7 +178,7 @@ export default class Chess extends Game {
         .addField('ℹ️', 'To make a move, enter the bot prefix followed by a valid move in algebraic notation.', true)
         .addField('⏰', `Type \`${this.channel.prefix}timer\` to see the move time remaining.`, true)
         .addField('🏳', `Type \`${this.channel.prefix}resign\` to give up.`, true)
-        .setFooter(`Type ${this.channel.prefix}movehelp for help.`)
+        .setFooter({ text: `Type ${this.channel.prefix}movehelp for help.`})
         .setImage(`attachment://image.png`)
         .setColor({ 'White': '#fffffe', 'Black': '#000001' }[side])
 

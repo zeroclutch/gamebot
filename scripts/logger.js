@@ -1,6 +1,6 @@
 // import client from '../bot.js'
 
-let client  = null
+let client = null
 
 export const ready = (c) => {
     client = c
