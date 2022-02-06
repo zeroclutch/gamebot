@@ -440,7 +440,7 @@ export default class Game {
                         optionsDisplay += `**${i + 1}.** ${option.friendlyName}: ${typeof option.value == 'object' ? option.value.join(', ') : option.value }\n`
                     }
                     optionsDisplay += `\nClick "Confirm Settings" below to start the game.`
-                    optionMessage.edit({
+                    await optionMessage.edit({
                         embeds: [{
                             title: 'Configure Settings',
                             description: optionsDisplay,
