@@ -31,7 +31,7 @@ export default class Anagrams extends Game {
                 friendlyName: 'Custom Word',
                 default: 'none',
                 type: 'free',
-                filter: m => m.content.length == 7 && m.content.replace(/[A-Z]|[a-z]/g, '') == 0 || m.content.toLowerCase() == 'none',
+                filter: m => m.content.length === 7 && m.content.replace(/[A-Z]|[a-z]/g, '') === '' || m.content.toLowerCase() == 'none',
                 note: 'The new value must be 7 characters long and contain only letters. Enter "none" to disable the custom word.',
             },
         ]
