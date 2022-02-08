@@ -1,6 +1,7 @@
 import Game from '../../_Game/main.js'
 import options from '../../../config/options.js'
 import metadata from '../metadata.js'
+import logger from 'gamebot/logger'
 
 import chess from 'chess'
 import canvas from 'canvas'
@@ -56,7 +57,7 @@ export default class Chess extends Game {
                     boards.push(map.boards.find(item => item.itemID === id).friendlyName)
                 }
             })
-        }).catch(console.error)
+        }).catch(logger.error)
         return { pieces, boards }
     }
 
@@ -177,11 +178,11 @@ export default class Chess extends Game {
         .addField('ℹ️', 'To make a move, enter the bot prefix followed by a valid move in algebraic notation.', true)
         .addField('⏰', `Type \`${this.channel.prefix}timer\` to see the move time remaining.`, true)
         .addField('🏳', `Type \`${this.channel.prefix}resign\` to give up.`, true)
-        .setFooter(`Type ${this.channel.prefix}movehelp for help.`)
+        .setFooter({ text: `Type ${this.channel.prefix}movehelp for help.`})
         .setImage(`attachment://image.png`)
         .setColor({ 'White': '#fffffe', 'Black': '#000001' }[side])
 
-        this.client.logger.log('Generated image', {
+        this.client.metrics.log('Generated image', {
             game: this.metadata.id,
         })
 
@@ -192,7 +193,7 @@ export default class Chess extends Game {
                 attachment: stream,
                 name: 'image.png'
             }]
-        }).catch(console.error)
+        }).catch(logger.error)
     }
 
     awaitMove(side) {
@@ -293,7 +294,6 @@ export default class Chess extends Game {
             pgn += this.moves[i] + ' '
         }
         pgn += winner
-        console.log(pgn)
         return pgn
     }
 

@@ -4,6 +4,7 @@
 import Discord from 'discord.js-light'
 import options from './config/options.js'
 import Game from './games/_Game/classes/Game.js'
+import logger from 'gamebot/logger'
   
 /**
  * Accesses and sets the prefix for a specific channel, regardless of channel caching
@@ -75,7 +76,7 @@ Discord.DMChannel.prototype.sendEmbed = Discord.TextChannel.prototype.sendEmbed 
  * @example
  * user.createDBInfo()
  * .then(info => console.log(`User was created with ${info.balance} credits`))
- * .catch(console.error)
+ * .catch(logger.error)
  */
 Discord.User.prototype.createDBInfo = function() {
   return new Promise((resolve, reject) => {
@@ -117,7 +118,7 @@ Discord.Client.prototype.updateStatus = async function(itemID) {
   // try fetching message
   let statusChannel = await this.channels.fetch(options.statusChannel)
   if(statusChannel) {
-    let message = (await statusChannel.messages.fetch({ limit: 1 }).catch(console.error)).first()
+    let message = (await statusChannel.messages.fetch({ limit: 1 }).catch(logger.error)).first()
     this.latestStatus = { content: message.content, date: message.createdAt.toLocaleDateString() }
     return this.latestStatus
   }

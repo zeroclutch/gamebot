@@ -1,4 +1,5 @@
 import axios from 'axios'
+import logger from 'gamebot/logger'
 
 export default class OAuth2Client {
     constructor() {
@@ -51,7 +52,7 @@ export default class OAuth2Client {
             headers: {
                 authorization: token
             }
-        }).catch(console.error)
+        }).catch(err => logger.error(err))
         if(res && res.data && res.data.id == id) {
             this.storedHashes[this.hash(id, token)] = true
             return true

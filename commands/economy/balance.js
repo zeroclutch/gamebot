@@ -1,5 +1,7 @@
 import options from './../../config/options.js'
 import BotCommand from '../../types/command/BotCommand.js'
+import logger from 'gamebot/logger'
+
 export default new BotCommand({
     name: 'balance',
     usage: 'balance',
@@ -23,7 +25,7 @@ export default new BotCommand({
                 }]
             })
         }).catch(err => {
-            console.error(err)
+            logger.error(err)
             msg.channel.sendEmbed('User not found.')
         })
 

@@ -26,7 +26,7 @@ export default new BotCommand({
           .then(e => msg.channel.sendEmbed(`<@${userID}> has voted, and can claim.`))
           .catch(e =>{
             msg.channel.sendEmbed(`There was an error with fake voting.`)
-            console.log(e)
+            logger.info(e)
           })
     }
 })

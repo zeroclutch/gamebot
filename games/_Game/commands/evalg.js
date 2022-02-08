@@ -3,6 +3,7 @@ import GameCommand from '../../../types/command/GameCommand.js'
 import { Util } from 'discord.js'
 import util from 'util'
 import { GAMEBOT_PERMISSIONS } from '../../../config/types.js'
+import logger from 'gamebot/logger'
 
 let responsify = (response, msg, completed='+ eval completed +') => {
     response = util.inspect(response) 
@@ -31,7 +32,7 @@ export default new GameCommand({
         response = await eval('(async ()=>{'+args.join(' ')+'})()')
         responsify(response, msg)
     } catch (err) {
-        console.error(err)
+        logger.error(err)
         responsify(err, msg, '- eval failed -')
     }
   }

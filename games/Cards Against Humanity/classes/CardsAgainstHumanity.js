@@ -4,6 +4,7 @@ import { BUTTONS } from '../../../config/types.js'
 import Discord from '../../../discord_mod.js'
 import metadata from '../metadata.js'
 import fs from 'fs'
+import logger from 'gamebot/logger'
 
 // CAH dependencies
 import Game from '../../_Game/main.js'
@@ -215,7 +216,7 @@ export default class CardsAgainstHumanity extends Game {
                     else this.availableSets = this.availableSets.concat(packs)
                 }
             })
-        }).catch(console.error)
+        }).catch(logger.error)
 
         whiteCards.forEach((cards, metadata) => {
              if(!metadata.official) return
@@ -235,7 +236,7 @@ export default class CardsAgainstHumanity extends Game {
                     cardBackList.push(CARD_BACKS[item].friendlyName)
                 }
             })
-        }).catch(console.error)
+        }).catch(logger.error)
         return cardBackList
     }
 
@@ -321,7 +322,7 @@ export default class CardsAgainstHumanity extends Game {
         .setImage(`attachment://${fileName}`)
         .setColor(4886754)
 
-        this.client.logger.log('Generated image', {
+        this.client.metrics.log('Generated image', {
             game: this.metadata.id,
         })
 
@@ -331,7 +332,7 @@ export default class CardsAgainstHumanity extends Game {
                 attachment: stream,
                 name: fileName
             }]
-        }).catch(console.error)
+        }).catch(logger.error)
         return stream
     }
 
@@ -502,7 +503,7 @@ export default class CardsAgainstHumanity extends Game {
             }
         })
         .catch(async err => {
-            console.error(err)
+            logger.error(err)
             
         })
     }
@@ -544,7 +545,7 @@ export default class CardsAgainstHumanity extends Game {
             this.blackCard = new BlackCard(this.cardDeck.draw('black')[0])
         } while(this.blackCard.responses > 1 || !this.blackCard.text || this.blackCard.text.length == 0)
         if(!this.blackCard.text) {
-            console.error('Error: card loaded with no text')
+            logger.error('Error: card loaded with no text')
         }
         
         // Render and send card image
@@ -590,7 +591,7 @@ export default class CardsAgainstHumanity extends Game {
             }],
             components: [ viewHandRow ]
         }).catch(err => {
-            console.error(err)
+            logger.error(err)
         })
 
         let viewHandCollector = submissionStatusMessage.createMessageComponentCollector({
@@ -643,7 +644,7 @@ export default class CardsAgainstHumanity extends Game {
             let player = this.players.get(m.author.id)
             let cardRemoved = parseInt(m.content) - 1
 
-            m.delete().catch(console.error)
+            m.delete().catch(logger.error)
 
             // save selection for one card
             this.submittedCards.push({
