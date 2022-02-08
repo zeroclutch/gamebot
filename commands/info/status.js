@@ -1,4 +1,5 @@
 import options from '../../config/options.js'
+import logger from 'gamebot/logger'
 
 import BotCommand from '../../types/command/BotCommand.js'
 
@@ -61,6 +62,6 @@ export default new BotCommand({
         thumbnail: { url: msg.client.user.avatarURL({dynamic: true}) }
       }]
     })
-    .catch(console.error)
+    .catch(logger.error)
   }
 })

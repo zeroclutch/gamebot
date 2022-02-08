@@ -1,4 +1,5 @@
 import options from './../../config/options.js'
+import logger from 'gamebot/logger'
 
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
@@ -57,7 +58,7 @@ export default new BotCommand({
           color: 5301186
         }]
       })
-      console.error(err)
+      logger.error(err)
     })
   }
 })

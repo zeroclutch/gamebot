@@ -1,5 +1,5 @@
 import options from './../../config/options.js'
-import Discord from './../../discord_mod.js'
+import logger from 'gamebot/logger'
 import GamebotError from '../../types/error/GamebotError.js'
 import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 
@@ -51,7 +51,7 @@ export default new BotCommand({
             await collection.updateOne(
                 { userID: user.id },
                 { $inc: { balance: amount } }
-            ).catch(console.error)
+            ).catch(logger.error)
         });
         
         collector.once('end', collected => {
@@ -68,7 +68,7 @@ export default new BotCommand({
                     }]
                 })
             } catch (err) {
-                console.error(err)
+                logger.error(err)
                 reactionMessage.edit({
                     embeds: [{
                         title: 'The giveaway is now over!',

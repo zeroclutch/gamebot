@@ -1,4 +1,5 @@
 import Discord from 'discord.js-light';
+import logger from 'gamebot/logger'
 const { Collection } = Discord;
 import fs from 'fs'
 
@@ -57,7 +58,7 @@ export default class WebUIManager {
             variables.push(['{id}', webUI.id])
             variables.push(['{killAt}', webUI.killAt])
         } catch(err) {
-            console.error(err)
+            logger.error(err)
             return false
         }
         variables.forEach(v => page = page.replace(v[0], v[1]))

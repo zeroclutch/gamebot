@@ -1,6 +1,7 @@
 import { Collection } from '../discord_mod.js'
 import fs from 'fs'
 import path from 'path'
+import logger from 'gamebot/logger'
 
 // import GameManager from '../types/games/GameManager.js'
 import CommandHandler from '../types/command/CommandHandler.js'
@@ -17,7 +18,7 @@ const commands = async client => {
             const folder = fs.readdirSync(path.join('.', 'commands', commandFolder))
             for (const file of folder) {
                 if (file === '.DS_Store') continue
-                const { default: command } = await import(`../commands/${commandFolder}/${file}`).catch(console.error)
+                const { default: command } = await import(`../commands/${commandFolder}/${file}`).catch(logger.error)
                 client.commands.set(command.name, command)
             }
         }
@@ -111,7 +112,7 @@ const database = async client => {
         return new Promise((resolve, reject) => {
         client.database.collection('status').findOne( { type: 'downtime' }).then((data, err) => {
             if(err || !data) {
-            reject(console.error(err))
+            reject(logger.error(err))
             return
             }
             resolve(data.downtimeStart - Date.now())

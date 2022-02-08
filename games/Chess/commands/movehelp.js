@@ -32,7 +32,7 @@ export default new GameCommand({
         .addField('Second...', `**Decide where you want to move your piece.** We can use the same method to find the destination square. Find the file and rank of the square you want to move your piece to, and type it in the message box.`)
         .addField('Combine them!', `Now just combine these, and make your move! An example would be ${msg.channel.prefix}e2e4. To castle, move the king left or right two spaces in either direction.`)
         .addField(`What if I'm already a pro?`, `Gamebot supports [algebraic notation](https://en.wikipedia.org/wiki/Algebraic_notation_(chess)), and you can make your moves using that instead.`)
-        .setFooter(`Refer back to this anytime!`)
+        .setFooter({ text: `Refer back to this anytime!`})
         .setColor(options.colors.info)
     
         if(stream) embed.setImage(`attachment://image.png`)

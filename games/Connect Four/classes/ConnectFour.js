@@ -1,6 +1,7 @@
 import Game from '../../_Game/main.js'
 import options from '../../../config/options.js'
 import metadata from '../metadata.js'
+import logger from 'gamebot/logger'
 
 const ICONS = ['⚪️','🔴','🔵', '💚', '💛', '💜', '🖤']
 const FOOTER = ['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟']
@@ -90,7 +91,7 @@ export default class ConnectFour extends Game {
      */
     columnIsFull(column) {
         if(!this.board[0][column]) return false
-        this.msg.channel.sendEmbed('That column is full!', 'Error', options.colors.error).catch(console.error)
+        this.msg.channel.sendEmbed('That column is full!', 'Error', options.colors.error).catch(logger.error)
         return true
     }
 
@@ -209,8 +210,8 @@ export default class ConnectFour extends Game {
             let column = -1
             do {
                 if(this.ending) return
-                await this.channel.sendEmbed(`First to ${this.options['Connect More?']} in a row wins!\n${this.renderBoard()}\n\n${player.user} ${ICONS[player.id]}, select a column between 1-${this.board[0].length} in ${Math.floor(this.timeLimit/1000)} seconds!`).catch(console.error)
-                column = await this.allowSelection(player).catch(console.error)
+                await this.channel.sendEmbed(`First to ${this.options['Connect More?']} in a row wins!\n${this.renderBoard()}\n\n${player.user} ${ICONS[player.id]}, select a column between 1-${this.board[0].length} in ${Math.floor(this.timeLimit/1000)} seconds!`).catch(logger.error)
+                column = await this.allowSelection(player).catch(logger.error)
             } while(this.columnIsFull(column))
             this.dropTile(player.id, column)
         } while(!this.getWinner())

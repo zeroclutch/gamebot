@@ -1,6 +1,7 @@
 import Game from '../../_Game/main.js'
 import options from '../../../config/options.js'
 import metadata from '../metadata.js'
+import logger from 'gamebot/logger'
 
 import othello from 'reversi';
 const OthelloGame = othello.Game;
@@ -59,7 +60,7 @@ export default class Othello extends Game {
                     boards.push(map.boards.find(item => item.itemID === id).friendlyName)
                 }
             })
-        }).catch(console.error)
+        }).catch(logger.error)
         return { pieces, boards }
     }
 
@@ -260,7 +261,7 @@ export default class Othello extends Game {
         .addField('🏳', `Type \`${this.channel.prefix}resign\` to give up.`, true)
         .addField('ℹ️', `To make a move, enter the bot prefix followed by the name of the square.`, true)
 
-        this.client.logger.log('Generated image', {
+        this.client.metrics.log('Generated image', {
             game: this.metadata.id,
         })
 
@@ -271,7 +272,7 @@ export default class Othello extends Game {
                 attachment: stream,
                 name: 'image.png'
             }]
-        }).catch(console.error)
+        }).catch(logger.error)
     }
 
     awaitMove(side) {

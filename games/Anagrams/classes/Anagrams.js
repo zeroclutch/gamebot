@@ -1,10 +1,11 @@
 import Game from '../../_Game/main.js'
 import options from '../../../config/options.js'
 import metadata from '../metadata.js'
+import logger from 'gamebot/logger'
 import fs from 'fs'
 
 let words = fs.readFileSync('./gameData/WordGames/Collins_Scrabble_Dictionary.txt', { encoding: 'utf-8' }, err => {
-    console.error(err)
+    logger.error(err)
 })
 
 let wordRegistry = {}
@@ -30,7 +31,7 @@ export default class Anagrams extends Game {
                 friendlyName: 'Custom Word',
                 default: 'none',
                 type: 'free',
-                filter: m => m.content.length == 7 && m.content.replace(/[A-Z]|[a-z]/g, '') == 0 || m.content.toLowerCase() == 'none',
+                filter: m => m.content.length === 7 && m.content.replace(/[A-Z]|[a-z]/g, '') === '' || m.content.toLowerCase() == 'none',
                 note: 'The new value must be 7 characters long and contain only letters. Enter "none" to disable the custom word.',
             },
         ]
@@ -51,11 +52,6 @@ export default class Anagrams extends Game {
     gameInit() {
         this.settings.updatePlayersAnytime = true
     }
-
-    async sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
 
     /**
      * Scrambles a string.
@@ -227,7 +223,6 @@ export default class Anagrams extends Game {
                 //console.log(player.dmChannel)
                 player.user.createDM().then(channel => {
                     const filter = m => {
-                        console.log(m.content)
                         return true
                     }
                     let collector = channel.createMessageCollector({ filter, time: 15000 })
@@ -251,7 +246,7 @@ export default class Anagrams extends Game {
                 /*player.collector.on('end', (collected) => {
                     callback()
                 })*/
-            }).catch(console.error)
+            }).catch(logger.error)
         })
     }
 

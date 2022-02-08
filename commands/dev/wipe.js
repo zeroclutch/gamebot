@@ -1,5 +1,6 @@
 import BotCommand from '../../types/command/BotCommand.js'
 import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
+import logger from 'gamebot/logger'
 
 export default new BotCommand({
     name: 'wipe',
@@ -16,7 +17,7 @@ export default new BotCommand({
         collection.findOneAndDelete({ userID })
         .then(() => msg.channel.sendEmbed(`<@${userID}> was wiped from the database.`))
         .catch(err => {
-            console.error(err)
+            logger.error(err)
             msg.channel.sendEmbed(`<@${userID}> could not be wiped from the database.`, 'Error!')
         })
     }

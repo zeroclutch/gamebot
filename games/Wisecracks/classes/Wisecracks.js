@@ -2,6 +2,7 @@ import Game from '../../_Game/main.js'
 import PromptList from './PromptList.js'
 import options from '../../../config/options.js'
 import metadata from '../metadata.js'
+import logger from 'gamebot/logger'
 
 /**
  * The base class for Wisecracks games.
@@ -124,7 +125,7 @@ export default class Wisecracks extends Game {
                                         color: options.colors.error
                                     }]
                                 })
-                                console.error(err)
+                                logger.error(err)
                             }
                         )
                     })

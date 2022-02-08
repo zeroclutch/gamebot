@@ -1,3 +1,35 @@
+// Initialize logger
+//import pino from 'pino'
+
+/*const transport = pino.transport({
+  targets: [
+    {
+        level: 'trace',
+        target: 'pino-pretty',
+    }
+  ]
+})*/
+
+/**
+ * Creates logger at various priorities -- 60 highest
+ * { '10': 'trace',
+     '20': 'debug',
+     '30': 'info',
+     '40': 'warn',
+     '50': 'error',
+     '60': 'fatal' },
+ */
+//const logger = pino(transport)
+
+let logger = {
+  trace: console.log,
+  debug: console.log,
+  info: console.log,
+  warn: console.log,
+  error: console.error,
+  fatal: console.error,
+}
+
 // Initialize Discord bot
 import Discord from './discord_mod.js'
 import options from './config/options.js'
@@ -17,9 +49,21 @@ const manager = new Discord.ShardingManager('./bot.js', {
 const SPAWN_DELAY = 5000
 
 manager.on('shardCreate', shard => {
+  // Intentional nesting of event handlers
+  // Log messages on each shard through IPC, do not create duplicate listeners
+  if(!shard.hasLogListener) {
+    shard.on('message', async message => {
+      shard.hasLogListener = true
+      if(message.type === 'log') {
+        const [level, ...args] = message.data
+        logger[level](...args)
+      }
+    })
+  }
+
   setTimeout(() => shard.send({ testMode }), SPAWN_DELAY)
 })
-manager.spawn('auto', SPAWN_DELAY).catch(err => console.error(err))
+manager.spawn('auto', SPAWN_DELAY).catch(err => logger.error(err))
 
 // Add server dependencies
 import bodyParser from 'body-parser'
@@ -47,8 +91,8 @@ const oauth2 = new OAuth2Client()
 oauth2.initialize()
 
 // Create logger
-import Logger from './types/log/Logger.js'
-const logger = new Logger()
+import Metrics from './types/log/Metrics.js'
+const metrics = new Metrics()
 
 import fs from 'fs'
 const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'))
@@ -71,24 +115,26 @@ import axios from 'axios'
 if(process.env.DBL_TOKEN) {
   setInterval(async () => {
     let botId = (await manager.fetchClientValues('user.id'))[0]
-    console.log(botId, cachedGuilds, manager.totalShards, process.env.DBL_TOKEN)
+    logger.info(botId, cachedGuilds, manager.totalShards, process.env.DBL_TOKEN)
     if(cachedGuilds)
-      axios.post(`https://top.gg/api/bots/${botId}/stats`,{
+      axios({
+        url: `https://top.gg/api/bots/${botId}/stats`,
+        method: 'POST',
         headers: {
           'Authentication': process.env.DBL_TOKEN,
         },
-        body: JSON.stringify({
+        data: JSON.stringify({
           server_count: cachedGuilds || 28000,
           shard_count: manager.totalShards,
         })
-      }).then(console.log)
+      }).then(logger.info)
   }, 1800000)
 }
 
 
 app.get('/docs', (request, response) => {
   response.redirect('/docs/version/' + pkg.version)
-  logger.log('Docs viewed', {
+  metrics.log('Docs viewed', {
     ref: request.query.ref
   })
 })
@@ -105,14 +151,14 @@ app.get('/api/guilds', async (req, res) => {
 })
 
 app.get('/discord', (req,res) => {
-  logger.log('Discord joined', {
+  metrics.log('Discord joined', {
     ref: req.query.ref
   })
   res.redirect('https://discord.gg/7pNEJQC')
 })
 
 app.get('/invite', (req,res) => {
-  logger.log('Invite used', {
+  metrics.log('Invite used', {
     ref: req.query.ref
   })
   res.redirect(`https://discord.com/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&scope=bot&permissions=1547041872`)
@@ -123,9 +169,9 @@ app.get('/api/shopItems', async (req, res) => {
   if(req.query.userID)
     validated = await oauth2.validate(req.query.userID, req.header('authorization'))
   if(validated)
-    shopItems = await shopGenerator.fetchShopItems(req.query.userID).catch(console.error)
+    shopItems = await shopGenerator.fetchShopItems(req.query.userID).catch(logger.error)
   else
-    shopItems = await shopGenerator.fetchShopItems().catch(console.error)
+    shopItems = await shopGenerator.fetchShopItems().catch(logger.error)
   res.send(shopItems)
 })
 
@@ -181,7 +227,7 @@ app.post('/api/purchase', async (req, res) => {
         },
         { returnOriginal: false }
     ).catch(err => {
-      console.error(err)
+      logger.error(err)
       res.status(500)
     })
 
@@ -193,7 +239,7 @@ app.post('/api/purchase', async (req, res) => {
   }
     res.status(200)
     res.send(result)
-    logger.log('Item Purchased', result)
+    metrics.log('Item Purchased', result)
   } else {
     res.status(401)
     res.send({
@@ -265,7 +311,7 @@ app.get('/game/:ui_id', (req, res) => {
   webUIManager.getWebpage(UI_ID).then(webpage => {
     res.send(webpage)
   }).catch(err => {
-    console.error(err)
+    logger.error(err)
     res.status(404).redirect('/404')
   })
 })
@@ -300,7 +346,7 @@ app.post('/response/:ui_id', (req, res) => {
     webUIManager.UIs.delete(UI_ID)
   })
   .catch(err => {
-    console.error(err)
+    logger.error(err)
     res.status(404)
     res.redirect('/404')
   })
@@ -344,11 +390,11 @@ app.post('/voted', async (req, res) => {
         firstVote
       }
     }).then(() => {
-    logger.log('User voted')
+    metrics.log('User voted')
     res.status(200)
     res.send()
   }).catch(err => {
-    console.error(err)
+    logger.error(err)
     res.status(500)
     res.send()
   })
@@ -367,7 +413,7 @@ subscriptionManager.init()
 // Chargebee
 // Handle CHECKOUT endpoint
 app.post('/api/checkout/generateHostedPage', async (req, res) => {
-  //console.log(req.body.customerID, req.header('authorization'))
+  //logger.info(req.body.customerID, req.header('authorization'))
   let validated = await oauth2.validate(req.body.customerID, req.header('authorization'))
   if(!validated) {
     res.status(401)
@@ -415,11 +461,11 @@ app.post('/api/checkout/generateHostedPage', async (req, res) => {
   }).request(function(error, result) {
     if(error) {
       //handle error
-      console.log(error)
+      logger.info(error)
       res.status(500)
       res.send({ error: error.message })
     } else {
-      //console.log(result)
+      //logger.info(result)
       subscriptionManager.add(result.hosted_page)
       res.send(result)
     }
@@ -441,12 +487,12 @@ app.post('/api/checkout/confirmHostedPage', async (req, res) => {
   chargebee.hosted_page.retrieve(req.body.hostedPageID).request(async function(error,result) {
     if(error) {
       //handle error
-      console.log(error);
+      logger.info(error);
       res.status(500)
       res.send(error.message)
       return
     } else {
-      //console.log(result.hosted_page.content);
+      //logger.info(result.hosted_page.content);
       // Credit user with their purchase
       let content = result.hosted_page.content;
       if(result.hosted_page.state !== 'succeeded') {
@@ -508,7 +554,7 @@ app.get('*', (req, res) => {
 
 app.on('error', function(err) {
   if (err.code === "ECONNRESET") {
-      console.log("Timeout occurs");
+      logger.info("Timeout occurs");
       return;
   }
   //handle normal errors
@@ -518,9 +564,9 @@ app.on('error', function(err) {
 // Listen on port 5000
 app.listen(process.env.PORT || 5000, (err) => {
   if (err) throw new Error(err)
-  console.log('Server is running on port ' + (process.env.PORT || 5000))
+  logger.info('Server is running on port ' + (process.env.PORT || 5000))
 })
 
 process.on('unhandledRejection', err => {
-  console.error(err.stack, 'error')
+  logger.error(err.stack, 'error')
 })

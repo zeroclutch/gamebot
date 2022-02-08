@@ -1,9 +1,9 @@
-export const eventName = 'shardError'
+import logger from 'gamebot/logger'
+export const eventName = 'beforeExit'
 
-export const handler = (client, err) => {
+export const handler = code => {
     try {
-        logger.error('A websocket connection encountered an error:')
-        logger.error(err)
+        logger.fatal(`Process ${process.pid} exiting with code ${code}`)
     } catch(err2) {
         console.error('There was an error handling the error.')
         console.error('Initial error', err)

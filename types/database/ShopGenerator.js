@@ -1,4 +1,5 @@
 import DatabaseClient from "./DatabaseClient.js";
+import logger from 'gamebot/logger'
 
 export default class ShopGenerator {
     constructor(options) {
@@ -32,7 +33,7 @@ export default class ShopGenerator {
             let items = await this.client.getItems()
             this.itemCache = { items, errors: [] }
         } catch (err) {
-            console.error('There was an error fetching the shop items.\n' + err)
+            logger.error('There was an error fetching the shop items.\n' + err)
             this.itemCache = { items: [], errors: ['There was an error fetching the shop items.'] }
         }
     }

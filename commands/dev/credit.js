@@ -1,4 +1,5 @@
 import options from '../../config/options.js'
+import logger from 'gamebot/logger'
 import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 import BotCommand from '../../types/command/BotCommand.js'
 
@@ -24,7 +25,7 @@ export default new BotCommand({
         ).then(result => {
             msg.channel.sendEmbed(`<@${user}> now has ${result.value.balance}${options.creditIcon}.`, `User was updated.`)
         }).catch(err => {
-            console.error(err)
+            logger.error(err)
             msg.channel.sendEmbed('User not found.')
         })
 
