@@ -203,6 +203,15 @@ export default class Game {
     get leader () { return this.gameMaster }
 
     /**
+     * Sleeps for a given number of milliseconds
+     * @param {Number} ms The milliseconds to sleep for
+     * @returns {Promise<NewType>}
+     */
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms))
+    }
+
+    /**
      * Begins a new game. This will be called by the play command.
      */
     async init() {
@@ -512,7 +521,13 @@ export default class Game {
                 // Add custom filter options
                 if(option.filter) {
                     if(!option.filter(optionResponse)) {
-                        this.channel.sendEmbed('You have entered an invalid value. Please read the instructions and try again.', 'Error!', options.colors.error).then(m => m.delete(5000)).catch(reject)
+                        this.channel.sendEmbed('You have entered an invalid value. Please read the instructions and try again.', 'Error!', options.colors.error)
+                        .then(async m => {
+                            await this.sleep(5000)
+                            m.delete()
+                        })
+                        .catch(reject)
+
                         resolve(false)
                         return
                     }
