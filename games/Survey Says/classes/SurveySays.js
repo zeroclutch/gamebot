@@ -50,10 +50,6 @@ export default class SurveySays extends Game {
         return res[0]
     }
 
-    async sleep(ms) {
-        return new Promise(res => setTimeout(res, ms))
-    }
-
     /**
      * The play method, which begins the game and continues until a winner is found.
      */

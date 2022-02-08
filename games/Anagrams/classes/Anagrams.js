@@ -53,11 +53,6 @@ export default class Anagrams extends Game {
         this.settings.updatePlayersAnytime = true
     }
 
-    async sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-
     /**
      * Scrambles a string.
      * str {string} str The original string.
