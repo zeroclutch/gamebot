@@ -115,16 +115,15 @@ import axios from 'axios'
 if(process.env.DBL_TOKEN) {
   setInterval(async () => {
     let botId = (await manager.fetchClientValues('user.id'))[0]
-    logger.info(botId, cachedGuilds, manager.totalShards, process.env.DBL_TOKEN)
     if(cachedGuilds)
       axios({
         url: `https://top.gg/api/bots/${botId}/stats`,
         method: 'POST',
         headers: {
-          'Authentication': process.env.DBL_TOKEN,
+          'Authorization': process.env.DBL_TOKEN,
         },
         data: JSON.stringify({
-          server_count: cachedGuilds || 28000,
+          server_count: cachedGuilds || 30787,
           shard_count: manager.totalShards,
         })
       }).then(logger.info)
