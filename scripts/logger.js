@@ -34,4 +34,4 @@ export default {
     warn: console.log,
     error: console.error,
     fatal: console.error,
-  }
+}

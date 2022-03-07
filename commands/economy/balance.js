@@ -17,7 +17,7 @@ export default new BotCommand({
             msg.channel.send({
                 embeds: [{
                     title: `${msg.author.tag}'s balance`,
-                    description: `You have **${user.balance}**${options.creditIcon}.`,
+                    description: `You have **${user.balance}**${options.creditIcon} and **${user.goldBalance}**${options.goldIcon}.`,
                     color: 4513714,
                     footer: {
                         text: `Get credits by typing ${msg.channel.prefix}daily, ${msg.channel.prefix}donate, and from giveaways in the support server!`
