@@ -1,4 +1,5 @@
 export const eventName = 'shardError'
+import logger from 'gamebot/logger'
 
 export const handler = (client, err) => {
     try {
