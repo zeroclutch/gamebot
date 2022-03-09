@@ -11,7 +11,7 @@ const events = async () => {
         const { eventName, handler  } = await import(`../events/process/${event}`)
         process.on(eventName, async (...args) => {
             // client is always passed as last event handler argument
-            await handler(...args, client)
+            await handler(...args)
         })
     }
 }
