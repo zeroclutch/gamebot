@@ -1,5 +1,4 @@
-import mongodb from 'mongodb';
-const { MongoClient: MongoClient } = mongodb;
+import { MongoClient } from 'mongodb';
 import logger from 'gamebot/logger'
 
 export default class DatabaseClient {
@@ -162,7 +161,7 @@ export default class DatabaseClient {
 
   async getItems() {
     const collection = this.database.collection('items')
-    return await collection.find('*').toArray()
+    return await collection.find().toArray()
   }
 
   async getShopStatus () {
