@@ -1,0 +1,201 @@
+.overlay-login {
+    z-index: 4;
+    top: 80px;
+    right: -5px;
+    position: fixed;
+    background-color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 0.5em 1em -0.125em rgba(10,10,10,.1), 0 0 0 1px rgba(10,10,10,.02);
+    color: #4a4a4a;
+    display: block;
+    padding: 0.5rem;
+    padding-right: 0.75rem;
+    height: 3.5em;
+}
+
+.overlay-login .overlay-profile-picture {
+    height: 2.5em;
+    display: inline-flex;
+    width: auto;
+    border-radius: 100%;
+}
+
+.overlay-login .overlay-text {
+    display: inline-block;
+    transform: translateY(-60%);
+    line-height: 1.5;
+    color: #4a4a4a;
+}
+
+.overlay-login .gb-balance {
+    font-weight: bold;
+    transform: translateY(-50%);
+}
+
+.overlay-login .gb-credits #credit-balance {
+    color: #3aa9c1;
+}
+
+.overlay-login .gb-coins #coin-balance {
+    color: #eeb436;
+}
+
+.overlay-login .add-more-button {
+    display: inline-block;
+    border-radius: 100%;
+    height: 20px;
+    width: 20px;
+    text-align: center;
+}
+
+.button.is-discord {
+    background-color: #7789D4;
+    color: white;
+    border-color: #9eabe0
+}
+
+.button.is-discord:hover {
+    background-color: #6479ce;
+    color: white;
+    border-color: #9eabe0
+}
+
+section.featured-section, .message-wrapper {
+    padding: 1.5rem 0;
+}
+
+div.column.box {
+    padding: 15px;
+    margin-bottom: 1.5rem;
+}
+
+.box .title.box-title {
+    margin-bottom: 10px;
+}
+
+.item {
+    min-width: 270px;
+    margin: 0 auto;
+}
+
+.item-buttons {
+    padding-top: 10px;
+}
+
+.item-image {
+    border-radius: 10px;
+    min-height: 270px;
+    background-color: #eee;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.item-description:not(.modal .item-description) {
+    height: 48px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.item-info {
+    font-size: 1rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+
+.item-info > .column {
+    padding: 0;
+}
+
+
+.is-buy {
+    background-color: #52D9E9;
+    color: white;
+    border: none;
+}
+
+.is-buy:hover {
+    color: white;
+    background-color: #26d0e3;
+}
+
+.is-buy:active, .is-buy:focus {
+    color: white;
+    background-color: #1cbdcf;
+}
+
+img.currency-icon {
+    display: inline-block;
+    height: 1.5rem;
+    width: auto;
+    position: relative;
+    top: 5px;
+}
+
+img.currency-icon.is-stable {
+    top: 0;
+}
+
+.shop-inventory.columns {
+    background-color: white;
+    margin-bottom: 1rem;
+}
+
+.shop-inventory .menu-wrapper {
+    border-right: 1px solid #dbdbdb;
+}
+
+.inventory-search {
+    max-width: 400px;
+}
+
+.has-text-icon {
+    color: #26d0e3;
+}
+
+.is-active .has-text-icon {
+    color: white;
+}
+
+a.dropdown-item.is-active {
+    background-color: #26d0e3;
+}
+
+.tag-holder {
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    align-items: center;
+    box-shadow: none;
+    display: inline-flex;
+    font-size: 1rem;
+    height: 2.5em;
+    justify-content: flex-start;
+    line-height: 1.5;
+    padding-bottom: calc(.5em - 1px);
+    padding-left: calc(.75em - 1px);
+    padding-right: calc(.75em - 1px);
+    padding-top: calc(.5em - 1px);
+    position: relative;
+    vertical-align: top;
+}
+
+.menu-list a.is-active {
+    background-color: #26d0e3;
+}
+
+/* Responsiveness */
+
+/* Tablets */
+@media screen and (max-width: 1024px) {
+    .item-image {
+        min-height: 100px;
+    }
+}
+
+/* Desktop */
+@media screen and (max-width: 1459px), print {
+    .divider {
+        display:none;
+    }
+}
