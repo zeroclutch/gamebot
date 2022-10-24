@@ -1,4 +1,6 @@
 import Mixpanel from 'mixpanel'
+import StatsD from 'hot-shots'
+const dogstatsd = new StatsD();
 
 /**
  * Extensible library for collection of usage statistics and anonymous user data.

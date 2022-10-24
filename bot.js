@@ -1,5 +1,5 @@
 import Discord from 'gamebot/discord'
-import logger, { ready } from 'gamebot/logger'
+import logger, { attachChildLogger } from 'gamebot/logger'
 
 import { makeCache, intents } from './config/client.js'
 
@@ -61,25 +61,27 @@ import processSetup from './scripts/processSetup.js'
 })()
 
 client.once('ready', async () => {
-  ready(client)
+  try {
+    // Setup bot
+    await clientSetup.database(client)
+    await clientSetup.games(client)
+    await clientSetup.commands(client)
+    await clientSetup.events(client)
+    await clientSetup.moderators(client)
+    attachChildLogger(client)
 
-  // Setup bot
-  await clientSetup.database(client)
-  await clientSetup.games(client)
-  await clientSetup.commands(client)
-  await clientSetup.events(client)
-  await clientSetup.moderators(client)
+    // Refresh user activity
+    client.user.setActivity(options.activity.game, { type: options.activity.type })
 
-  // Refresh user activity
-  client.user.setActivity(options.activity.game, { type: options.activity.type })
-
-  // Update bot system status
-  client.updateStatus()
-
-  // Logged in!
-  logger.info(`Logged in as ${client.user.tag} on shard ${client.shard.ids[0]}!`)
+    // Update bot system status
+    client.updateStatus()
+    // Logged in!
+    client.logger.info.bind(client.logger)(`Logged in as ${client.user.tag} on shard ${client.shard.ids[0]}!`)
 
   runTests()
+  } catch (err) {
+    logger.fatal(err)
+  }
 });
 
 
