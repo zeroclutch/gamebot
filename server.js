@@ -1,34 +1,5 @@
 // Initialize logger
-//import pino from 'pino'
-
-/*const transport = pino.transport({
-  targets: [
-    {
-        level: 'trace',
-        target: 'pino-pretty',
-    }
-  ]
-})*/
-
-/**
- * Creates logger at various priorities -- 60 highest
- * { '10': 'trace',
-     '20': 'debug',
-     '30': 'info',
-     '40': 'warn',
-     '50': 'error',
-     '60': 'fatal' },
- */
-//const logger = pino(transport)
-
-let logger = {
-  trace: console.log,
-  debug: console.log,
-  info: console.log,
-  warn: console.log,
-  error: console.error,
-  fatal: console.error,
-}
+import logger from 'gamebot/logger'
 
 // Initialize Discord bot
 import Discord from './discord_mod.js'
@@ -126,7 +97,7 @@ if(process.env.DBL_TOKEN) {
           server_count: cachedGuilds || 30787,
           shard_count: manager.totalShards,
         })
-      }).then(logger.info)
+      }).then(logger.info.bind(logger))
   }, 1800000)
 }
 
@@ -170,7 +141,7 @@ app.get('/api/shopItems', async (req, res) => {
   if(validated)
     shopItems = await shopGenerator.fetchShopItems(req.query.userID).catch(logger.error)
   else
-    shopItems = await shopGenerator.fetchShopItems().catch(logger.error)
+    shopItems = await shopGenerator.fetchShopItems().catch(logger.error.bind(logger))
   res.send(shopItems)
 })
 
