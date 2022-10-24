@@ -26,20 +26,24 @@ const CONFIGURATIONS = {
     },
     staging: {
         transport: {
-            target: 'pino-datadog-transport',
-            options: {
-                ddClientConf: {
-                    authMethods: {
-                        apiKeyAuth: process.env.DATADOG_API_KEY_AUTH
-                    }
+            targets: [{
+                target: 'pino-datadog-transport',
+                options: {
+                    ddClientConf: {
+                        authMethods: {
+                            apiKeyAuth: process.env.DATADOG_API_KEY_AUTH
+                        }
+                    },
+                    ddtags: 'service:bot.staging',
                 },
-                ddtags: 'service:bot.staging',
-            },
-            onError: (err, logs) => {
-                console.error(err)
-                console.log(logs)
-            }
-        },
+            }, {
+                target: 'pino-pretty',    
+                options: {
+                    colorize: true
+                },
+            }],
+            level: 'trace',
+        }
     },
     production: {
         transport: {
@@ -62,7 +66,7 @@ const CONFIGURATIONS = {
 };
 
 // Select logger configuration based on environment
-const logger = pino(CONFIGURATIONS[process.env.NODE_ENV]);
+const logger = pino(CONFIGURATIONS[process.env.NODE_ENV || 'development']);
 
 export const attachChildLogger = (client) => {
     if(client?.shard?.ids) {
