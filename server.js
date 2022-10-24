@@ -93,10 +93,10 @@ if(process.env.DBL_TOKEN) {
         headers: {
           'Authorization': process.env.DBL_TOKEN,
         },
-        data: JSON.stringify({
-          server_count: cachedGuilds || 30787,
+        data: {
+          server_count: cachedGuilds < 100 ? 34346 : cachedGuilds,
           shard_count: manager.totalShards,
-        })
+        }
       })
       .then(logger.info)
       .catch(logger.error)
