@@ -1,34 +1,5 @@
 // Initialize logger
-//import pino from 'pino'
-
-/*const transport = pino.transport({
-  targets: [
-    {
-        level: 'trace',
-        target: 'pino-pretty',
-    }
-  ]
-})*/
-
-/**
- * Creates logger at various priorities -- 60 highest
- * { '10': 'trace',
-     '20': 'debug',
-     '30': 'info',
-     '40': 'warn',
-     '50': 'error',
-     '60': 'fatal' },
- */
-//const logger = pino(transport)
-
-let logger = {
-  trace: console.log,
-  debug: console.log,
-  info: console.log,
-  warn: console.log,
-  error: console.error,
-  fatal: console.error,
-}
+import logger from 'gamebot/logger'
 
 // Initialize Discord bot
 import Discord from './discord_mod.js'
@@ -126,7 +97,9 @@ if(process.env.DBL_TOKEN) {
           server_count: cachedGuilds || 30787,
           shard_count: manager.totalShards,
         })
-      }).then(logger.info)
+      })
+      .then(logger.info)
+      .catch(logger.error)
   }, 1800000)
 }
 
@@ -170,7 +143,7 @@ app.get('/api/shopItems', async (req, res) => {
   if(validated)
     shopItems = await shopGenerator.fetchShopItems(req.query.userID).catch(logger.error)
   else
-    shopItems = await shopGenerator.fetchShopItems().catch(logger.error)
+    shopItems = await shopGenerator.fetchShopItems().catch(logger.error.bind(logger))
   res.send(shopItems)
 })
 
@@ -389,11 +362,12 @@ app.post('/voted', async (req, res) => {
         firstVote
       }
     }).then(() => {
-    metrics.log('User voted')
-    res.status(200)
-    res.send()
+      logger.trace({ user: userID }, 'User voted.')
+      metrics.log('User voted')
+      res.status(200)
+      res.send()
   }).catch(err => {
-    logger.error(err)
+    logger.error({ user: userID}, err)
     res.status(500)
     res.send()
   })
@@ -460,11 +434,11 @@ app.post('/api/checkout/generateHostedPage', async (req, res) => {
   }).request(function(error, result) {
     if(error) {
       //handle error
-      logger.info(error)
+      logger.error(error)
       res.status(500)
       res.send({ error: error.message })
     } else {
-      //logger.info(result)
+      logger.trace({ user: req.body.customerID }, 'Generated hosted page.')
       subscriptionManager.add(result.hosted_page)
       res.send(result)
     }
@@ -491,11 +465,11 @@ app.post('/api/checkout/confirmHostedPage', async (req, res) => {
       res.send(error.message)
       return
     } else {
-      //logger.info(result.hosted_page.content);
       // Credit user with their purchase
       let content = result.hosted_page.content;
       if(result.hosted_page.state !== 'succeeded') {
         res.status(402)
+        logger.trace({ user: userID }, 'Payment required.')
         res.send({
           error: 'Payment required, purchase not successful.',
         })
@@ -537,7 +511,21 @@ app.post('/api/checkout/confirmHostedPage', async (req, res) => {
         { userID },
         PLAN_IDS[content.subscription.plan_id],
         { returnOriginal: false }
-      )
+      ).then(() => {
+        logger.info({
+          user: userID,
+          plan_id: content.subscription.plan_id,
+          plan_quantity: content.subscription.plan_quantity,
+          content: content.invoice.total,
+        }, 'User purchased credits.')
+      }).catch(() => {
+        logger.error({
+          user: userID,
+          plan_id: content.subscription.plan_id,
+          plan_quantity: content.subscription.plan_quantity,
+          content: content.invoice.total
+        }, 'Error purchasing credits.')
+      })
       res.status(200).send(newUser)
       return
     }
@@ -553,10 +541,11 @@ app.get('*', (req, res) => {
 
 app.on('error', function(err) {
   if (err.code === "ECONNRESET") {
-      logger.info("Timeout occurs");
+      logger.info("Timeout occurred");
       return;
   }
   //handle normal errors
+  logger.error(err)
 });
 
 

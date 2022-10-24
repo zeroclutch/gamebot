@@ -23,7 +23,7 @@ export default new BotCommand({
       usersInDB = await msg.client.database.collection('users').stats()
 
       // try fetching message
-      await msg.client.shard.broadcastEval(client => client.updateStatus())
+      await msg.client.shard.broadcastEval(client => client.updateStatus()).catch(logger.error)
 
       message = (await msg.client.shard.broadcastEval(client => client.latestStatus)).filter(m => m && m.content && m.date)[0]
       statusUpdate = message ? `\`${message.date}\`: ${message.content}\n\n*See more updates in the [support server](${options.serverInvite}?ref=statusCommand).*` : 'No status update available.'
@@ -41,9 +41,11 @@ export default new BotCommand({
           description: 'Loading status. This may take a few moments.',
           color: options.colors.info
         }]
-      })
-      await getStatusFields()
-      setInterval(getStatusFields, 60000)
+      }).catch(logger.error)
+      await getStatusFields().catch(logger.error)
+      setInterval(() => {
+        getStatusFields().catch(logger.error)
+      }, 60000)
       isInitialized = true
     }
 
