@@ -32,7 +32,7 @@ export default class DatabaseClient {
       return
     }
      return await this.connect().catch(err => {
-      logger.error(err)
+      logger.bind(logger).error(err)
       this.initialize()
     })
   }
