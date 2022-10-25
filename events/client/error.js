@@ -1,5 +1,6 @@
 import options from '../../config/options.js'
-import logger from 'gamebot/logger'
+import logger, { getMessageData } from 'gamebot/logger'
+import util from 'node:util'
 
 export const eventName = 'error'
 
@@ -23,9 +24,9 @@ export const handler = (err, client, message, game) => {
         }
 
         logger.error(`Client on shard ${client.shard.ids[0]} received error ${ERROR_CODE}`)
-        logger.error({ code: ERROR_CODE }, err)
+        logger.error(Object.assign({ code: ERROR_CODE, content: message.content }, getMessageData(message)), util.inspect(err))
         if(game) {
-            logger.error(`Game: ${game?.metadata?.id}`)
+            logger.error({ code: ERROR_CODE }, `Game: ${game?.metadata?.id}`)
         }
     } catch(err2) {
         console.error('There was an error handling the error.')
