@@ -1,7 +1,7 @@
 import options from '../../../config/options.js'
 import { BUTTONS, GAME_OPTIONS, REPLIES } from '../../../config/types.js'
 import Discord from '../../../discord_mod.js'
-import logger from 'gamebot/logger'
+import logger, { getMessageData } from 'gamebot/logger'
 
 /**
  * The base class for all games, see {@tutorial getting_started} to get started.
@@ -194,6 +194,7 @@ export default class Game {
          * ]
          */
         this.gameOptions = []
+        logger.info(getMessageData(this.msg), `Game ${this.constructor.name} initialized.`)
     }
 
     /**
@@ -855,6 +856,12 @@ export default class Game {
             duration: Date.now() - this.msg.createdTimestamp,
             players: this.players.size,
         })
+
+        logger.info(Object.assign(getMessageData(this.msg), {
+            id: this.metadata.id,
+            duration: Date.now() - this.msg.createdTimestamp,
+            players: this.players.size,
+        }), `Game ${this.constructor.name} ended.`)
 
         if(!endPhrase) {
             if(winners instanceof Array && winners.length > 1) {

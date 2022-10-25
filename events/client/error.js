@@ -23,7 +23,7 @@ export const handler = (err, client, message, game) => {
         }
 
         logger.error(`Client on shard ${client.shard.ids[0]} received error ${ERROR_CODE}`)
-        logger.error(err)
+        logger.error({ code: ERROR_CODE }, err)
         if(game) {
             logger.error(`Game: ${game?.metadata?.id}`)
         }
