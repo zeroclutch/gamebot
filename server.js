@@ -169,7 +169,7 @@ app.post('/api/purchase', async (req, res) => {
     let item = await dbClient.fetchItemInfo(itemID) || {}
 
     // Test for currency
-    if(isNaN(info.balance) || info.balance < item.cost) {
+    if((item.cost && isNaN(info.balance)) || info.balance < item.cost) {
       res.send({
         error: 'Not enough credits, purchase could not be completed.',
       })
@@ -177,7 +177,7 @@ app.post('/api/purchase', async (req, res) => {
     }
 
     // Test for gold
-    if(isNaN(info.goldBalance) || info.goldBalance < item.goldCost) {
+    if((item.goldCost && isNaN(info.goldBalance)) || info.goldBalance < item.goldCost) {
       res.send({
         error: 'Not enough gold, purchase could not be completed.'
       })
@@ -200,15 +200,16 @@ app.post('/api/purchase', async (req, res) => {
             $inc: { balance: -item.cost, goldBalance: -item.goldCost }
         },
         { returnOriginal: false }
-    ).then((doc) => {
-      // This should never happen, but just in case
-      if(doc.balance < 0) logger.warn('User has negative balance') 
-      if(doc.goldBalance < 0) logger.warn('User has negative gold balance')
-    }).catch(err => {
+    ).catch(err => {
       logger.error(err)
       res.status(500)
     })
 
+
+    // This should never happen, but just in case
+    if(updatedUser.balance < 0)     logger.warn({ userID }, 'User has negative balance') 
+    if(updatedUser.goldBalance < 0) logger.warn({ userID }, 'User has negative gold balance')
+    
     const result = {
       itemID: item.itemID,
       item: item.friendlyName,

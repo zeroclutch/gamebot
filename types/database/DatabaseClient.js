@@ -99,7 +99,7 @@ export default class DatabaseClient {
         unlockedGames: [],
         unlockedItems: [],
         created: Date.now(),
-        coins: 0,
+        goldBalance: 0,
         wins: [],
         achievements: [],
         quests: [],
