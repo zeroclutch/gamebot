@@ -165,24 +165,26 @@ app.post('/api/purchase', async (req, res) => {
   if(await oauth2.validate(userID, req.header('authorization'))) {
     // Checkout
     // check if user has enough currency
-    let info = await dbClient.fetchDBInfo(userID)
+    let info = await dbClient.fetchDBInfo(userID) || {}
+    let item = await dbClient.fetchItemInfo(itemID) || {}
 
-    let item = await dbClient.fetchItemInfo(itemID)
-
-    if(info.balance < item.cost) {
+    // Test for currency
+    if(isNaN(info.balance) || info.balance < item.cost) {
       res.send({
         error: 'Not enough credits, purchase could not be completed.',
       })
       return
     }
 
-    if(info.goldBalance < item.goldCost) {
+    // Test for gold
+    if(isNaN(info.goldBalance) || info.goldBalance < item.goldCost) {
       res.send({
         error: 'Not enough gold, purchase could not be completed.'
       })
       return
     }
 
+    // Test to see if item has already been unlocked
     if(info.unlockedItems.includes(itemID)) {
       res.send({
         error: 'This item is already unlocked, purchase could not be completed.'
@@ -198,7 +200,11 @@ app.post('/api/purchase', async (req, res) => {
             $inc: { balance: -item.cost, goldBalance: -item.goldCost }
         },
         { returnOriginal: false }
-    ).catch(err => {
+    ).then((doc) => {
+      // This should never happen, but just in case
+      if(doc.balance < 0) logger.warn('User has negative balance') 
+      if(doc.goldBalance < 0) logger.warn('User has negative gold balance')
+    }).catch(err => {
       logger.error(err)
       res.status(500)
     })
@@ -208,7 +214,7 @@ app.post('/api/purchase', async (req, res) => {
       item: item.friendlyName,
       cost: item.cost,
       remainingBalance: updatedUser.value.balance
-  }
+    }
     res.status(200)
     res.send(result)
     metrics.log('Item Purchased', result)
