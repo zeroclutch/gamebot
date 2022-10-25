@@ -4,10 +4,10 @@ import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 import BotCommand from '../../types/command/BotCommand.js'
 
 export default new BotCommand({
-    name: 'credit',
-    usage: 'credit <user> <amount>',
+    name: 'gold',
+    usage: 'gold <user> <amount>',
     aliases: [],
-    description: 'Adds to a specified user\'s balance.',
+    description: 'Adds to a specified user\'s gold balance.',
     category: 'dev',
     permissions: [GAMEBOT_PERMISSIONS.GOD],
     dmCommand: true,
@@ -24,9 +24,9 @@ export default new BotCommand({
 
         msg.client.database.collection('users').findOneAndUpdate(
             {'userID': user},
-            { $inc: { balance: amount } }
+            { $inc: { goldBalance: amount } }
         ).then(result => {
-            msg.channel.sendEmbed(`<@${user}> now has ${result.value.balance + amount}${options.creditIcon}.`, `User was updated.`)
+            msg.channel.sendEmbed(`<@${user}> now has ${result.value.goldBalance + amount}${options.goldIcon}.`, `User was updated.`)
         }).catch(err => {
             logger.error(err)
             msg.channel.sendEmbed('User not found.')
