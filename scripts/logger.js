@@ -55,7 +55,7 @@ const CONFIGURATIONS = {
                         apiKeyAuth: process.env.DATADOG_API_KEY_AUTH
                     }
                 },
-                ddtags: 'service:bot.staging',
+                ddtags: 'service:bot.production',
             },
             onError: (err, logs) => {
                 console.error(err)
