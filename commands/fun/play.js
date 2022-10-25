@@ -1,5 +1,6 @@
 // create Collection<Game> of all the games
 import options from './../../config/options.js'
+import { InteractionOptionType } from 'discord.js-light'
 
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
@@ -10,9 +11,14 @@ export default new BotCommand({
   category: 'fun',
   permissions: [],
   dmCommand: false,
-  args: true,
+  args: [{
+    name: 'game',
+    type: InteractionOptionType.STRING,
+    required: true,
+    description: 'The game to play',
+    
+  }],
   run: function(msg, args) {
-
     // for testing only
     const selection = args.join(' ').toLowerCase()
     const game = msg.client.games.find((game, meta) => meta.id == selection || meta.name.toLowerCase() == selection)
