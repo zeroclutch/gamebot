@@ -19,7 +19,8 @@ export const handler = (err, client, message, game) => {
         if(message) {
             message.channel.send({
                 content: `**Error [Code ${ERROR_CODE}]:** ${getError(err)}`
-            }).catch(logger.error)
+            })
+            .catch(logger.error)
             // could cause infinite loop if error is with sending
         }
 

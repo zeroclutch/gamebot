@@ -8,7 +8,7 @@ export default new BotCommand({
     category: 'info',
     permissions: [],
     dmCommand: true,
-    args: false,
+    args: [],
     run: function(msg, args) {
         const time = Date.now()
         const response = time - msg.createdTimestamp

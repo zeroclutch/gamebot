@@ -117,22 +117,34 @@ export default class CommandHandler {
         
     }
 
-    getCommand(messageData, game) {
+    getCommand(commandData, game) {
         let command
 
         // Get default commands and aliases
-        command = this.commands.get(messageData.name)
-            || this.commands.find(command => command.aliases.includes(messageData.name))
+        command = this.commands.get(commandData.name)
+            || this.commands.find(command => command.aliases.includes(commandData.name))
 
         // Get in-game commands
         if(game && this.client.games.has(game.metadata)) {
-            command = command || this.client.games.get(game.metadata).commands.get(messageData.name)
+            command = command || this.client.games.get(game.metadata).commands.get(commandData.name)
         }
 
         return command
     }
 
-    async handle(message) {
+    // Creates a response to a command or slash command
+    /**
+     * 
+     * @param {Object} command The command to respond to
+     * @param {Message|Interaction} userInput The message or interaction that triggered the command
+     */
+    async handle(command, userInput) {
+        // TODO: Convert to unified interface for messages and interactions
+        
+    }
+
+    async handleMessage() {
+        // TODO: Handle message
         // Ignore bots
         if(message.author.bot && !message.client.isTestingMode) {
             return false
@@ -147,7 +159,7 @@ export default class CommandHandler {
         let prefix = this.getPrefix(message.channel)
 
         // Check for empty tag
-        if(messageData.prefix === this.client.user.tag && !messageData.name) {
+        if(messageData.prefix === this.client.user.toString() && !messageData.name) {
             message.channel.sendEmbed(`The prefix for this bot is \`${prefix}\`. You can also use ${this.client.user.tag} as a prefix.`)
             return false
         }
@@ -202,6 +214,43 @@ export default class CommandHandler {
         } catch (err) {
             this.client.emit('error', err, this.client, message)
         }
-    
+    }
+
+    async handleInteraction(interaction) {
+        // Ignore bots
+        if(interaction.user.bot && !interaction.client.isTestingMode) {
+            return false
+        }
+
+        if(!interaction.isChatInput()) {
+            // Not a slash command, ignore
+            return false
+        }
+
+        // Find command 
+        let interactionData = this.getMessageData(interaction)
+
+        // Check command exists
+        if(!interactionData) {
+            interaction.reply({ content: 'Invalid command', ephemeral: true }) 
+            return false
+        }
+
+        // Check for dmChannel
+        if (message.channel.type === CHANNELS.DM && !command.dmCommand) {
+            interaction.reply({ content: 'Invalid command', ephemeral: true }) 
+            return false
+        } 
+
+        try {
+            if (['dev', 'economy'].includes(command.category)) {
+                await this.client.dbClient.createDBInfo(message.author.id)
+            }
+            
+            // Run as promise so we can always catch the error without awaiting
+            command.runPromise(message, messageData.args, game).catch(err => this.client.emit('error', err, this.client, message))
+        } catch (err) {
+            this.client.emit('error', err, this.client, message)
+        }
     }
 }

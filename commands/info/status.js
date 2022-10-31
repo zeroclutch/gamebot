@@ -15,7 +15,7 @@ export default new BotCommand({
   category: 'info',
   permissions: [],
   dmCommand: true,
-  args: false,
+  args: [],
   run: async function(msg, args) {
     const getStatusFields = async () => {
       guilds = (await msg.client.shard.fetchClientValues('guilds.cache.size')).reduce((acc, val) => acc + val, 0)

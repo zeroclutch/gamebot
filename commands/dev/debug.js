@@ -11,7 +11,7 @@ export default new BotCommand({
   category: 'dev',
   permissions: [GAMEBOT_PERMISSIONS.GOD],
   dmCommand: false,
-  args: true,
+  args: [],
   run: function(msg, args) {
 
     // for testing only

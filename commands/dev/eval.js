@@ -27,7 +27,7 @@ export default new BotCommand({
   category: 'dev',
   permissions: ["GOD"],
   dmCommand: true,
-  args: true,
+  args: [],
   run: async (msg, args) => {
     let response
     try {

@@ -10,7 +10,7 @@ export default new BotCommand({
   category: 'dev',
   permissions: [GAMEBOT_PERMISSIONS.GOD],
   dmCommand: true,
-  args: false,
+  args: [],
   run: async function(msg, args) {
     const row = new Discord.MessageActionRow()
 			.addComponents(

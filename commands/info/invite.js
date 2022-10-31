@@ -9,7 +9,7 @@ export default new BotCommand({
     category: 'info',
     permissions: [],
     dmCommand: true,
-    args: false,
+    args: [],
     run: function(msg, args) {
         msg.channel.sendEmbed(`
         [**Invite** Gamebot to your server](https://gamebot.rocks/invite?ref=inviteCommand)

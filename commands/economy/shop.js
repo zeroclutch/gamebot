@@ -10,7 +10,7 @@ export default new BotCommand({
     category: 'economy',
     permissions: [],
     dmCommand: true,
-    args: false,
+    args: [],
     run: async function(msg, args) {
         msg.channel.sendEmbed(`See our online shop at [gamebot.rocks/shop](${process.env.BASE_URL}/shop)`)
     }
