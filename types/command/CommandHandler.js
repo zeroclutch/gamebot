@@ -136,25 +136,62 @@ export default class CommandHandler {
     /**
      * 
      * @param {Object} command The command to respond to
-     * @param {Message|Interaction} userInput The message or interaction that triggered the command
+     * @param {Message|Interaction} input The message or interaction that triggered the command
      */
-    async handle(command, userInput) {
-        // TODO: Convert to unified interface for messages and interactions
-        
+    async handle(command, input, game) {
+        if(!command) return false
+
+        // Validate permissions
+        if(!(await this.hasPermissions(input, command.permissions, game))) {
+            let permissions = command.permissions.map(permission => this.titleCase(permission)).join(', ')
+            message.channel.sendEmbed(`Sorry, you don't have the necessary permissions for this command.\n\nRequired permissions: \`${permissions}\``, 'Error!', options.colors.error)
+            return false
+        }
+
+        if (command instanceof BotCommand) {} 
+        else if (command instanceof GameCommand) {
+            if(!game) {
+                input.channel.sendEmbed(`Please start a game before using this command.`, 'Error!', options.colors.error)
+                return false
+            }
+            if(!game.players.has(message.author.id)) {
+                input.channel.sendEmbed(`Only players may use in-game commands.`, 'Error!', options.colors.error)
+                return false
+            }
+        } else {
+            throw new TypeError('Improperly constructed command, all commands must be of type BotCommand or GameCommand')
+        }
+
+        // Check for dmChannel
+        if (input.channel.type === CHANNELS.DM && !command.dmCommand) {
+            input.channel.send('This command is not available in a DM channel. Please try this again in a server.')
+            return false
+        }
+
+        try {
+            if (['dev', 'mod', 'economy'].includes(command.category)) {
+                await this.client.dbClient.createDBInfo((input.user || input.author).id)
+            }
+            
+            // Run as promise so we can always catch the error without awaiting
+            command.runPromise(input, command.args, game).catch(err => this.client.emit('error', err, this.client, input))
+        } catch (err) {
+            this.client.emit('error', err, this.client, input)
+        }
     }
 
-    async handleMessage() {
-        // TODO: Handle message
+    async handleMessage(message) {
         // Ignore bots
         if(message.author.bot && !message.client.isTestingMode) {
             return false
         }
 
-        // Find command 
+        // Find command
         let messageData = this.getMessageData(message)
+        const command = this.getCommand(messageData)
 
         // Check command exists
-        if(!messageData) return false
+        if(!messageData || !command) return false
 
         let prefix = this.getPrefix(message.channel)
 
@@ -165,55 +202,16 @@ export default class CommandHandler {
         }
 
         // Validate command type
-        let game = this.client.gameManager.games.get(message.channel.id)
+        const game = this.client.gameManager.games.get(message.channel.id)
 
-        // Get command
-        let command = this.getCommand(messageData, game)
-        
-        if(!command) return false
-
-        if (command instanceof BotCommand) {} 
-        else if (command instanceof GameCommand) {
-            if(!game) {
-                message.channel.sendEmbed(`Please start a game before using this command.`, 'Error!', options.colors.error)
-                return false
-            }
-            if(!game.players.has(message.author.id)) {
-                message.channel.sendEmbed(`Only players may use in-game commands.`, 'Error!', options.colors.error)
-                return false
-            }
-        } else {
-            throw new TypeError('Improperly constructed command, all commands must be of type BotCommand or GameCommand')
-        }
-
-
-        // Check for dmChannel
-        if (message.channel.type === CHANNELS.DM && !command.dmCommand) {
-            message.channel.send('This command is not available in a DM channel. Please try this again in a server.')
-            return false
-        } 
-        
-        if(!(await this.hasPermissions(message, command.permissions, game))) {
-            let permissions = command.permissions.map(permission => this.titleCase(permission)).join(', ')
-            message.channel.sendEmbed(`Sorry, you don't have the necessary permissions for this command.\n\nRequired permissions: \`${permissions}\``, 'Error!', options.colors.error)
-            return false
-        }
-
-        if (command.args && messageData.args.join() === '') {
+        // Validate usage
+        // TODO: improve argument checking
+        if (command.args.length > 0 && messageData.args.join() === '') {
             message.channel.sendEmbed(`Incorrect usage of this command. Usage: \`${prefix}${command.usage}\`.`)
             return
         }
 
-        try {
-            if (['dev', 'economy'].includes(command.category)) {
-                await this.client.dbClient.createDBInfo(message.author.id)
-            }
-            
-            // Run as promise so we can always catch the error without awaiting
-            command.runPromise(message, messageData.args, game).catch(err => this.client.emit('error', err, this.client, message))
-        } catch (err) {
-            this.client.emit('error', err, this.client, message)
-        }
+        this.handle(command, message, game)
     }
 
     async handleInteraction(interaction) {
@@ -222,35 +220,42 @@ export default class CommandHandler {
             return false
         }
 
-        if(!interaction.isChatInput()) {
+        if(!interaction.isCommand()) {
             // Not a slash command, ignore
             return false
         }
 
-        // Find command 
-        let interactionData = this.getMessageData(interaction)
+        const prefix = '/' // Slash commands always use / as a prefix
+        const name = interaction.commandName
+        const args = interaction.options.data.map(option => option.value)
+        const content = `${prefix}${name} ${args.join(' ')}`.trim()
+
+        // Message-ify the interaction
+        const interactionData = {
+            prefix, name, args, content
+        }
+        
+        // Define message field
+        interaction.author = interaction.user
+        interaction.content = content
+
+        let game = this.client.gameManager.games.get(interaction.channel.id)
+
+        const command = this.getCommand(interactionData, game)
 
         // Check command exists
-        if(!interactionData) {
+        if(!command) {
             interaction.reply({ content: 'Invalid command', ephemeral: true }) 
             return false
         }
 
         // Check for dmChannel
-        if (message.channel.type === CHANNELS.DM && !command.dmCommand) {
+        if (interaction.channel.type === CHANNELS.DM && !command.dmCommand) {
             interaction.reply({ content: 'Invalid command', ephemeral: true }) 
             return false
-        } 
-
-        try {
-            if (['dev', 'economy'].includes(command.category)) {
-                await this.client.dbClient.createDBInfo(message.author.id)
-            }
-            
-            // Run as promise so we can always catch the error without awaiting
-            command.runPromise(message, messageData.args, game).catch(err => this.client.emit('error', err, this.client, message))
-        } catch (err) {
-            this.client.emit('error', err, this.client, message)
         }
+
+
+        this.handle(command, interaction, game)
     }
 }
