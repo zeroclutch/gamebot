@@ -4,12 +4,14 @@ import { InteractionType } from 'discord-api-types/v10'
 
 
 export const handler = async (interaction, client) => {
+    console.log(interaction)
     try {
         switch(interaction.type) {
             // Slash command
-            case InteractionType.ApplicationCommand:
+            case 'APPLICATION_COMMAND': {
                 await client.commandHandler.handleInteraction(interaction)
                 break
+            }
             // Do nothing for other interaction types
             default:
                 break
