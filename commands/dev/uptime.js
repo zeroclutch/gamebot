@@ -9,7 +9,7 @@ export default new BotCommand({
     category: 'dev',
     permissions: [GAMEBOT_PERMISSIONS.GOD],
     dmCommand: true,
-    args: false,
+    args: [],
     run: function(msg, args) {
         let s = (Date.now() - msg.client.readyAt.valueOf())
         let ms = s % 1000;

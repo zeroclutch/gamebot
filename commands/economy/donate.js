@@ -11,7 +11,7 @@ export default new BotCommand({
     category: 'economy',
     permissions: [],
     dmCommand: true,
-    args: false,
+    args: [],
     run: function(msg, args) {
         msg.channel.send({
             embeds: [{

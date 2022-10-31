@@ -10,7 +10,7 @@ export default new BotCommand({
     category: 'info',
     permissions: [],
     dmCommand: true,
-    args: false,
+    args: [],
     run: function(msg, args) {
         // find command in question
         const helpCmd = msg.client.commands.find(cmd => cmd.name === args.join(" ")) || msg.client.commands.find(cmd => cmd.aliases.includes(args.join(" ")))

@@ -46,11 +46,11 @@ export default new BotCommand({
     name: 'daily',
     usage: 'daily',
     aliases: ['claim', 'vote'],
-    description: ['Claim today\'s credits for voting on the bot.'],
+    description: 'Claim today\'s credits for voting on the bot.',
     category: 'economy',
     permissions: [],
     dmCommand: true,
-    args: false,
+    args: [],
     run: async function(msg, args) {
         const collection = msg.client.database.collection('users')
         const characters = ['<:gamebot_g:810656510995595304>','<:gamebot_a:810656545725349928>','<:gamebot_m:810656506273071125>','<:gamebot_e:810656515316121630>','<:gamebot_b:810656509666787390>','<:gamebot_o:810656516507566150>','<:gamebot_t:810656512154140732>']

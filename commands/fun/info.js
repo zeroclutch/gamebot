@@ -11,7 +11,7 @@ export default new BotCommand({
     category: 'fun',
     permissions: [],
     dmCommand: true,
-    args: true,
+    args: [],
     run: function(msg, args) {
         // require() selected game and get their exported info
         const selection = args.join(' ').toLowerCase()

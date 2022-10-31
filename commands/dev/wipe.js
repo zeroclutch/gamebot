@@ -10,7 +10,7 @@ export default new BotCommand({
     category: 'dev',
     permissions: [GAMEBOT_PERMISSIONS.GOD],
     dmCommand: true,
-    args: true,
+    args: [],
     run: function(msg, args) {
         const collection = msg.client.database.collection('users')
         const userID = args[0].replace(/\D/g, '')

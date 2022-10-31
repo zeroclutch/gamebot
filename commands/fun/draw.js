@@ -10,7 +10,7 @@ export default new BotCommand({
   category: 'fun',
   // permissions: ['ATTACH_FILES'],
   dmCommand: false,
-  args: false,
+  args: [],
   run: function (msg, args) {
     // Check permissions
     msg.client.webUIClient.createWebUI(msg.member || msg.author, data => msg.channel.send({

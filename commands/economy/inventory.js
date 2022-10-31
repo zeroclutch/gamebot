@@ -10,7 +10,12 @@ export default new BotCommand({
     category: 'economy',
     permissions: [],
     dmCommand: true,
-    args: false,
+    args: [{
+        name: 'category',
+        description: 'The category of items to display. If not specified, all categories will be displayed.',
+        required: false,
+        type: Discord.Constants.ApplicationCommandOptionTypes.STRING,
+    }],
     run: async function(msg, args) {
         const collection = msg.client.database.collection('items')
         const itemType = args.join(' ')

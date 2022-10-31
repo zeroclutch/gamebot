@@ -13,7 +13,7 @@ export default new BotCommand({
     category: 'dev',
     permissions: [GAMEBOT_PERMISSIONS.GOD],
     dmCommand: true,
-    args: false,
+    args: [],
     run: async function(msg, args) {
         // initialize constants
         let channel = await msg.client.channels.fetch(args[0].replace(/\D/g, ''))

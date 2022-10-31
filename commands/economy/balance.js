@@ -10,7 +10,7 @@ export default new BotCommand({
     category: 'economy',
     permissions: [],
     dmCommand: true,
-    args: false,
+    args: [],
     run: function(msg, args) {
         msg.client.database.collection('users').findOne({'userID': msg.author.id}).then(user => {
             if(!user) throw 'Error: User not found in database'

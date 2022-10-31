@@ -12,7 +12,7 @@ export default new BotCommand({
     category: 'fun',
     permissions: [],
     dmCommand: true,
-    args: false,
+    args: [],
     run: function(msg, args) {
         let games = []
         let index = 0
