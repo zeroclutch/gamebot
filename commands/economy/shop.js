@@ -12,6 +12,22 @@ export default new BotCommand({
     dmCommand: true,
     args: [],
     run: async function(msg, args) {
-        msg.channel.sendEmbed(`See our online shop at [gamebot.rocks/shop](${process.env.BASE_URL}/shop)`)
+        msg.reply({
+            embeds: [{
+                title: 'Shop',
+                description: `See our online shop at [gamebot.rocks/shop](${process.env.BASE_URL}/shop)`,
+                color: options.colors.economy,
+                fields: [
+                    {
+                        name: 'Unlockables',
+                        value: `Get new Cards Against Humanity packs, board skins for Chess and Othello, and much more!`
+                    },
+                    {
+                        name: 'Rewards',
+                        value: `You can gain ${options.creditIcon} credits and ${options.goldIcon} gold for donating!`
+                    },
+                ],
+            }]
+        })
     }
   })

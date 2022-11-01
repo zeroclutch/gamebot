@@ -24,7 +24,7 @@ export default new BotCommand({
             index++
         })
 
-        msg.channel.send({
+        msg.reply({
             embeds: [{
                 title: 'List of available games',
                 description: `Type \`${msg.channel.prefix}play <game id>\` to start a new game.`,

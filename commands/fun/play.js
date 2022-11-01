@@ -1,7 +1,7 @@
 // create Collection<Game> of all the games
 import options from './../../config/options.js'
 import Discord from 'discord.js-light'
-const { Constants } = Discord
+const { Constants, CommandInteraction } = Discord
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -41,9 +41,10 @@ export default new BotCommand({
   }],
 
   run: function(msg, args) {
-    // for testing only
+    msg.reply('Loading...')
+
     const selection = args.join(' ').toLowerCase()
-    const game = msg.client.games.find((game, meta) => meta.id == selection || meta.name.toLowerCase() == selection)
+    const game = msg.client.games.find((_game, meta) => meta.id == selection || meta.name.toLowerCase() == selection)
     
     const gameOptions = args.slice(1).join(' ')
 

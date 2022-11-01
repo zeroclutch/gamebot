@@ -21,9 +21,15 @@ export default new BotCommand({
         const itemType = args.join(' ')
         let items = []
         msg.author.fetchDBInfo().then(async info => {
-            // check if user has items
+            // Check if user has items
             if(info.unlockedItems.length == 0) {
-                msg.channel.sendEmbed(`View available items in the shop by typing \`${msg.channel.prefix}shop\`.`, 'You do not have any items in your inventory!', 13632027)
+                msg.reply({
+                    embed: [{
+                        description: `View available items in the shop by typing \`${msg.channel.prefix}shop\`.`,
+                        title: 'You do not have any items in your inventory!',
+                        color: options.colors.economy
+                    }]
+                })
                 return
             }
 
@@ -56,11 +62,17 @@ export default new BotCommand({
                     embed.addField(`${itemType} - ${count} item${count == 1 ? '' : 's'}`, inventoryItems.filter(item => item.type == itemType).map(item => { return item.friendlyName }).join(', '))
                 })
                 embed.setFooter({text: `To see a list of your items for a category, type ${msg.channel.prefix}inventory <category name>`})
-                await msg.channel.send({ embeds: [embed] })
+                await msg.reply({ embeds: [embed] })
             } else {
                 const categoryItems = inventoryItems.filter(item => item.type.toLowerCase() == itemType.toLowerCase())
                 if(categoryItems.length == 0) {
-                    msg.channel.sendEmbed(`View available items in the shop by typing \`${msg.channel.prefix}shop\`. Make sure you are spelling the category correctly.`, 'You do not have any items in this category!', 13632027)
+                    msg.channel.send({
+                        embeds: [{
+                            description: `View available items in the shop by typing \`${msg.channel.prefix}shop\`. Make sure you are spelling the category correctly.`,
+                            title: 'You do not have any items in this category!',
+                            colors: options.colors.info
+                        }]
+                    })
                     return
                 }
                 // make a new embed 
@@ -78,7 +90,7 @@ export default new BotCommand({
                 embed.setDescription(description)
 
                 let message
-                await msg.channel.send({ embeds: [embed] })
+                await msg.reply({ embeds: [embed] })
             }
         })
     }

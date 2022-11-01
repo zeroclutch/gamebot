@@ -14,7 +14,7 @@ export default new BotCommand({
     run: function(msg, args) {
         msg.client.database.collection('users').findOne({'userID': msg.author.id}).then(user => {
             if(!user) throw 'Error: User not found in database'
-            msg.channel.send({
+            msg.reply({
                 embeds: [{
                     title: `${msg.author.tag}'s balance`,
                     description: `You have **${user.balance}**${options.creditIcon} and **${user.goldBalance}**${options.goldIcon}.`,
@@ -26,7 +26,12 @@ export default new BotCommand({
             })
         }).catch(err => {
             logger.error(err)
-            msg.channel.sendEmbed('User not found.')
+            msg.reply({
+                embeds: [{
+                    description: 'User not found.',
+                    color: options.colors.error,
+                }]
+            })
         })
 
     }
