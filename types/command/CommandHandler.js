@@ -174,7 +174,6 @@ export default class CommandHandler {
             }
             
             // Run as promise so we can always catch the error without awaiting
-            console.log(command)
             command.runPromise(input, args, game).catch(err => this.client.emit('error', err, this.client, input))
         } catch (err) {
             this.client.emit('error', err, this.client, input)
