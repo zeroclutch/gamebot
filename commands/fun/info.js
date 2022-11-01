@@ -17,7 +17,13 @@ export default new BotCommand({
         const selection = args.join(' ').toLowerCase()
         const game = msg.client.games.findKey((game, meta) => meta.id == selection || meta.name.toLowerCase() == selection)
         if(!game) {
-            msg.channel.sendEmbed('Game not found.', 'Error!', options.colors.error)
+            msg.reply({
+                embeds: [{
+                    title: 'Error!',
+                    description: 'Game not found.',
+                    color: options.colors.error
+                }]
+            })
             return
         } else {
             const message = {
@@ -55,7 +61,7 @@ export default new BotCommand({
                 })
             }
             
-            msg.channel.send(message)
+            msg.reply(message)
         }
     }
   })

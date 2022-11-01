@@ -51,7 +51,7 @@ export default new BotCommand({
         }))
       })
     }).catch(err => {
-      msg.channel.send({
+      msg.reply({
         embeds: [{
           title: 'Error!',
           description: `There was an error loading the drawing page.`,

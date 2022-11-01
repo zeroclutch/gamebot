@@ -75,7 +75,7 @@ export default new BotCommand({
                     )
                 }
 
-                msg.channel.send({
+                msg.reply({
                     embeds: [{
                         title: '**Vote for Gamebot on top.gg here!**',
                         url: 'https://top.gg/bot/620307267241377793/vote',
@@ -114,7 +114,7 @@ export default new BotCommand({
                 )
                 // display vote streak
                 let rewardContent = `Daily reward claimed! - ${reward.credits || ''}${reward.credits ? options.creditIcon : ''}${reward.gold || ''}${reward.gold ? options.goldIcon : ''}`
-                msg.channel.send({
+                msg.reply({
                     embeds: [{
                         title: rewardContent,
                         description: `Thank you for voting on Gamebot! You can vote again in about 12 hours.`,
@@ -151,7 +151,7 @@ export default new BotCommand({
                 const hoursWait = Math.floor(msWait / HOUR_LENGTH)
                 const minutesWait = Math.round((msWait / HOUR_LENGTH - hoursWait) * 60)
 
-                msg.channel.send({
+                msg.reply({
                     embeds: [{
                         title: `You've already claimed your rewards!`,
                         description: `You have to wait ${hoursWait} hours and ${minutesWait} minutes before voting again.`,
@@ -167,7 +167,11 @@ export default new BotCommand({
                 })
             } else {    
                 // this should never happen
-                msg.channel.sendEmbed(`There seems to be an issue with the ${msg.channel.prefix}daily command. Please submit a bug report in the [support server](${options.serverInvite}).`, 'Error!')
+                msg.reply({
+                    title: 'Error!',
+                    description: `There seems to be an issue with the ${msg.channel.prefix}daily command. Please submit a bug report in the [support server](${options.serverInvite}).`,
+                    color: options.colors.error
+                })
             }
         })
     }

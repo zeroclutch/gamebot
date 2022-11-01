@@ -13,11 +13,10 @@ export default new BotCommand({
     dmCommand: true,
     args: [],
     run: function(msg, args) {
-        msg.channel.send({
+        msg.reply({
             embeds: [{
                 title: 'Support Gamebot\'s development by donating!',
                 description: `[Go to our shop](${process.env.BASE_URL}/shop) and purchase credits or coins to donate!`,
-                //description: 'Donation link coming soon.',
                 color: options.colors.economy,
                 fields: [
                     {
@@ -28,7 +27,12 @@ export default new BotCommand({
             }]
         }).catch(err => {
             logger.error(err)
-            msg.channel.sendEmbed('Unable to start a DM with you. Check your Discord settings and try again.', 'Error!', options.colors.error)
+            msg.reply({
+                embeds: [{
+                    description: 'An error occurred.',
+                    color: options.colors.error,
+                }]
+            })
         })
     }
   })

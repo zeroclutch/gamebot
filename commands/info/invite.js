@@ -11,11 +11,24 @@ export default new BotCommand({
     dmCommand: true,
     args: [],
     run: function(msg, args) {
-        msg.channel.sendEmbed(`
-        [**Invite** Gamebot to your server](https://gamebot.rocks/invite?ref=inviteCommand)
-        [**Join** the support server](${options.serverInvite}?ref=inviteCommand)
-        [**Star** Gamebot on Github](https://github.com/zeroclutch/gamebot)
-        **Support** Gamebot on Paypal - Type \`&donate\` for the link!
-        `, 'Important Links')
+        msg.reply({
+            embeds: [{
+                description: `
+                    [**Invite** Gamebot to your server](https://gamebot.rocks/invite?ref=inviteCommand)
+                    [**Join** the support server](${options.serverInvite}?ref=inviteCommand)
+                    [**Star** Gamebot on Github](https://github.com/zeroclutch/gamebot)
+                    **Support** Gamebot on Paypal - Type \`&donate\` for the link!`,
+                title: 'Invite Gamebot to your server!',
+                color: options.colors.info,
+            }]
+        }).catch(err => {
+            logger.error(err)
+            msg.reply({
+                embeds: [{
+                    description: 'An error occurred.',
+                    color: options.colors.error,
+                }]
+            })
+        })
     }
 })

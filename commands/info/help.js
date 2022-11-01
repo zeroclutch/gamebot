@@ -16,11 +16,17 @@ export default new BotCommand({
         const helpCmd = msg.client.commands.find(cmd => cmd.name === args.join(" ")) || msg.client.commands.find(cmd => cmd.aliases.includes(args.join(" ")))
         // find help for a specific command
         if (helpCmd && (helpCmd.category !== 'dev' || msg.author.id == process.env.OWNER_ID) && (helpCmd.category !== 'mod' || msg.client.moderators.includes(msg.author.id))) {
-            msg.channel.sendEmbed(`**__HELP:__**
+            msg.reply({
+                embeds: [{
+                    description: `**__HELP:__**
                     \nCommand: \`${msg.channel.prefix}${helpCmd.name}\`
                     \nDescription: ${helpCmd.description}
                     \nUsage: \`${msg.channel.prefix}${helpCmd.usage}\`
-                    \nAliases: \`${(helpCmd.aliases.join(", ")||'None')}\``)
+                    \nAliases: \`${(helpCmd.aliases.join(", ")||'None')}\``,
+                    color: options.colors.info,
+                    footer: {text: `Type ${msg.channel.prefix}help for a list of commands.`}
+                }]
+            })
             // find list of commands
         } else {
             // sort each command by category

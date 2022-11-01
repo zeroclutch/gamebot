@@ -36,7 +36,7 @@ export default new BotCommand({
 
     // On the first call, fetch fresh values for status fields. Then, cache and update asynchronously.
     if(!isInitialized) {
-      await msg.channel.send({
+      await msg.reply({
         embeds: [{
           description: 'Loading status. This may take a few moments.',
           color: options.colors.info
@@ -49,7 +49,7 @@ export default new BotCommand({
       isInitialized = true
     }
 
-    msg.channel.send({
+    msg.reply({
       embeds: [{
         title: 'Gamebot Status', 
         fields: [

@@ -138,7 +138,7 @@ export default class CommandHandler {
      * @param {Object} command The command to respond to
      * @param {Message|Interaction} input The message or interaction that triggered the command
      */
-    async handle(command, input, game) {
+    async handle(command, input, args, game) {
         if(!command) return false
 
         // Validate permissions
@@ -174,7 +174,8 @@ export default class CommandHandler {
             }
             
             // Run as promise so we can always catch the error without awaiting
-            command.runPromise(input, command.args, game).catch(err => this.client.emit('error', err, this.client, input))
+            console.log(command)
+            command.runPromise(input, args, game).catch(err => this.client.emit('error', err, this.client, input))
         } catch (err) {
             this.client.emit('error', err, this.client, input)
         }
@@ -211,7 +212,7 @@ export default class CommandHandler {
             return
         }
 
-        this.handle(command, message, game)
+        this.handle(command, message, messageData.args, game)
     }
 
     async handleInteraction(interaction) {
@@ -255,7 +256,6 @@ export default class CommandHandler {
             return false
         }
 
-
-        this.handle(command, interaction, game)
+        this.handle(command, interaction, args, game)
     }
 }
