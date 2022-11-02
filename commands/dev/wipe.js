@@ -7,7 +7,7 @@ export default new BotCommand({
         aliases: [],
     description: 'Wipes a user\'s stored information.',
     category: 'dev',
-    permissions: [GAMEBOT_PERMISSIONS.GOD],
+    permissions: [GAMEBOT_PERMISSIONS.OWNER],
     dmCommand: true,
     args: [],
     run: function(msg, args) {

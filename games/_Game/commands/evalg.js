@@ -26,7 +26,7 @@ export default new GameCommand({
   aliases: ['evg'],
   description: 'Test code',
   category: 'dev',
-  permissions: [GAMEBOT_PERMISSIONS.GOD],
+  permissions: [GAMEBOT_PERMISSIONS.OWNER],
   dmCommand: false,
   args: [{
     name: 'code',

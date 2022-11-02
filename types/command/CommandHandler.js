@@ -56,7 +56,7 @@ export default class CommandHandler {
 
         // Substitute custom permissions
         if(message.author.id === process.env.OWNER_ID) {
-            userPermissions.push(GAMEBOT_PERMISSIONS.GOD)
+            userPermissions.push(GAMEBOT_PERMISSIONS.OWNER)
         }
 
         if(this.client.moderators.includes(message.author.id)) {
