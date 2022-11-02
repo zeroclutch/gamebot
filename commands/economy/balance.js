@@ -4,7 +4,7 @@ import logger from 'gamebot/logger'
 
 export default new BotCommand({
     name: 'balance',
-        aliases: ['bal'],
+    aliases: ['bal'],
     description: 'Get your current balance.',
     category: 'economy',
     permissions: [],

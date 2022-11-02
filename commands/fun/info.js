@@ -1,16 +1,26 @@
 // create Collection<Game> of all the games
-import Discord from '../../discord_mod.js'
 import options from '../../config/options.js'
+
+import { choices } from '../../types/util/games.js'
+
+import Discord from 'discord.js-light'
+const { Constants } = Discord
 
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
     name: 'info',
-        aliases: [],
+    aliases: [],
     description: 'Get the information and rules for a game.',
     category: 'fun',
     permissions: [],
     dmCommand: true,
-    args: [],
+    args: [{
+        name: 'game',
+        type: Constants.ApplicationCommandOptionTypes.STRING,
+        required: true,
+        description: 'The name of the game',
+        choices: await Promise.all(choices),
+    }],
     run: function(msg, args) {
         // require() selected game and get their exported info
         const selection = args.join(' ').toLowerCase()

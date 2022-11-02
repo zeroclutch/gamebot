@@ -4,7 +4,6 @@ import logger from 'gamebot/logger'
 import BotCommand from '../../types/command/BotCommand.js'
 
 import Discord from 'discord.js-light'
-const { Constants } = Discord
 
 export default new BotCommand({
   name: 'draw',
