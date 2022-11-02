@@ -12,7 +12,7 @@ export default new BotCommand({
     args: [{
         name: 'command',
         type: Discord.Constants.ApplicationCommandOptionTypes.STRING,
-        description: 'The command to get help for',
+        description: 'The name of the command you need help with',
         required: false,
     }],
     run: function(msg, args) {
