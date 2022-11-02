@@ -10,7 +10,7 @@ export default new BotCommand({
         aliases: [],
     description: 'Adds to a specified user\'s balance.',
     category: 'dev',
-    permissions: [GAMEBOT_PERMISSIONS.GOD],
+    permissions: [GAMEBOT_PERMISSIONS.OWNER],
     dmCommand: true,
     args: [{
         name: 'user',

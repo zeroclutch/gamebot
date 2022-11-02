@@ -21,8 +21,8 @@ export default new BotCommand({
     choices: await Promise.all(choices),
   }],
 
-  run: function(msg, args) {
-    msg.reply('Loading...')
+  run: async function(msg, args) {
+    await msg.reply('Loading...')
 
     const selection = args.join(' ').toLowerCase()
     const game = msg.client.games.find((_game, meta) => meta.id == selection || meta.name.toLowerCase() == selection)

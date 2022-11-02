@@ -6,7 +6,7 @@ export default new BotCommand({
         aliases: [],
     description: 'Displays how long the bot has been running',
     category: 'dev',
-    permissions: [GAMEBOT_PERMISSIONS.GOD],
+    permissions: [GAMEBOT_PERMISSIONS.OWNER],
     dmCommand: true,
     args: [],
     run: function(msg, args) {

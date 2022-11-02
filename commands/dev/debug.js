@@ -8,7 +8,7 @@ export default new BotCommand({
     aliases: ['db'],
   description: 'Starts a new game with no minimum player count.',
   category: 'dev',
-  permissions: [GAMEBOT_PERMISSIONS.GOD],
+  permissions: [GAMEBOT_PERMISSIONS.OWNER],
   dmCommand: false,
   args: [],
   run: function(msg, args) {

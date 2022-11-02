@@ -6,7 +6,7 @@ export default new BotCommand({
     aliases: ['blank'],
   description: 'Description',
   category: 'dev',
-  permissions: [GAMEBOT_PERMISSIONS.GOD],
+  permissions: [GAMEBOT_PERMISSIONS.OWNER],
   dmCommand: true,
   args: [],
   run: function(msg, args) {

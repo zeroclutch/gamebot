@@ -7,7 +7,7 @@ export default new BotCommand({
     aliases: [],
   description: 'Button test',
   category: 'dev',
-  permissions: [GAMEBOT_PERMISSIONS.GOD],
+  permissions: [GAMEBOT_PERMISSIONS.OWNER],
   dmCommand: true,
   args: [],
   run: async function(msg, args) {
