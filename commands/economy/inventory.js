@@ -23,7 +23,7 @@ export default new BotCommand({
             // Check if user has items
             if(info.unlockedItems.length == 0) {
                 msg.reply({
-                    embed: [{
+                    embeds: [{
                         description: `View available items in the shop by typing \`${msg.channel.prefix}shop\`.`,
                         title: 'You do not have any items in your inventory!',
                         color: options.colors.economy
