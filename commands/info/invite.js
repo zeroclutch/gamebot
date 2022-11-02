@@ -17,7 +17,7 @@ export default new BotCommand({
                     [**Invite** Gamebot to your server](https://gamebot.rocks/invite?ref=inviteCommand)
                     [**Join** the support server](${options.serverInvite}?ref=inviteCommand)
                     [**Star** Gamebot on Github](https://github.com/zeroclutch/gamebot)
-                    **Support** Gamebot on Paypal - Type \`&donate\` for the link!`,
+                    **Support** Gamebot - Type \`&donate\` for the link!`,
                 title: 'Invite Gamebot to your server!',
                 color: options.colors.info,
             }]

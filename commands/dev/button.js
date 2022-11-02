@@ -23,7 +23,7 @@ export default new BotCommand({
 		let messageWithButton = await msg.reply({ content: 'Pong!', components: [row] });
 
     const filter = i => i.customId === 'primary'
-    const collector = messageWithButton.channel.createMessageComponentCollector({ filter, time: 15000 });
+    const collector = messageWithButton.channel.createMessageComponentCollector({ filter, time: 10 * 60 * 1000 });
 
     collector.once('collect', async i => {
         await i.update({ content: 'A button was clicked!', components: [] })
