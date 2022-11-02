@@ -14,12 +14,12 @@ export default new BotCommand({
         msg.reply({
             embeds: [{
                 title: 'Shop',
-                description: `See our online shop at [gamebot.rocks/shop](${process.env.BASE_URL}/shop)`,
+                description: `Check out our online shop at **[gamebot.rocks/shop](${process.env.BASE_URL}/shop)**!`,
                 color: options.colors.economy,
                 fields: [
                     {
                         name: 'Unlockables',
-                        value: `Get new Cards Against Humanity packs, board skins for Chess and Othello, and much more!`
+                        value: `Get new Cards Against Humanity packs, new boards and pieces for Chess and Othello, and much more!`
                     },
                     {
                         name: 'Rewards',
