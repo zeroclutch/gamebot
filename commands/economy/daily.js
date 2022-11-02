@@ -44,8 +44,7 @@ const DAY_LENGTH = (24 * HOUR_LENGTH)
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
     name: 'daily',
-    usage: 'daily',
-    aliases: ['claim', 'vote'],
+        aliases: ['claim', 'vote'],
     description: 'Claim today\'s credits for voting on the bot.',
     category: 'economy',
     permissions: [],

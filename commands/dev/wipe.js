@@ -4,8 +4,7 @@ import logger from 'gamebot/logger'
 
 export default new BotCommand({
     name: 'wipe',
-    usage: 'wipe <@user>',
-    aliases: [],
+        aliases: [],
     description: 'Wipes a user\'s stored information.',
     category: 'dev',
     permissions: [GAMEBOT_PERMISSIONS.GOD],

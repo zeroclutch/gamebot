@@ -26,7 +26,6 @@ const choices = (() => games.map(async game => {
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
   name: 'play',
-  usage: 'play <game>',
   aliases: ['p'],
   description: 'Starts a new game!',
   category: 'fun',

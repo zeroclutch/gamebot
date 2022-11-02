@@ -6,8 +6,7 @@ const { Constants } = Discord
 
 export default new BotCommand({
     name: 'fakevote',
-    usage: 'fakevote <@user>',
-    aliases: [],
+        aliases: [],
     description: 'Fakes a top.gg vote for a user if they have trouble claiming',
     category: 'mod',
     permissions: ['MOD'],

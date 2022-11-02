@@ -21,8 +21,7 @@ let responsify = (response, msg, completed='+ eval completed +') => {
 
 export default new BotCommand({
   name: 'eval',
-  usage: 'eval',
-  aliases: ['ev'],
+    aliases: ['ev'],
   description: 'Test code',
   category: 'dev',
   permissions: ["GOD"],

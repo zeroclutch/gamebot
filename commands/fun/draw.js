@@ -4,8 +4,7 @@ import logger from 'gamebot/logger'
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
   name: 'draw',
-  usage: 'draw',
-  aliases: [],
+    aliases: [],
   description: 'Lets you send a drawing in chat!',
   category: 'fun',
   // permissions: ['ATTACH_FILES'],

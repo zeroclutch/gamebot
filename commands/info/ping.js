@@ -5,8 +5,7 @@ import Discord from 'discord.js-light'
 
 export default new BotCommand({
     name: 'ping',
-    usage: 'ping',
-    aliases: ['latency', 'test'],
+        aliases: ['latency', 'test'],
     description: 'Pings the server.',
     category: 'info',
     permissions: [],

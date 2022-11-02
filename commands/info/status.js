@@ -21,8 +21,7 @@ let guilds = 0,
 
 export default new BotCommand({
   name: 'status',
-  usage: 'status',
-  aliases: ['stats'],
+    aliases: ['stats'],
   description: 'Provides the current status of Gamebot',
   category: 'info',
   permissions: [],

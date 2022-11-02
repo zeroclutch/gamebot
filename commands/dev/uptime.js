@@ -3,8 +3,7 @@ import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 
 export default new BotCommand({
     name: 'uptime',
-    usage: 'uptime',
-    aliases: [],
+        aliases: [],
     description: 'Displays how long the bot has been running',
     category: 'dev',
     permissions: [GAMEBOT_PERMISSIONS.GOD],
