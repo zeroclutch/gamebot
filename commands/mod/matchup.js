@@ -1,14 +1,26 @@
-import axios from 'axios'
 import BotCommand from '../../types/command/BotCommand.js'
+
+import Discord from 'discord.js-light'
+const { Constants } = Discord
+
 export default new BotCommand({
     name: 'matchup',
-    usage: 'matchup <@user> <@user>',
     aliases: [],
     description: 'Creates a channel for users',
     category: 'mod',
     permissions: ['MOD'],
     dmCommand: true,
-    args: true,
+    args: [{
+      name: 'user1',
+      description: 'Player 1',
+      required: true,
+      type: Constants.ApplicationCommandOptionTypes.USER,
+    }, {
+      name: 'user2',
+      description: 'Player 2',
+      required: true,
+      type: Constants.ApplicationCommandOptionTypes.USER,
+    }],
     run: async function(msg, args) {
       const user1 = args[0].replace(/\D/g, '')
       const user2 = args[1].replace(/\D/g, '')

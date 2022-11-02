@@ -17,6 +17,7 @@ export default class BaseCommand {
     }
 
     get usage() {
+        console.log(this.name, this.args)
         return `${this.name} ${
             this.args.map(arg => {
                 if(arg.required) `<${arg.name}>`

@@ -3,6 +3,9 @@ import logger from 'gamebot/logger'
 import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 import BotCommand from '../../types/command/BotCommand.js'
 
+import Discord from 'discord.js-light'
+const { Constants } = Discord
+
 export default new BotCommand({
     name: 'gold',
     usage: 'gold <user> <amount>',
@@ -11,7 +14,17 @@ export default new BotCommand({
     category: 'dev',
     permissions: [GAMEBOT_PERMISSIONS.GOD],
     dmCommand: true,
-    args: true,
+    args: [{
+        name: 'user',
+        description: 'The user to add gold to.',
+        required: true,
+        type: Constants.ApplicationCommandOptionTypes.USER,
+    }, {
+        name: 'amount',
+        description: 'The amount of gold to add.',
+        required: true,
+        type: Constants.ApplicationCommandOptionTypes.INTEGER,
+    }],
     run: function(msg, args) {
         const user = args[0].replace(/\D/g, '')
         const amount = parseInt(args[1])

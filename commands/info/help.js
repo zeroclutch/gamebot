@@ -24,7 +24,7 @@ export default new BotCommand({
                     \nUsage: \`${msg.channel.prefix}${helpCmd.usage}\`
                     \nAliases: \`${(helpCmd.aliases.join(", ")||'None')}\``,
                     color: options.colors.info,
-                    footer: {text: `Type ${msg.channel.prefix}help for a list of commands.`}
+                    footer: { text: `Type ${msg.channel.prefix}help for a list of commands.` }
                 }]
             })
             // find list of commands
