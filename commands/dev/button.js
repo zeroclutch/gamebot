@@ -12,12 +12,12 @@ export default new BotCommand({
   args: [],
   run: async function(msg, args) {
     const row = new Discord.MessageActionRow()
-			.addComponents(
-				new Discord.MessageButton()
-					.setCustomId('primary')
-					.setLabel('Primary')
-					.setStyle('PRIMARY'),
-			);
+    .addComponents(
+      new Discord.MessageButton()
+        .setCustomId('primary')
+        .setLabel('Primary')
+        .setStyle('PRIMARY'),
+    );
 
 		let messageWithButton = await msg.reply({ content: 'Pong!', components: [row] });
 
