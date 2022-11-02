@@ -5,6 +5,9 @@ import util from 'util'
 import { GAMEBOT_PERMISSIONS } from '../../../config/types.js'
 import logger from 'gamebot/logger'
 
+import Discord from 'discord.js-light'
+const { Constants } = Discord
+
 let responsify = (response, msg, completed='+ eval completed +') => {
     response = util.inspect(response) 
     response = Util.splitMessage(response, {maxLength: 1600})
@@ -25,7 +28,12 @@ export default new GameCommand({
   category: 'dev',
   permissions: [GAMEBOT_PERMISSIONS.GOD],
   dmCommand: false,
-  args: true,
+  args: [{
+    name: 'code',
+    description: 'The code to test',
+    required: true,
+    type: Constants.ApplicationCommandOptionTypes.STRING,
+  }],
   run: async (msg, args, game) => {
     let response
     try {

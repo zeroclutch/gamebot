@@ -4,8 +4,7 @@ import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
     name: 'downtime',
-    usage: 'downtime <time (minutes)>',
-    aliases: [],
+        aliases: [],
     description: 'Notify users when downtimes will occur.',
     category: 'dev',
     permissions: [GAMEBOT_PERMISSIONS.GOD],

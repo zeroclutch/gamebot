@@ -6,8 +6,7 @@ import options from '../../config/options.js'
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
     name: 'gamelist',
-    usage: 'gamelist',
-    aliases: ['list', 'gl', 'games'],
+        aliases: ['list', 'gl', 'games'],
     description: 'Get the list of currently available games.',
     category: 'fun',
     permissions: [],

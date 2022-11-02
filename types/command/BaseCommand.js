@@ -14,16 +14,12 @@ export default class BaseCommand {
         this.description = options.description || new GamebotError('Command has uninitialized description')
         this.permissions = options.permissions || []
         this.args        = options.args        || [] // Array of objects with name, type, required, description
-    }
 
-    get usage() {
-        console.log(this.name, this.args)
-        return `${this.name} ${
-            this.args.map(arg => {
-                if(arg.required) `<${arg.name}>`
-                else `[${arg.name}]`
-            }).join(' ')
-        }`
+        this.usage = `${this.name} ${
+            this.args.map(
+                arg => arg.required ? `<${arg.name}>` : `[${arg.name}]`
+            ).join(' ')
+        }`.trim()
     }
 
     toSlashCommand() {

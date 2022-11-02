@@ -5,8 +5,7 @@ const { Constants } = Discord
 
 export default new BotCommand({
     name: 'setstreak',
-    usage: 'setstreak <@user> <streak>',
-    aliases: [],
+        aliases: [],
     description: 'Sets a vote streak for a user',
     category: 'mod',
     permissions: ['MOD'],

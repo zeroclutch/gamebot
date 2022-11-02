@@ -5,8 +5,7 @@ import options from '../../config/options.js'
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
     name: 'info',
-    usage: 'info <game>',
-    aliases: [],
+        aliases: [],
     description: 'Get the information and rules for a game.',
     category: 'fun',
     permissions: [],

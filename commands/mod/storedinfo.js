@@ -5,8 +5,7 @@ const { Constants } = Discord
 
 export default new BotCommand({
     name: 'storedinfo',
-    usage: 'storedinfo <@user>',
-    aliases: [],
+        aliases: [],
     description: 'Returns a user\'s stored data.',
     category: 'mod',
     permissions: ['MOD'],

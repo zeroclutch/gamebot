@@ -7,8 +7,7 @@ import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
     name: 'giveaway',
-    usage: 'giveaway <channel> <time (minutes)> <amount> <reaction> <message>',
-    aliases: [],
+        aliases: [],
     description: 'Start a giveaway in a channel.',
     category: 'dev',
     permissions: [GAMEBOT_PERMISSIONS.GOD],

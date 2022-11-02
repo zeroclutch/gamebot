@@ -4,8 +4,7 @@ import options from './../../config/options.js'
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
     name: 'inventory',
-    usage: 'inventory <item type>',
-    aliases: ['inv'],
+        aliases: ['inv'],
     description: 'Display the items that you have purchased.',
     category: 'economy',
     permissions: [],

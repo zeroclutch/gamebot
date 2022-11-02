@@ -5,8 +5,7 @@ import url from 'url';
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
     name: 'donate',
-    usage: 'donate',
-    aliases: ['patreon', 'paypal', 'support'],
+        aliases: ['patreon', 'paypal', 'support'],
     description: 'Get credits and rewards for donating to Gamebot!',
     category: 'economy',
     permissions: [],

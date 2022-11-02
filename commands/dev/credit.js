@@ -7,8 +7,7 @@ const { Constants } = Discord
 
 export default new BotCommand({
     name: 'credit',
-    usage: 'credit <user> <amount>',
-    aliases: [],
+        aliases: [],
     description: 'Adds to a specified user\'s balance.',
     category: 'dev',
     permissions: [GAMEBOT_PERMISSIONS.GOD],

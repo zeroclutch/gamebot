@@ -8,8 +8,7 @@ import options from '../../config/options.js'
 
 export default new BotCommand({
     name: 'wipe',
-    usage: 'wipe <@user>',
-    aliases: [],
+        aliases: [],
     description: 'Wipes a user\'s stored information.',
     category: 'mod',
     permissions: ['MOD'],
