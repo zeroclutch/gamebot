@@ -154,7 +154,7 @@ export default class CommandHandler {
                 input.channel.sendEmbed(`Please start a game before using this command.`, 'Error!', options.colors.error)
                 return false
             }
-            if(!game.players.has(message.author.id)) {
+            if(!game.players.has(input.author.id)) {
                 input.channel.sendEmbed(`Only players may use in-game commands.`, 'Error!', options.colors.error)
                 return false
             }
@@ -186,9 +186,12 @@ export default class CommandHandler {
             return false
         }
 
+        // Validate command type
+        const game = this.client.gameManager.games.get(message.channel.id)
+
         // Find command
         let messageData = this.getMessageData(message)
-        const command = this.getCommand(messageData)
+        const command = this.getCommand(messageData, game)
 
         // Check command exists
         if(!messageData || !command) return false
@@ -200,9 +203,6 @@ export default class CommandHandler {
             message.channel.sendEmbed(`The prefix for this bot is \`${prefix}\`. You can also use ${this.client.user.tag} as a prefix.`)
             return false
         }
-
-        // Validate command type
-        const game = this.client.gameManager.games.get(message.channel.id)
 
         // Validate usage
         // TODO: improve argument checking
