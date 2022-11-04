@@ -88,7 +88,7 @@ export default new BotCommand({
                 msg.channel.prefix + 'add <@user>` - Add a user to the game (game leader only).\n`' +
                 msg.channel.prefix + 'join` - Join the game. Only available at the start of each game.\n`' +
                 msg.channel.prefix + 'leave` - Leave the game you are playing in that channel.\n')
-            msg.channel.send({ embeds: [embed] })
+            msg.reply({ embeds: [embed] })
         }
         return false
     }
