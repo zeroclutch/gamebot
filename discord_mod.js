@@ -9,9 +9,9 @@ import logger from 'gamebot/logger'
 /**
  * Accesses and sets the prefix for a specific channel, regardless of channel caching
  */
-Object.defineProperty(Discord.TextChannel.prototype, 'prefix', {
+ Object.defineProperty(Discord.Channel.prototype, 'prefix', {
   get() {
-    return this.client.commandHandler.getPrefix(this)
+    return this.client.commandHandler.getPrefix(this) || options.prefix
   },
   set(prefix) {
     if(this.guild)

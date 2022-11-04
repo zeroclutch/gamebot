@@ -1,8 +1,11 @@
 import options from '../../config/options.js'
 import { GAMEBOT_PERMISSIONS, CHANNELS } from '../../config/types.js'
-import { Collection } from '../../discord_mod.js'
+import Discord, { Collection } from '../../discord_mod.js'
 import BotCommand from './BotCommand.js'
 import GameCommand from './GameCommand.js'
+
+const { Constants } = Discord
+const { ApplicationCommandOptionTypes } = Constants
 
 export default class CommandHandler {
     constructor(client) {
@@ -144,18 +147,37 @@ export default class CommandHandler {
         // Validate permissions
         if(!(await this.hasPermissions(input, command.permissions, game))) {
             let permissions = command.permissions.map(permission => this.titleCase(permission)).join(', ')
-            message.channel.sendEmbed(`Sorry, you don't have the necessary permissions for this command.\n\nRequired permissions: \`${permissions}\``, 'Error!', options.colors.error)
+            
+            input.channel.send({
+                embeds: [{
+                    title: 'Error!',
+                    description: `Sorry, you don't have the necessary permissions for this command.\n\nRequired permissions: \`${permissions}\``,
+                    color: options.colors.error
+                }]
+            })
             return false
         }
 
         if (command instanceof BotCommand) {} 
         else if (command instanceof GameCommand) {
             if(!game) {
-                input.channel.sendEmbed(`Please start a game before using this command.`, 'Error!', options.colors.error)
+                input.channel.send({
+                    embeds: [{
+                        title: 'Error!',
+                        description: `Please start a game before using this command.`,
+                        color: options.colors.error
+                    }]
+                })
                 return false
             }
             if(!game.players.has(input.author.id)) {
-                input.channel.sendEmbed(`Only players may use in-game commands.`, 'Error!', options.colors.error)
+                input.channel.send({
+                    embeds: [{
+                        title: 'Error!',
+                        description: `Only players may use in-game commands.`,
+                        color: options.colors.error
+                    }]
+                })
                 return false
             }
         } else {
@@ -205,8 +227,38 @@ export default class CommandHandler {
         }
 
         // Validate usage
-        // TODO: improve argument checking
-        if (command.args.length > 0 && messageData.args.join() === '') {
+        let valid = true
+
+        command.args.forEach((cmdArg, i) => {
+            let userArg = messageData.args[i]
+
+            // Validate required args
+            if (cmdArg.required && !userArg) {
+                valid = false
+            } else if (userArg) {
+                // Validate arg types if provided
+                if (cmdArg.type === ApplicationCommandOptionTypes.NUMBER && isNaN(userArg)) {
+                    valid = false
+                } else if (cmdArg.type === ApplicationCommandOptionTypes.USER && userArg.length < 17) {
+                    valid = false
+                } else if (cmdArg.type === ApplicationCommandOptionTypes.CHANNEL && userArg.length < 17) {
+                    valid = false
+                } else if (cmdArg.type === ApplicationCommandOptionTypes.ROLE && userArg.length < 17) {
+                    valid = false
+                } else if (cmdArg.type === ApplicationCommandOptionTypes.MENTIONABLE && userArg.length < 17) {
+                    valid = false
+                } else if (cmdArg.type === ApplicationCommandOptionTypes.INTEGER && (isNaN(userArg) || userArg.includes('.'))) {
+                    valid = false
+                } else if (cmdArg.type === ApplicationCommandOptionTypes.BOOLEAN && !['true', 'false'].includes(userArg.toLowerCase())) {
+                    valid = false
+                } else if (cmdArg.type === ApplicationCommandOptionTypes.STRING && userArg.length > 100) {
+                    valid = false
+                }
+            }
+
+        })
+
+        if (!valid) {
             message.channel.sendEmbed(`Incorrect usage of this command. Usage: \`${prefix}${command.usage}\`.`)
             return
         }
