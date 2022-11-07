@@ -64,8 +64,8 @@ export default class SurveySays extends Game {
                 this.question = this.select(this.questionList)
             } while(!this.question || !this.question.question)
 
-            let guess = await this.awaitGuesserResponse().catch(logger.error)
-            let submitted = await this.awaitPlayerResponse(guess).catch(logger.error)
+            let guess = await this.awaitGuesserResponse().catch(logger.error.bind(logger))
+            let submitted = await this.awaitPlayerResponse(guess).catch(logger.error.bind(logger))
             await this.sleep(3000)
             await this.awardPoints(guess, submitted)
         }

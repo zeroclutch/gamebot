@@ -10,7 +10,7 @@ const getError = err => {
         'Missing Permissions': `I'm missing some permissions. Gamebot needs have 'Embed Links' and 'Manage Messages' enabled in this channel to work.`,
     }
 
-    return ERROR_MESSAGES[err.message] || `An unknown error occurred. Please report the error with the code in the Gamebot support server: ${options.serverInvite}.`
+    return ERROR_MESSAGES[err.message] || `An unknown error occurred. Please report the error with the code in the Gamebot support server: <${options.serverInvite}>.`
 }
 
 export const handler = (err, client, message, game) => {

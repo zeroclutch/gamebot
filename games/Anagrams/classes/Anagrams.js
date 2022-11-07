@@ -246,7 +246,7 @@ export default class Anagrams extends Game {
                 /*player.collector.on('end', (collected) => {
                     callback()
                 })*/
-            }).catch(logger.error)
+            }).catch(logger.error.bind(logger))
         })
     }
 

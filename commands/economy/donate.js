@@ -15,7 +15,7 @@ export default new BotCommand({
         msg.reply({
             embeds: [{
                 title: 'Support Gamebot\'s development by donating!',
-                description: `[Go to our shop](${process.env.BASE_URL}/shop) and purchase credits or coins to donate!`,
+                description: `[Go to our shop](${options.links.shop}) and purchase credits or coins to donate!`,
                 color: options.colors.economy,
                 fields: [
                     {
