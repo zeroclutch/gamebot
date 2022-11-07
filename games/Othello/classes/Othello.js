@@ -60,7 +60,7 @@ export default class Othello extends Game {
                     boards.push(map.boards.find(item => item.itemID === id).friendlyName)
                 }
             })
-        }).catch(logger.error)
+        }).catch(logger.error.bind(logger))
         return { pieces, boards }
     }
 
@@ -272,7 +272,7 @@ export default class Othello extends Game {
                 attachment: stream,
                 name: 'image.png'
             }]
-        }).catch(logger.error)
+        }).catch(logger.error.bind(logger))
     }
 
     awaitMove(side) {

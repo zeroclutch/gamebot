@@ -216,7 +216,7 @@ export default class CardsAgainstHumanity extends Game {
                     else this.availableSets = this.availableSets.concat(packs)
                 }
             })
-        }).catch(logger.error)
+        }).catch(logger.error.bind(logger))
 
         whiteCards.forEach((cards, metadata) => {
              if(!metadata.official) return
@@ -236,7 +236,7 @@ export default class CardsAgainstHumanity extends Game {
                     cardBackList.push(CARD_BACKS[item].friendlyName)
                 }
             })
-        }).catch(logger.error)
+        }).catch(logger.error.bind(logger))
         return cardBackList
     }
 
@@ -332,7 +332,7 @@ export default class CardsAgainstHumanity extends Game {
                 attachment: stream,
                 name: fileName
             }]
-        }).catch(logger.error)
+        }).catch(logger.error.bind(logger))
         return stream
     }
 
@@ -644,7 +644,7 @@ export default class CardsAgainstHumanity extends Game {
             let player = this.players.get(m.author.id)
             let cardRemoved = parseInt(m.content) - 1
 
-            m.delete().catch(logger.error)
+            m.delete().catch(logger.error.bind(logger))
 
             // save selection for one card
             this.submittedCards.push({

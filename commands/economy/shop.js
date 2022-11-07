@@ -14,7 +14,7 @@ export default new BotCommand({
         msg.reply({
             embeds: [{
                 title: 'Shop',
-                description: `Check out our online shop at **[gamebot.rocks/shop](${process.env.BASE_URL}/shop)**!`,
+                description: `Check out our online shop at **[gamebot.rocks/shop](${options.links.shop})**!`,
                 color: options.colors.economy,
                 fields: [
                     {
