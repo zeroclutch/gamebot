@@ -5,13 +5,12 @@ import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
   name: 'debug',
-  usage: 'debug <game>',
-  aliases: ['db'],
+    aliases: ['db'],
   description: 'Starts a new game with no minimum player count.',
   category: 'dev',
-  permissions: [GAMEBOT_PERMISSIONS.GOD],
+  permissions: [GAMEBOT_PERMISSIONS.OWNER],
   dmCommand: false,
-  args: true,
+  args: [],
   run: function(msg, args) {
 
     // for testing only

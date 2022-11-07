@@ -3,78 +3,145 @@ import logger from 'gamebot/logger'
 import GamebotError from '../../types/error/GamebotError.js'
 import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 
+import Discord from 'discord.js-light'
+const { Constants } = Discord
+
 
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
     name: 'giveaway',
-    usage: 'giveaway <channel> <time (minutes)> <amount> <reaction> <message>',
     aliases: [],
     description: 'Start a giveaway in a channel.',
     category: 'dev',
-    permissions: [GAMEBOT_PERMISSIONS.GOD],
+    permissions: [GAMEBOT_PERMISSIONS.OWNER],
     dmCommand: true,
-    args: false,
+    args: [{
+        name: 'channel',
+        description: 'The channel to start the giveaway in.',
+        type: Constants.ApplicationCommandOptionTypes.CHANNEL,
+        required: true,
+    }, {
+        name: 'time',
+        description: 'The time the giveaway should last, in minutes',
+        type: Constants.ApplicationCommandOptionTypes.INTEGER,
+        required: true,
+    }, {
+        name: 'amount',
+        description: 'The type of reward for the giveaway.',
+        type: Constants.ApplicationCommandOptionTypes.INTEGER,
+        required: true,
+    },{
+        name: 'type',
+        description: 'The type of reward for the giveaway.',
+        type: Constants.ApplicationCommandOptionTypes.STRING,
+        required: true,
+    },{
+        name: 'message',
+        description: 'The message to send with the giveaway.',
+        type:  Constants.ApplicationCommandOptionTypes.STRING,
+        required: false,
+    }],
     run: async function(msg, args) {
         // initialize constants
         let channel = await msg.client.channels.fetch(args[0].replace(/\D/g, ''))
         let time =  parseFloat(args[1])
         let amount = parseInt(args[2])
-        let reaction = args[3].replace(/\D/g, '')
-        let message = args.slice(4, args.length).join(' ') || `React to the message in the next ${time} minute${time == 1 ? '' : 's'} to get ${amount}${options.creditIcon}.`
+        let type = (args[3] || 'credits').toLowerCase()
+        let emoji = options.creditIcon
 
         time *= 60000 // convert time to ms
         const collection = msg.client.database.collection('users')
 
-        // send reaction message
-        let reactionMessage = await channel.send({
+        // Default to credits if type is not specified
+        if(type === 'gold') {
+            emoji = options.goldIcon
+        }
+        
+        let timeString = `<t:${Math.floor((Date.now() + time)/1000)}:R>`
+
+        let message = args.slice(4, args.length).join(' ') || `Click below before time expires ${timeString} to get ${amount}${emoji}.`
+
+        // send reaction message with a button
+        let giveawayMessage = await channel.send({
             embeds: [{
                 title: 'A giveaway is starting!',
                 description: message,
                 color: options.colors.info
-            }]
+            }],
+            components: [
+                new Discord.MessageActionRow().addComponents(
+                    new Discord.MessageButton()
+                        .setCustomId('giveaway')
+                        .setLabel(amount.toString())
+                        .setEmoji(emoji)
+                        .setStyle('PRIMARY')
+                )
+            ]
         })
-        
-        let reactionEmoji = await msg.guild.emojis.fetch(reaction)
-        if(!reactionEmoji) throw new GamebotError('The client did not find the emoji.')
-        reactionMessage.react(reactionEmoji)
 
-        const filter = r => r.emoji.id == reaction
-        const collector = reactionMessage.createReactionCollector({ filter, time });
-        let collectedUsers = []
-        collector.on('collect', async (r, user) => {
-            // avoid duplicates 
-            if(collectedUsers.includes(user.id) || user.id == msg.client.user.id) return
-            collectedUsers.push(user.id) 
+        // Collect button clicks and reward users
+        let collectedUsers = {}
+        const filter = i => i.customId === 'giveaway'
+        const collector = giveawayMessage.createMessageComponentCollector({ filter, time })
+
+        collector.on('collect', async (i) => {
+            let user = i.user
+
+            // Avoid duplicates
+            if(collectedUsers[i.user.id] || user.id == msg.client.user.id) {
+                i.reply({
+                    content: `You've already claimed your reward from this giveaway!`,
+                    ephemeral: true
+                })
+                return
+            }
+            
+            // Prevent users from claiming more than once
+            collectedUsers[user.id] = true
 
             await user.createDBInfo()
 
-            await collection.updateOne(
-                { userID: user.id },
-                { $inc: { balance: amount } }
-            ).catch(logger.error)
+            if(type === 'gold') {
+                await collection.updateOne(
+                    { userID: user.id },
+                    { $inc: { goldBalance: amount } }
+                ).catch(logger.error)
+            } else {
+                await collection.updateOne(
+                    { userID: user.id },
+                    { $inc: { balance: amount } }
+                ).catch(logger.error)
+            }
+
+            i.reply({
+                content: `You have been rewarded ${amount}${emoji}!`,
+                ephemeral: true
+            })
         });
         
         collector.once('end', collected => {
             try {
                 msg.author.createDM().then(c => {
-                    c.send(`The giveaway you started in ${channel} at ${new Date(Date.now() - args[2] * 1000).toLocaleTimeString('en-us')} is over. There were ${collectedUsers.length} participants who earned ${amount}${options.creditIcon}.`)
+                    c.send(`The giveaway you started in ${channel} at ${new Date(Date.now() - args[2] * 1000).toLocaleTimeString('en-us')} is over. There were ${Object.keys(collectedUsers).length} participants who earned ${amount}${emoji}.`)
                 })
 
-                reactionMessage.edit({
+                giveawayMessage.edit({
                     embeds: [{
                         title: 'The giveaway is now over!',
                         description: 'If you participated, your credits should have been rewarded.',
-                        color: 4513714
-                    }]
+                        color: options.colors.info
+                    }],
+                    components: []
                 })
             } catch (err) {
                 logger.error(err)
-                reactionMessage.edit({
+                giveawayMessage.edit({
                     embeds: [{
                         title: 'The giveaway is now over!',
                         description: 'If you participated, your credits should be rewarded shortly.',
-                        color: 4513714
-                    }]
+                        color: options.colors.error
+                    }],
+                    components: []
                 })
             }
         });

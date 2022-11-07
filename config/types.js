@@ -16,7 +16,7 @@ export const CHANNELS = {
 }
 
 export const GAMEBOT_PERMISSIONS = {
-    GOD: 'GOD',
+    OWNER: 'OWNER',
     MOD: 'MOD',
     GAME_LEADER: 'GAME_LEADER'
 }

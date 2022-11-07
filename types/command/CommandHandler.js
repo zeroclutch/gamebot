@@ -1,8 +1,11 @@
 import options from '../../config/options.js'
 import { GAMEBOT_PERMISSIONS, CHANNELS } from '../../config/types.js'
-import { Collection } from '../../discord_mod.js'
+import Discord, { Collection } from '../../discord_mod.js'
 import BotCommand from './BotCommand.js'
 import GameCommand from './GameCommand.js'
+
+const { Constants } = Discord
+const { ApplicationCommandOptionTypes } = Constants
 
 export default class CommandHandler {
     constructor(client) {
@@ -56,7 +59,7 @@ export default class CommandHandler {
 
         // Substitute custom permissions
         if(message.author.id === process.env.OWNER_ID) {
-            userPermissions.push(GAMEBOT_PERMISSIONS.GOD)
+            userPermissions.push(GAMEBOT_PERMISSIONS.OWNER)
         }
 
         if(this.client.moderators.includes(message.author.id)) {
@@ -117,91 +120,193 @@ export default class CommandHandler {
         
     }
 
-    getCommand(messageData, game) {
+    getCommand(commandData, game) {
         let command
 
         // Get default commands and aliases
-        command = this.commands.get(messageData.name)
-            || this.commands.find(command => command.aliases.includes(messageData.name))
+        command = this.commands.get(commandData.name)
+            || this.commands.find(command => command.aliases.includes(commandData.name))
 
         // Get in-game commands
         if(game && this.client.games.has(game.metadata)) {
-            command = command || this.client.games.get(game.metadata).commands.get(messageData.name)
+            command = command || this.client.games.get(game.metadata).commands.get(commandData.name)
         }
 
         return command
     }
 
-    async handle(message) {
-        // Ignore bots
-        if(message.author.bot && !message.client.isTestingMode) {
-            return false
-        }
-
-        // Find command 
-        let messageData = this.getMessageData(message)
-
-        // Check command exists
-        if(!messageData) return false
-
-        let prefix = this.getPrefix(message.channel)
-
-        // Check for empty tag
-        if(messageData.prefix === this.client.user.tag && !messageData.name) {
-            message.channel.sendEmbed(`The prefix for this bot is \`${prefix}\`. You can also use ${this.client.user.tag} as a prefix.`)
-            return false
-        }
-
-        // Validate command type
-        let game = this.client.gameManager.games.get(message.channel.id)
-
-        // Get command
-        let command = this.getCommand(messageData, game)
-        
+    // Creates a response to a command or slash command
+    /**
+     * 
+     * @param {Object} command The command to respond to
+     * @param {Message|Interaction} input The message or interaction that triggered the command
+     */
+    async handle(command, input, args, game) {
         if(!command) return false
+
+        // Validate permissions
+        if(!(await this.hasPermissions(input, command.permissions, game))) {
+            let permissions = command.permissions.map(permission => this.titleCase(permission)).join(', ')
+            
+            input.channel.send({
+                embeds: [{
+                    title: 'Error!',
+                    description: `Sorry, you don't have the necessary permissions for this command.\n\nRequired permissions: \`${permissions}\``,
+                    color: options.colors.error
+                }]
+            })
+            return false
+        }
 
         if (command instanceof BotCommand) {} 
         else if (command instanceof GameCommand) {
             if(!game) {
-                message.channel.sendEmbed(`Please start a game before using this command.`, 'Error!', options.colors.error)
+                input.channel.send({
+                    embeds: [{
+                        title: 'Error!',
+                        description: `Please start a game before using this command.`,
+                        color: options.colors.error
+                    }]
+                })
                 return false
             }
-            if(!game.players.has(message.author.id)) {
-                message.channel.sendEmbed(`Only players may use in-game commands.`, 'Error!', options.colors.error)
+            if(!game.players.has(input.author.id)) {
+                input.channel.send({
+                    embeds: [{
+                        title: 'Error!',
+                        description: `Only players may use in-game commands.`,
+                        color: options.colors.error
+                    }]
+                })
                 return false
             }
         } else {
             throw new TypeError('Improperly constructed command, all commands must be of type BotCommand or GameCommand')
         }
 
-
         // Check for dmChannel
-        if (message.channel.type === CHANNELS.DM && !command.dmCommand) {
-            message.channel.send('This command is not available in a DM channel. Please try this again in a server.')
-            return false
-        } 
-        
-        if(!(await this.hasPermissions(message, command.permissions, game))) {
-            let permissions = command.permissions.map(permission => this.titleCase(permission)).join(', ')
-            message.channel.sendEmbed(`Sorry, you don't have the necessary permissions for this command.\n\nRequired permissions: \`${permissions}\``, 'Error!', options.colors.error)
+        if (input.channel.type === CHANNELS.DM && !command.dmCommand) {
+            input.channel.send('This command is not available in a DM channel. Please try this again in a server.')
             return false
         }
 
-        if (command.args && messageData.args.join() === '') {
+        try {
+            if (['dev', 'mod', 'economy'].includes(command.category)) {
+                await this.client.dbClient.createDBInfo((input.user || input.author).id)
+            }
+            
+            // Run as promise so we can always catch the error without awaiting
+            command.runPromise(input, args, game).catch(err => this.client.emit('error', err, this.client, input))
+        } catch (err) {
+            this.client.emit('error', err, this.client, input)
+        }
+    }
+
+    async handleMessage(message) {
+        // Ignore bots
+        if(message.author.bot && !message.client.isTestingMode) {
+            return false
+        }
+
+        // Validate command type
+        const game = this.client.gameManager.games.get(message.channel.id)
+
+        // Find command
+        let messageData = this.getMessageData(message)
+        const command = this.getCommand(messageData, game)
+
+        // Check command exists
+        if(!messageData || !command) return false
+
+        let prefix = this.getPrefix(message.channel)
+
+        // Check for empty tag
+        if(messageData.prefix === this.client.user.toString() && !messageData.name) {
+            message.channel.sendEmbed(`The prefix for this bot is \`${prefix}\`. You can also use ${this.client.user.tag} as a prefix.`)
+            return false
+        }
+
+        // Validate usage
+        let valid = true
+
+        command.args.forEach((cmdArg, i) => {
+            let userArg = messageData.args[i]
+
+            // Validate required args
+            if (cmdArg.required && !userArg) {
+                valid = false
+            } else if (userArg) {
+                // Validate arg types if provided
+                if (cmdArg.type === ApplicationCommandOptionTypes.NUMBER && isNaN(userArg)) {
+                    valid = false
+                } else if (cmdArg.type === ApplicationCommandOptionTypes.USER && userArg.length < 17) {
+                    valid = false
+                } else if (cmdArg.type === ApplicationCommandOptionTypes.CHANNEL && userArg.length < 17) {
+                    valid = false
+                } else if (cmdArg.type === ApplicationCommandOptionTypes.ROLE && userArg.length < 17) {
+                    valid = false
+                } else if (cmdArg.type === ApplicationCommandOptionTypes.MENTIONABLE && userArg.length < 17) {
+                    valid = false
+                } else if (cmdArg.type === ApplicationCommandOptionTypes.INTEGER && (isNaN(userArg) || userArg.includes('.'))) {
+                    valid = false
+                } else if (cmdArg.type === ApplicationCommandOptionTypes.BOOLEAN && !['true', 'false'].includes(userArg.toLowerCase())) {
+                    valid = false
+                } else if (cmdArg.type === ApplicationCommandOptionTypes.STRING && userArg.length > 100) {
+                    valid = false
+                }
+            }
+
+        })
+
+        if (!valid) {
             message.channel.sendEmbed(`Incorrect usage of this command. Usage: \`${prefix}${command.usage}\`.`)
             return
         }
 
-        try {
-            if (['dev', 'economy'].includes(command.category)) {
-                await this.client.dbClient.createDBInfo(message.author.id)
-            }
-            
-            // Run as promise so we can always catch the error without awaiting
-            command.runPromise(message, messageData.args, game).catch(err => this.client.emit('error', err, this.client, message))
-        } catch (err) {
-            this.client.emit('error', err, this.client, message)
+        this.handle(command, message, messageData.args, game)
+    }
+
+    async handleInteraction(interaction) {
+        // Ignore bots
+        if(interaction.user.bot && !interaction.client.isTestingMode) {
+            return false
         }
-    
+
+        if(!interaction.isCommand()) {
+            // Not a slash command, ignore
+            return false
+        }
+
+        const prefix = '/' // Slash commands always use / as a prefix
+        const name = interaction.commandName
+        const args = interaction.options.data.map(option => option.value)
+        const content = `${prefix}${name} ${args.join(' ')}`.trim()
+
+        // Message-ify the interaction
+        const interactionData = {
+            prefix, name, args, content
+        }
+        
+        // Define message field
+        interaction.author = interaction.user
+        interaction.content = content
+
+        let game = this.client.gameManager.games.get(interaction.channel.id)
+
+        const command = this.getCommand(interactionData, game)
+
+        // Check command exists
+        if(!command) {
+            interaction.reply({ content: 'Invalid command', ephemeral: true }) 
+            return false
+        }
+
+        // Check for dmChannel
+        if (interaction.channel.type === CHANNELS.DM && !command.dmCommand) {
+            interaction.reply({ content: 'Invalid command', ephemeral: true }) 
+            return false
+        }
+
+        this.handle(command, interaction, args, game)
     }
 }

@@ -4,21 +4,31 @@ import options from './../../config/options.js'
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
     name: 'inventory',
-    usage: 'inventory <item type>',
-    aliases: ['inv'],
+        aliases: ['inv'],
     description: 'Display the items that you have purchased.',
     category: 'economy',
     permissions: [],
     dmCommand: true,
-    args: false,
+    args: [{
+        name: 'category',
+        description: 'The category of items to display. If not specified, all categories will be displayed.',
+        required: false,
+        type: Discord.Constants.ApplicationCommandOptionTypes.STRING,
+    }],
     run: async function(msg, args) {
         const collection = msg.client.database.collection('items')
         const itemType = args.join(' ')
         let items = []
         msg.author.fetchDBInfo().then(async info => {
-            // check if user has items
+            // Check if user has items
             if(info.unlockedItems.length == 0) {
-                msg.channel.sendEmbed(`View available items in the shop by typing \`${msg.channel.prefix}shop\`.`, 'You do not have any items in your inventory!', 13632027)
+                msg.reply({
+                    embeds: [{
+                        description: `View available items in the shop by typing \`${msg.channel.prefix}shop\`.`,
+                        title: 'You do not have any items in your inventory!',
+                        color: options.colors.economy
+                    }]
+                })
                 return
             }
 
@@ -51,11 +61,17 @@ export default new BotCommand({
                     embed.addField(`${itemType} - ${count} item${count == 1 ? '' : 's'}`, inventoryItems.filter(item => item.type == itemType).map(item => { return item.friendlyName }).join(', '))
                 })
                 embed.setFooter({text: `To see a list of your items for a category, type ${msg.channel.prefix}inventory <category name>`})
-                await msg.channel.send({ embeds: [embed] })
+                await msg.reply({ embeds: [embed] })
             } else {
                 const categoryItems = inventoryItems.filter(item => item.type.toLowerCase() == itemType.toLowerCase())
                 if(categoryItems.length == 0) {
-                    msg.channel.sendEmbed(`View available items in the shop by typing \`${msg.channel.prefix}shop\`. Make sure you are spelling the category correctly.`, 'You do not have any items in this category!', 13632027)
+                    msg.channel.send({
+                        embeds: [{
+                            description: `View available items in the shop by typing \`${msg.channel.prefix}shop\`. Make sure you are spelling the category correctly.`,
+                            title: 'You do not have any items in this category!',
+                            colors: options.colors.info
+                        }]
+                    })
                     return
                 }
                 // make a new embed 
@@ -73,7 +89,7 @@ export default new BotCommand({
                 embed.setDescription(description)
 
                 let message
-                await msg.channel.send({ embeds: [embed] })
+                await msg.reply({ embeds: [embed] })
             }
         })
     }

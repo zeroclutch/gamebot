@@ -4,13 +4,12 @@ import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
     name: 'downtime',
-    usage: 'downtime <time (minutes)>',
-    aliases: [],
+        aliases: [],
     description: 'Notify users when downtimes will occur.',
     category: 'dev',
-    permissions: [GAMEBOT_PERMISSIONS.GOD],
+    permissions: [GAMEBOT_PERMISSIONS.OWNER],
     dmCommand: true,
-    args: false,
+    args: [],
     run: function(msg, args) {
         const collection = msg.client.database.collection('status')
         const length =  Math.round(parseFloat(args[0]) * 60000)

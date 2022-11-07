@@ -1,23 +1,38 @@
 // create Collection<Game> of all the games
-import Discord from '../../discord_mod.js'
 import options from '../../config/options.js'
+
+import { choices } from '../../types/util/games.js'
+
+import Discord from 'discord.js-light'
+const { Constants } = Discord
 
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
     name: 'info',
-    usage: 'info <game>',
     aliases: [],
     description: 'Get the information and rules for a game.',
     category: 'fun',
     permissions: [],
     dmCommand: true,
-    args: true,
+    args: [{
+        name: 'game',
+        type: Constants.ApplicationCommandOptionTypes.STRING,
+        required: true,
+        description: 'The name of the game',
+        choices: await Promise.all(choices),
+    }],
     run: function(msg, args) {
         // require() selected game and get their exported info
         const selection = args.join(' ').toLowerCase()
         const game = msg.client.games.findKey((game, meta) => meta.id == selection || meta.name.toLowerCase() == selection)
         if(!game) {
-            msg.channel.sendEmbed('Game not found.', 'Error!', options.colors.error)
+            msg.reply({
+                embeds: [{
+                    title: 'Error!',
+                    description: 'Game not found.',
+                    color: options.colors.error
+                }]
+            })
             return
         } else {
             const message = {
@@ -55,7 +70,7 @@ export default new BotCommand({
                 })
             }
             
-            msg.channel.send(message)
+            msg.reply(message)
         }
     }
   })

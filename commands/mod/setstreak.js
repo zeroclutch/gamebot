@@ -1,13 +1,29 @@
 import BotCommand from '../../types/command/BotCommand.js'
+
+import Discord from 'discord.js-light'
+const { Constants } = Discord
+
 export default new BotCommand({
     name: 'setstreak',
-    usage: 'setstreak <@user> <streak>',
-    aliases: [],
+        aliases: [],
     description: 'Sets a vote streak for a user',
     category: 'mod',
     permissions: ['MOD'],
     dmCommand: true,
-    args: true,
+    args: [
+      {
+        name: 'user',
+        description: 'The user to modify the streak for',
+        required: true,
+        type: Constants.ApplicationCommandOptionTypes.USER,
+      },
+      {
+        name: 'streak',
+        description: 'The new streak to set',
+        required: true,
+        type: Constants.ApplicationCommandOptionTypes.INTEGER,
+      },
+    ],
     run: function(msg, args) {
         const collection = msg.client.database.collection('users')
         const userID = args[0].replace(/\D/g, '')

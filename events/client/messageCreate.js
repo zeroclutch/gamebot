@@ -1,5 +1,9 @@
 export const eventName = 'messageCreate'
 
 export const handler = async (msg, client) => {
-    await client.commandHandler.handle(msg)
+    try {
+        await client.commandHandler.handleMessage(msg)
+    } catch (error) {
+        client.emit('error', error)
+    }
 }

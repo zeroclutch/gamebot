@@ -6,13 +6,12 @@ import options from '../../config/options.js'
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
     name: 'gamelist',
-    usage: 'gamelist',
-    aliases: ['list', 'gl', 'games'],
+        aliases: ['list', 'gl', 'games'],
     description: 'Get the list of currently available games.',
     category: 'fun',
     permissions: [],
     dmCommand: true,
-    args: false,
+    args: [],
     run: function(msg, args) {
         let games = []
         let index = 0
@@ -24,7 +23,7 @@ export default new BotCommand({
             index++
         })
 
-        msg.channel.send({
+        msg.reply({
             embeds: [{
                 title: 'List of available games',
                 description: `Type \`${msg.channel.prefix}play <game id>\` to start a new game.`,

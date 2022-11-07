@@ -3,13 +3,12 @@ import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 
 export default new BotCommand({
     name: 'uptime',
-    usage: 'uptime',
-    aliases: [],
+        aliases: [],
     description: 'Displays how long the bot has been running',
     category: 'dev',
-    permissions: [GAMEBOT_PERMISSIONS.GOD],
+    permissions: [GAMEBOT_PERMISSIONS.OWNER],
     dmCommand: true,
-    args: false,
+    args: [],
     run: function(msg, args) {
         let s = (Date.now() - msg.client.readyAt.valueOf())
         let ms = s % 1000;

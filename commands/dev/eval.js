@@ -1,12 +1,15 @@
 import BotCommand from '../../types/command/BotCommand.js'
 import logger from 'gamebot/logger'
 
+import options from '../../config/options.js'
+
 import Discord from '../../discord_mod.js' 
 const { Util } = Discord
-import util from 'util'
+import { inspect } from 'util'
+import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 
 let responsify = (response, msg, completed='+ eval completed +') => {
-    response = util.inspect(response) 
+    response = inspect(response) 
     response = Util.splitMessage(response, {maxLength: 1600})
     response.forEach((res, index, arr) => {
         const isFirst = index === 0
@@ -21,13 +24,12 @@ let responsify = (response, msg, completed='+ eval completed +') => {
 
 export default new BotCommand({
   name: 'eval',
-  usage: 'eval',
   aliases: ['ev'],
   description: 'Test code',
   category: 'dev',
-  permissions: ["GOD"],
+  permissions: [GAMEBOT_PERMISSIONS.OWNER],
   dmCommand: true,
-  args: true,
+  args: [],
   run: async (msg, args) => {
     let response
     try {

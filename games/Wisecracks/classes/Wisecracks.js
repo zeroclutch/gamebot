@@ -146,7 +146,6 @@ export default class Wisecracks extends Game {
     }
 
     getVotes() {
-        //
     }
 
     displayLeaderboard() {

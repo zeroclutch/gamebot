@@ -14,7 +14,7 @@ const DAILY_REWARDS = [
     { credits: 0,   gold: 1 },
     { credits: 1000, gold: 0 },
     { credits: 1500, gold: 0 },
-    { credits: 0,   gold: 500 },
+    { credits: 0,   gold: 5 },
 ]
 
 // Box-Muller Transform
@@ -44,13 +44,12 @@ const DAY_LENGTH = (24 * HOUR_LENGTH)
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
     name: 'daily',
-    usage: 'daily',
-    aliases: ['claim', 'vote'],
-    description: ['Claim today\'s credits for voting on the bot.'],
+        aliases: ['claim', 'vote'],
+    description: 'Claim today\'s credits for voting on the bot.',
     category: 'economy',
     permissions: [],
     dmCommand: true,
-    args: false,
+    args: [],
     run: async function(msg, args) {
         const collection = msg.client.database.collection('users')
         const characters = ['<:gamebot_g:810656510995595304>','<:gamebot_a:810656545725349928>','<:gamebot_m:810656506273071125>','<:gamebot_e:810656515316121630>','<:gamebot_b:810656509666787390>','<:gamebot_o:810656516507566150>','<:gamebot_t:810656512154140732>']
@@ -75,7 +74,7 @@ export default new BotCommand({
                     )
                 }
 
-                msg.channel.send({
+                msg.reply({
                     embeds: [{
                         title: '**Vote for Gamebot on top.gg here!**',
                         url: 'https://top.gg/bot/620307267241377793/vote',
@@ -114,7 +113,7 @@ export default new BotCommand({
                 )
                 // display vote streak
                 let rewardContent = `Daily reward claimed! - ${reward.credits || ''}${reward.credits ? options.creditIcon : ''}${reward.gold || ''}${reward.gold ? options.goldIcon : ''}`
-                msg.channel.send({
+                msg.reply({
                     embeds: [{
                         title: rewardContent,
                         description: `Thank you for voting on Gamebot! You can vote again in about 12 hours.`,
@@ -151,7 +150,7 @@ export default new BotCommand({
                 const hoursWait = Math.floor(msWait / HOUR_LENGTH)
                 const minutesWait = Math.round((msWait / HOUR_LENGTH - hoursWait) * 60)
 
-                msg.channel.send({
+                msg.reply({
                     embeds: [{
                         title: `You've already claimed your rewards!`,
                         description: `You have to wait ${hoursWait} hours and ${minutesWait} minutes before voting again.`,
@@ -167,7 +166,11 @@ export default new BotCommand({
                 })
             } else {    
                 // this should never happen
-                msg.channel.sendEmbed(`There seems to be an issue with the ${msg.channel.prefix}daily command. Please submit a bug report in the [support server](${options.serverInvite}).`, 'Error!')
+                msg.reply({
+                    title: 'Error!',
+                    description: `There seems to be an issue with the ${msg.channel.prefix}daily command. Please submit a bug report in the [support server](${options.serverInvite}).`,
+                    color: options.colors.error
+                })
             }
         })
     }

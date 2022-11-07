@@ -4,26 +4,25 @@ import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 
 export default new BotCommand({
   name: 'button',
-  usage: 'button',
-  aliases: [],
+    aliases: [],
   description: 'Button test',
   category: 'dev',
-  permissions: [GAMEBOT_PERMISSIONS.GOD],
+  permissions: [GAMEBOT_PERMISSIONS.OWNER],
   dmCommand: true,
-  args: false,
+  args: [],
   run: async function(msg, args) {
     const row = new Discord.MessageActionRow()
-			.addComponents(
-				new Discord.MessageButton()
-					.setCustomId('primary')
-					.setLabel('Primary')
-					.setStyle('PRIMARY'),
-			);
+    .addComponents(
+      new Discord.MessageButton()
+        .setCustomId('primary')
+        .setLabel('Primary')
+        .setStyle('PRIMARY'),
+    );
 
 		let messageWithButton = await msg.reply({ content: 'Pong!', components: [row] });
 
     const filter = i => i.customId === 'primary'
-    const collector = messageWithButton.channel.createMessageComponentCollector({ filter, time: 15000 });
+    const collector = messageWithButton.channel.createMessageComponentCollector({ filter, time: 10 * 60 * 1000 });
 
     collector.once('collect', async i => {
         await i.update({ content: 'A button was clicked!', components: [] })
