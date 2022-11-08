@@ -11,7 +11,7 @@ import canvas from '@napi-rs/canvas'
 const { createCanvas, loadImage } = canvas
 
 import Discord from '../../../discord_mod.js'
-import { AttachmentBuilder } from 'discord.js'
+import { AttachmentBuilder, time } from 'discord.js'
 
 /**
  * The base class for Othello games.
@@ -145,27 +145,6 @@ export default class Othello extends Game {
         }
     }
 
-    getTimer(msg) {
-        if(msg.content.toLowerCase().startsWith(`${this.channel.prefix}timer`)) {
-            if(this.thisTurnEndsAt > -1) {
-                msg.channel.send({
-                    embeds: [{
-                        description: `${this.getPlayer(this.side).user} has ${Math.floor((this.thisTurnEndsAt - Date.now()) / 1000)} seconds left.`,
-                        color: options.colors.info
-                    }]
-                })
-            } else {
-                msg.channel.send({
-                    embeds: [{
-                        title: 'Error!',
-                        description: 'Please wait for the game to begin before using this command.',
-                        color: options.colors.error
-                    }]
-                })
-            }
-        }
-    }
-
     setSides() {
         // Use preset side for leader
         let side = this.options['Side']
@@ -252,9 +231,10 @@ export default class Othello extends Game {
                                 (pieceCount[s] > pieceCount[PIECE_TYPES.BLACK]
                                 && pieceCount[s] > pieceCount[PIECE_TYPES.WHITE] ? ' ⭐️' : '')
 
-        
+        let turnEndTime = Math.round(Date.now() / 1000 + parseInt(this.options['Timer']))
+
         let embed = new Discord.EmbedBuilder()
-        .setDescription(`You have ${this.options['Timer']} seconds to make a move.`)
+        .setDescription(`You have to make a move ${time(turnEndTime, 'R')}.`)
         .setFooter({ text: `Type ${this.channel.prefix}movehelp for help.` })
         .setImage(`attachment://image.png`)
         .setColor({ 'White': '#fffffe', 'Black': '#000001' }[side])
@@ -269,11 +249,6 @@ export default class Othello extends Game {
         }, {
             name: 'ℹ️',
             value: 'To make a move, enter the bot prefix followed by the name of the square.',
-            inline: true
-        },
-        {
-            name: '⏰',
-            value:  `Type \`${this.channel.prefix}timer\` to see the move time remaining.`,
             inline: true
         },
         {
@@ -314,7 +289,7 @@ export default class Othello extends Game {
                         let report = this.game.proceed(row, column);
                         collector.stop('submitted')
                         resolve(report)
-                    } else {
+                    } else if(!['resign', 'timer', 'end'].includes(move.toLowerCase())) {
                         this.channel.send({
                             embeds: [{
                                 title: 'Invalid move!',
