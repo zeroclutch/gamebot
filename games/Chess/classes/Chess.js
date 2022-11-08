@@ -9,7 +9,7 @@ const { createCanvas, loadImage } = canvas
 import Discord from '../../../discord_mod.js'
 import LichessAPI from './../classes/LichessAPI.js'
 
-import { AttachmentBuilder } from 'discord.js'
+import { AttachmentBuilder, time } from 'discord.js'
 
 /**
  * The base class for Chess games.
@@ -173,17 +173,15 @@ export default class Chess extends Game {
 
     async displayBoard(side) {
         let attachment = await this.renderBoard(side)
+
+        let turnEndTime = Math.round(Date.now() / 1000 + parseInt(this.options['Timer']))
+
         let embed = new Discord.EmbedBuilder()
-        .setDescription(`You have ${this.options['Timer']} seconds to make a move.`)
+        .setDescription(`You have to make a move ${time(turnEndTime, 'R')}.`)
         .addFields([
             {
                 name: 'ℹ️',
                 value: 'To make a move, enter the bot prefix followed by a valid move in algebraic notation.',
-                inline: true
-            },
-            {
-                name: '⏰',
-                value:  `Type \`${this.channel.prefix}timer\` to see the move time remaining.`,
                 inline: true
             },
             {
@@ -247,7 +245,7 @@ export default class Chess extends Game {
                         this.moves.push(move)
                         collector.stop('submitted')
                         resolve(true)
-                    } else {
+                    } else if(!['resign', 'timer', 'end'].includes(move.toLowerCase())) {
                         this.channel.send({
                             embeds: [{
                                 title: 'Invalid move!',

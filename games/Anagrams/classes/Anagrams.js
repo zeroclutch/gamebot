@@ -3,6 +3,7 @@ import options from '../../../config/options.js'
 import metadata from '../metadata.js'
 import logger from 'gamebot/logger'
 import fs from 'fs'
+import { time } from 'discord.js'
 
 let words = fs.readFileSync('./gameData/WordGames/Collins_Scrabble_Dictionary.txt', { encoding: 'utf-8' }, err => {
     logger.error(err)
@@ -164,6 +165,8 @@ export default class Anagrams extends Game {
             const collector = this.channel.createMessageCollector({filter, time: ROUND_LENGTH})
             const isPangram = word => word.length == this.word.length
 
+            let gameEndTime = Date.now() + ROUND_LENGTH
+
             collector.on('collect', message => {
                 if(this.ending) return
 
@@ -180,7 +183,7 @@ export default class Anagrams extends Game {
                 this.words.push(word)
                 player.words.push(word)
                 player.score += score
-                this.channel.sendEmbed(`<@${message.author.id}> got **${word}** for **${score}** points.\n\nThe letters are: ${this.emojify(this.word)}`, isPangram(word) ? 'PANGRAM!' : '', isPangram(word) ? options.colors.economy : options.colors.info)
+                this.channel.sendEmbed(`<@${message.author.id}> got **${word}** for **${score}** points. Time expires ${time(Math.round(gameEndTime / 1000), 'R')}.\n\nThe letters are: ${this.emojify(this.word)}`, isPangram(word) ? 'PANGRAM!' : '', isPangram(word) ? options.colors.economy : options.colors.info)
             })
 
             setTimeout(() => {
@@ -211,10 +214,11 @@ export default class Anagrams extends Game {
             }).then(async message => {
                 // Wait 5 seconds before start
                 await this.sleep(5000)
+                let gameEndTime = Date.now() + 60000
                 message.edit({
                     embeds: [{
                         title: 'Anagrams',
-                        description: `To earn points, make words using the letters below and send them in this channel. You have 60 seconds to make as many words as possible.\n\n**The letters are: ${this.emojify(this.word)}**`,
+                        description: `To earn points, make words using the letters below and send them in this channel. Time expires ${time(Math.round(gameEndTime / 1000), 'R')}\n\n**The letters are: ${this.emojify(this.word)}**`,
                         color: options.colors.info
                     }]
                 })
