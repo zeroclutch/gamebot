@@ -7,7 +7,7 @@ import othello from 'reversi';
 const OthelloGame = othello.Game;
 const PIECE_TYPES = othello.PIECE_TYPES;
 
-import canvas from 'canvas'
+import canvas from '@napi-rs/canvas'
 const { createCanvas, loadImage } = canvas
 
 import Discord from '../../../discord_mod.js'
@@ -121,10 +121,17 @@ export default class Othello extends Game {
 
             let placeableSquares = this.board.getPlaceableSquares(this.side.toUpperCase()).map(s => '`' + this.channel.prefix + columns[s._colIndex] + rows[s._rowIndex] + '`')
 
-            let embed = new Discord.MessageEmbed()
-            .addField('Important Note:', `Remember to start all moves with the Gamebot's prefix, ${this.channel.prefix}.`)
-            .addField('How do I enter my moves?', `Find the square you want to place your tile in. Look for its column letter, and look for its row number. For example, the top left square is h1, and the bottom right one is a8. Then, type ${this.channel.prefix}<letter><number>, and replace <letter> and <number> with your tile's letter and number.`)
-            .addField('Possible moves', `The possible moves right now are: ${placeableSquares.join(',')}`)
+            let embed = new Discord.EmbedBuilder()
+            .addFields([{
+                name: 'Important Note:',
+                value: `Remember to start all moves with the Gamebot's prefix, ${this.channel.prefix}.`
+            }, {
+                name: 'How do I enter my moves?',
+                value: `Find the square you want to place your tile in. Look for its column letter, and look for its row number. For example, the top left square is h1, and the bottom right one is a8. Then, type ${this.channel.prefix}<letter><number>, and replace <letter> and <number> with your tile's letter and number.`
+            }, {
+                name: 'Possible moves',
+                value: `The possible moves right now are: ${placeableSquares.join(',')}`
+            }])
             .setFooter({ text: `Refer back to this anytime!` })
             .setColor(options.colors.info)
 
@@ -249,17 +256,34 @@ export default class Othello extends Game {
                                 && pieceCount[s] > pieceCount[PIECE_TYPES.WHITE] ? ' ⭐️' : '')
 
         
-        let embed = new Discord.MessageEmbed()
+        let embed = new Discord.EmbedBuilder()
         .setDescription(`You have ${this.options['Timer']} seconds to make a move.`)
         .setFooter({ text: `Type ${this.channel.prefix}movehelp for help.` })
         .setImage(`attachment://image.png`)
         .setColor({ 'White': '#fffffe', 'Black': '#000001' }[side])
-        .addField('Black ⚫️', `${getPieces(PIECE_TYPES.BLACK)}`, true)
-        .addField('White ⚪️', `${getPieces(PIECE_TYPES.WHITE)}`, true)
-        .addField('Remaining', `${pieceCount[PIECE_TYPES.BLANK]}`, true)
-        .addField('⏰', `Type \`${this.channel.prefix}timer\` to see the move time remaining.`, true)
-        .addField('🏳', `Type \`${this.channel.prefix}resign\` to give up.`, true)
-        .addField('ℹ️', `To make a move, enter the bot prefix followed by the name of the square.`, true)
+        .addFields([{
+            name: 'Black ⚫️',
+            value: `${getPieces(PIECE_TYPES.BLACK)}`,
+            inline: true
+        }, {
+            name: 'White ⚪️',
+            value: `${getPieces(PIECE_TYPES.WHITE)}`,
+            inline: true
+        }, {
+            name: 'ℹ️',
+            value: 'To make a move, enter the bot prefix followed by the name of the square.',
+            inline: true
+        },
+        {
+            name: '⏰',
+            value:  `Type \`${this.channel.prefix}timer\` to see the move time remaining.`,
+            inline: true
+        },
+        {
+            name: '🏳',
+            value: `Type \`${this.channel.prefix}resign\` to give up.`,
+            inline: true
+        }])
 
         this.client.metrics.log('Generated image', {
             game: this.metadata.id,

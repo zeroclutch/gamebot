@@ -210,13 +210,13 @@ export default class SurveySays extends Game {
             submissionList += `${icons[submitted.get(id) || 'none']} **${player.user}**\n`
         })
 
-        const submissionButtonRow = new Discord.MessageActionRow()
+        const submissionButtonRow = new Discord.ActionRowBuilder()
         .addComponents(
-            new Discord.MessageButton()
+            new Discord.ButtonBuilder()
                 .setCustomId(BUTTONS.MORE)
                 .setLabel('More')
                 .setStyle('SUCCESS'),
-            new Discord.MessageButton()
+            new Discord.ButtonBuilder()
                 .setCustomId(BUTTONS.LESS)
                 .setLabel('Less')
                 .setStyle('DANGER'),

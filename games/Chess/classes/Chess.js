@@ -4,7 +4,7 @@ import metadata from '../metadata.js'
 import logger from 'gamebot/logger'
 
 import chess from 'chess'
-import canvas from 'canvas'
+import canvas from '@napi-rs/canvas'
 const { createCanvas, loadImage } = canvas
 import Discord from '../../../discord_mod.js'
 import LichessAPI from './../classes/LichessAPI.js'
@@ -173,11 +173,25 @@ export default class Chess extends Game {
 
     async displayBoard(side) {
         let stream = await this.renderBoard(side)
-        let embed = new Discord.MessageEmbed()
+        let embed = new Discord.EmbedBuilder()
         .setDescription(`You have ${this.options['Timer']} seconds to make a move.`)
-        .addField('ℹ️', 'To make a move, enter the bot prefix followed by a valid move in algebraic notation.', true)
-        .addField('⏰', `Type \`${this.channel.prefix}timer\` to see the move time remaining.`, true)
-        .addField('🏳', `Type \`${this.channel.prefix}resign\` to give up.`, true)
+        .addFields([
+            {
+                name: 'ℹ️',
+                value: 'To make a move, enter the bot prefix followed by a valid move in algebraic notation.',
+                inline: true
+            },
+            {
+                name: '⏰',
+                value:  `Type \`${this.channel.prefix}timer\` to see the move time remaining.`,
+                inline: true
+            },
+            {
+                name: '🏳',
+                value: `Type \`${this.channel.prefix}resign\` to give up.`,
+                inline: true
+            }
+        ])
         .setFooter({ text: `Type ${this.channel.prefix}movehelp for help.`})
         .setImage(`attachment://image.png`)
         .setColor({ 'White': '#fffffe', 'Black': '#000001' }[side])

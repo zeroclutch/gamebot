@@ -1,4 +1,4 @@
-import Discord from 'discord.js-light';
+import Discord from 'discord.js';
 import logger from 'gamebot/logger'
 const { Collection } = Discord;
 import fs from 'fs'

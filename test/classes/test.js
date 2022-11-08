@@ -1,5 +1,5 @@
 import colors from 'colors'
-import Discord from 'discord.js-light';
+import Discord from 'discord.js';
 const { Util } = Discord;
 import util from 'util'
 colors.enable()

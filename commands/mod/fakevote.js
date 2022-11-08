@@ -1,8 +1,7 @@
 import axios from 'axios'
 import BotCommand from '../../types/command/BotCommand.js'
 
-import Discord from 'discord.js-light'
-const { Constants } = Discord
+import { ApplicationCommandOptionType } from 'discord.js'
 
 export default new BotCommand({
     name: 'fakevote',
@@ -15,7 +14,7 @@ export default new BotCommand({
       name: 'user',
       description: 'The user to fake vote for',
       required: true,
-      type: Constants.ApplicationCommandOptionTypes.USER,
+      type: ApplicationCommandOptionType.User,
   }],
     run: function(msg, args) {
         const collection = msg.client.database.collection('users')

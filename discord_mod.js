@@ -1,7 +1,7 @@
 /**
  * Discord Mod. An extension of the discord.js module to streamline usage of this bot.
  */
-import Discord from 'discord.js-light'
+import Discord from 'discord.js'
 import options from './config/options.js'
 import Game from './games/_Game/classes/Game.js'
 import logger from 'gamebot/logger'
@@ -9,7 +9,7 @@ import logger from 'gamebot/logger'
 /**
  * Accesses and sets the prefix for a specific channel, regardless of channel caching
  */
- Object.defineProperty(Discord.Channel.prototype, 'prefix', {
+Object.defineProperty(Discord.TextChannel.prototype, 'prefix', {
   get() {
     return this.client.commandHandler.getPrefix(this) || options.prefix
   },

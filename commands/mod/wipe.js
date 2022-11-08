@@ -1,7 +1,6 @@
 import BotCommand from '../../types/command/BotCommand.js'
 
-import Discord from 'discord.js-light'
-const { Constants } = Discord
+import { ApplicationCommandOptionType } from 'discord.js'
 
 import logger from 'gamebot/logger'
 import options from '../../config/options.js'
@@ -17,25 +16,25 @@ export default new BotCommand({
         name: 'user',
         description: 'The user to wipe from the database',
         required: true,
-        type: Constants.ApplicationCommandOptionTypes.USER,
+        type: ApplicationCommandOptionType.User,
     }],
     run: function(msg, args) {
         const collection = msg.client.database.collection('users')
         const userID = args[0].replace(/\D/g, '')
 
         // Add a confirmation button
-        const embed = new Discord.MessageEmbed()
+        const embed = new Discord.EmbedBuilder()
         .setTitle('Are you sure?')
         .setDescription(`This will wipe <@${userID}> from the database. This cannot be undone.`)
         .setColor(options.colors.error)
 
         msg.channel.send({ embeds: [embed], components: [
-            new Discord.MessageActionRow().addComponents(
-                new Discord.MessageButton()
+            new Discord.ActionRowBuilder().addComponents(
+                new Discord.ButtonBuilder()
                 .setCustomId('wipe_confirm')
                 .setLabel('Confirm')
                 .setStyle('DANGER'),
-                new Discord.MessageButton()
+                new Discord.ButtonBuilder()
                 .setCustomId('wipe_cancel')
                 .setLabel('Cancel')
                 .setStyle('SECONDARY')

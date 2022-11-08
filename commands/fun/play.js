@@ -1,7 +1,6 @@
 // create Collection<Game> of all the games
 import options from './../../config/options.js'
-import Discord from 'discord.js-light'
-const { Constants, CommandInteraction } = Discord
+import { CommandInteraction, ApplicationCommandOptionType } from 'discord.js'
 
 import { choices } from '../../types/util/games.js'
 
@@ -15,7 +14,7 @@ export default new BotCommand({
   dmCommand: false,
   args: [{
     name: 'game',
-    type: Constants.ApplicationCommandOptionTypes.STRING,
+    type: ApplicationCommandOptionType.String,
     required: true,
     description: 'The name of the game',
     choices: await Promise.all(choices),
