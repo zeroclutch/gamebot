@@ -20,7 +20,7 @@ docs/gamebot/
 
 # dotenv environment variables file
 .env
-.env*
+.env.**
 app.yaml
 app.staging.yaml
 
