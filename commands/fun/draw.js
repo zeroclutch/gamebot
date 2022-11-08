@@ -3,7 +3,7 @@ import logger from 'gamebot/logger'
 
 import BotCommand from '../../types/command/BotCommand.js'
 
-import Discord from 'discord.js-light'
+import Discord from 'discord.js'
 
 export default new BotCommand({
   name: 'draw',
@@ -32,9 +32,9 @@ export default new BotCommand({
       }]
     })
 
-    const row = new Discord.MessageActionRow()
+    const row = new Discord.ActionRowBuilder()
     .addComponents(
-      new Discord.MessageButton()
+      new Discord.ButtonBuilder()
         .setCustomId('drawlink_button')
         .setLabel('View link')
         .setStyle('PRIMARY'),

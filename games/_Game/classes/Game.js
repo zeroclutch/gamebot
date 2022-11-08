@@ -278,13 +278,13 @@ export default class Game {
                 await this.updatePlayers(true)
 
                 // Construct join message
-                const joinButtonRow = new Discord.MessageActionRow()
+                const joinButtonRow = new Discord.ActionRowBuilder()
                 .addComponents(
-                    new Discord.MessageButton()
+                    new Discord.ButtonBuilder()
                         .setCustomId(BUTTONS.JOIN)
                         .setLabel('Join')
                         .setStyle('SUCCESS'),
-                    new Discord.MessageButton()
+                    new Discord.ButtonBuilder()
                         .setCustomId(BUTTONS.START)
                         .setLabel('Start Game (Leader)')
                         .setStyle('PRIMARY'),
@@ -413,9 +413,9 @@ export default class Game {
     }
 
     async displayOptionsMenu(optionMessage) {
-        const optionsButtonRow = new Discord.MessageActionRow()
+        const optionsButtonRow = new Discord.ActionRowBuilder()
         .addComponents(
-            new Discord.MessageButton()
+            new Discord.ButtonBuilder()
                 .setCustomId(BUTTONS.START)
                 .setLabel('Confirm Settings (Leader)')
                 .setStyle('PRIMARY'),

@@ -2,8 +2,7 @@ import options from '../../config/options.js'
 import logger from 'gamebot/logger'
 import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 import BotCommand from '../../types/command/BotCommand.js'
-import Discord from 'discord.js-light'
-const { Constants } = Discord
+import { ApplicationCommandOptionType } from 'discord.js'
 
 export default new BotCommand({
     name: 'credit',
@@ -16,12 +15,12 @@ export default new BotCommand({
         name: 'user',
         description: 'The user to add credits to.',
         required: true,
-        type: Constants.ApplicationCommandOptionTypes.USER,
+        type: ApplicationCommandOptionType.User,
     }, {
         name: 'amount',
         description: 'The amount of credits to add.',
         required: true,
-        type: Constants.ApplicationCommandOptionTypes.INTEGER,
+        type: ApplicationCommandOptionType.Integer,
     }],
     run: function(msg, args) {
         const user = args[0].replace(/\D/g, '')

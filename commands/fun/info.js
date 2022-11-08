@@ -3,8 +3,7 @@ import options from '../../config/options.js'
 
 import { choices } from '../../types/util/games.js'
 
-import Discord from 'discord.js-light'
-const { Constants } = Discord
+import { ApplicationCommandOptionType } from 'discord.js'
 
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
@@ -16,7 +15,7 @@ export default new BotCommand({
     dmCommand: true,
     args: [{
         name: 'game',
-        type: Constants.ApplicationCommandOptionTypes.STRING,
+        type: ApplicationCommandOptionType.String,
         required: true,
         description: 'The name of the game',
         choices: await Promise.all(choices),

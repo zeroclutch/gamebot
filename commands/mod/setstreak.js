@@ -1,7 +1,6 @@
 import BotCommand from '../../types/command/BotCommand.js'
 
-import Discord from 'discord.js-light'
-const { Constants } = Discord
+import { ApplicationCommandOptionType } from 'discord.js'
 
 export default new BotCommand({
     name: 'setstreak',
@@ -15,13 +14,13 @@ export default new BotCommand({
         name: 'user',
         description: 'The user to modify the streak for',
         required: true,
-        type: Constants.ApplicationCommandOptionTypes.USER,
+        type: ApplicationCommandOptionType.User,
       },
       {
         name: 'streak',
         description: 'The new streak to set',
         required: true,
-        type: Constants.ApplicationCommandOptionTypes.INTEGER,
+        type: ApplicationCommandOptionType.Integer,
       },
     ],
     run: function(msg, args) {

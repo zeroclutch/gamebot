@@ -11,9 +11,9 @@ export default new BotCommand({
   dmCommand: true,
   args: [],
   run: async function(msg, args) {
-    const row = new Discord.MessageActionRow()
+    const row = new Discord.ActionRowBuilder()
     .addComponents(
-      new Discord.MessageButton()
+      new Discord.ButtonBuilder()
         .setCustomId('primary')
         .setLabel('Primary')
         .setStyle('PRIMARY'),

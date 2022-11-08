@@ -13,7 +13,7 @@ export default new BotCommand({
         name: 'category',
         description: 'The category of items to display. If not specified, all categories will be displayed.',
         required: false,
-        type: Discord.Constants.ApplicationCommandOptionTypes.STRING,
+        type: Discord.ApplicationCommandOptionType.String,
     }],
     run: async function(msg, args) {
         const collection = msg.client.database.collection('items')
@@ -52,13 +52,16 @@ export default new BotCommand({
                 }
 
                 // make a new embed 
-                let embed = new Discord.MessageEmbed()
+                let embed = new Discord.EmbedBuilder()
                 embed.setTitle(`${msg.author.tag}'s Items - ${itemTypes.length} Categor${itemTypes.length == 1 ? 'y' : 'ies'}`)
                 embed.setColor(options.colors.economy)
 
                 itemTypes.forEach(async (itemType, index) => {
                     const count = inventoryItems.filter(item => item.type == itemType).length
-                    embed.addField(`${itemType} - ${count} item${count == 1 ? '' : 's'}`, inventoryItems.filter(item => item.type == itemType).map(item => { return item.friendlyName }).join(', '))
+                    embed.addFields([{
+                        name: `${itemType} - ${count} item${count == 1 ? '' : 's'}`,
+                        value: inventoryItems.filter(item => item.type == itemType).map(item => { return item.friendlyName }).join(', ')
+                    }])
                 })
                 embed.setFooter({text: `To see a list of your items for a category, type ${msg.channel.prefix}inventory <category name>`})
                 await msg.reply({ embeds: [embed] })
@@ -75,7 +78,7 @@ export default new BotCommand({
                     return
                 }
                 // make a new embed 
-                let embed = new Discord.MessageEmbed()
+                let embed = new Discord.EmbedBuilder()
                 embed.setTitle(`${msg.author.tag}'s items - Category: ${categoryItems[0].type}`)
                 embed.setColor(options.colors.economy)
                 let description = ''

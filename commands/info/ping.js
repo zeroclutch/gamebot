@@ -1,7 +1,7 @@
 import BotCommand from '../../types/command/BotCommand.js'
 import logger from 'gamebot/logger'
 import options from '../../config/options.js'
-import Discord from 'discord.js-light'
+import Discord from 'discord.js'
 
 export default new BotCommand({
     name: 'ping',

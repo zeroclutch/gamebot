@@ -1,11 +1,10 @@
 import options from '../../config/options.js'
 import { GAMEBOT_PERMISSIONS, CHANNELS } from '../../config/types.js'
-import Discord, { Collection } from '../../discord_mod.js'
+import { Collection } from '../../discord_mod.js'
 import BotCommand from './BotCommand.js'
 import GameCommand from './GameCommand.js'
 
-const { Constants } = Discord
-const { ApplicationCommandOptionTypes } = Constants
+import { ApplicationCommandOptionType } from 'discord.js'
 
 export default class CommandHandler {
     constructor(client) {
@@ -237,21 +236,21 @@ export default class CommandHandler {
                 valid = false
             } else if (userArg) {
                 // Validate arg types if provided
-                if (cmdArg.type === ApplicationCommandOptionTypes.NUMBER && isNaN(userArg)) {
+                if (cmdArg.type === ApplicationCommandOptionType.Number && isNaN(userArg)) {
                     valid = false
-                } else if (cmdArg.type === ApplicationCommandOptionTypes.USER && userArg.length < 17) {
+                } else if (cmdArg.type === ApplicationCommandOptionType.User && userArg.length < 17) {
                     valid = false
-                } else if (cmdArg.type === ApplicationCommandOptionTypes.CHANNEL && userArg.length < 17) {
+                } else if (cmdArg.type === ApplicationCommandOptionType.Channel && userArg.length < 17) {
                     valid = false
-                } else if (cmdArg.type === ApplicationCommandOptionTypes.ROLE && userArg.length < 17) {
+                } else if (cmdArg.type === ApplicationCommandOptionType.Role && userArg.length < 17) {
                     valid = false
-                } else if (cmdArg.type === ApplicationCommandOptionTypes.MENTIONABLE && userArg.length < 17) {
+                } else if (cmdArg.type === ApplicationCommandOptionType.Mentionable && userArg.length < 17) {
                     valid = false
-                } else if (cmdArg.type === ApplicationCommandOptionTypes.INTEGER && (isNaN(userArg) || userArg.includes('.'))) {
+                } else if (cmdArg.type === ApplicationCommandOptionType.Integer && (isNaN(userArg) || userArg.includes('.'))) {
                     valid = false
-                } else if (cmdArg.type === ApplicationCommandOptionTypes.BOOLEAN && !['true', 'false'].includes(userArg.toLowerCase())) {
+                } else if (cmdArg.type === ApplicationCommandOptionType.Boolean && !['true', 'false'].includes(userArg.toLowerCase())) {
                     valid = false
-                } else if (cmdArg.type === ApplicationCommandOptionTypes.STRING && userArg.length > 100) {
+                } else if (cmdArg.type === ApplicationCommandOptionType.String && userArg.length > 100) {
                     valid = false
                 }
             }

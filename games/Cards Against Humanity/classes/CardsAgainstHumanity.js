@@ -8,7 +8,7 @@ import logger from 'gamebot/logger'
 
 // CAH dependencies
 import Game from '../../_Game/main.js'
-import canvas from 'canvas';
+import canvas from '@napi-rs/canvas';
 const { createCanvas, registerFont, loadImage } = canvas;
 import { whiteCards } from '../assets/cards.js'
 import CAHDeck from './CAHDeck.js'
@@ -316,7 +316,7 @@ export default class CardsAgainstHumanity extends Game {
             chromaSubsampling: false,
             progressive: true
         })
-        const embed = new Discord.MessageEmbed()
+        const embed = new Discord.EmbedBuilder()
         .setTitle('This round\'s black card')
         .setFooter({ text: this.blackCard.clean })
         .setImage(`attachment://${fileName}`)
@@ -574,9 +574,9 @@ export default class CardsAgainstHumanity extends Game {
             player.cards = player.cards.concat(this.cardDeck.draw('white', this.settings.handLimit - player.cards.length))
         }
 
-            const viewHandRow = new Discord.MessageActionRow()
+            const viewHandRow = new Discord.ActionRowBuilder()
             .addComponents(
-                new Discord.MessageButton()
+                new Discord.ButtonBuilder()
                     .setCustomId(BUTTONS.VIEW_HAND)
                     .setLabel('View your hand')
                     .setStyle('PRIMARY'),
@@ -687,7 +687,9 @@ export default class CardsAgainstHumanity extends Game {
             }
 
             // update in chat
-            this.msg.channel.messages.fetch(submissionStatusMessage.id).then(message => {
+            this.msg.channel.messages.fetch({
+                message: submissionStatusMessage.id
+            }).then(message => {
                 message.edit({
                     embeds: [{
                         title: 'Submission status',
