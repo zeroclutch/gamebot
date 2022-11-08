@@ -1,6 +1,11 @@
 import BotCommand from '../../types/command/BotCommand.js'
 
-import { ApplicationCommandOptionType, ButtonStyle } from 'discord.js'
+import {
+    ApplicationCommandOptionType,
+    ButtonStyle,
+    ActionRowBuilder,
+    ButtonBuilder,
+    EmbedBuilder } from 'discord.js'
 
 import logger from 'gamebot/logger'
 import options from '../../config/options.js'
@@ -23,18 +28,18 @@ export default new BotCommand({
         const userID = args[0].replace(/\D/g, '')
 
         // Add a confirmation button
-        const embed = new Discord.EmbedBuilder()
+        const embed = new EmbedBuilder()
         .setTitle('Are you sure?')
         .setDescription(`This will wipe <@${userID}> from the database. This cannot be undone.`)
         .setColor(options.colors.error)
 
         msg.channel.send({ embeds: [embed], components: [
-            new Discord.ActionRowBuilder().addComponents(
-                new Discord.ButtonBuilder()
+            new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
                 .setCustomId('wipe_confirm')
                 .setLabel('Confirm')
                 .setStyle(ButtonStyle.Danger),
-                new Discord.ButtonBuilder()
+                new ButtonBuilder()
                 .setCustomId('wipe_cancel')
                 .setLabel('Cancel')
                 .setStyle(ButtonStyle.Secondary)

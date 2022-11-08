@@ -8,8 +8,7 @@ import logger from 'gamebot/logger'
 
 // CAH dependencies
 import Game from '../../_Game/main.js'
-import canvas from '@napi-rs/canvas';
-const { createCanvas, registerFont, loadImage } = canvas;
+import { createCanvas, loadImage, GlobalFonts } from '@napi-rs/canvas';
 import { whiteCards } from '../assets/cards.js'
 import CAHDeck from './CAHDeck.js'
 import BlackCard from './BlackCard.js'
@@ -264,7 +263,7 @@ export default class CardsAgainstHumanity extends Game {
         const ctx = canvas.getContext('2d')
 
         // register fonts
-        registerFont('./assets/fonts/SF-Pro-Display-Bold.otf', {family: 'SF Pro Display Bold'})
+       GlobalFonts.registerFromPath('./assets/fonts/SF-Pro-Display-Bold.otf', 'SF Pro Display Bold')
         
         let cardBack = CARD_BACKS['Default']
         for(let id in CARD_BACKS) {
@@ -293,18 +292,22 @@ export default class CardsAgainstHumanity extends Game {
         ctx.font = '22px SF Pro Display Bold'
         let wordList = cardText.split(/[\n\s]/g),
             textLine = '',
-            textTotal = ''
+            textTotal = []
         for(let i = 0; i < wordList.length; i++) {
             // See if adding the next word would exceed the size
             if(ctx.measureText(textLine + wordList[i]).width > 255) {
-                textTotal += textLine + '\n'
+                textTotal.push(textLine + '\n')
                 textLine = ''
             }
             textLine += wordList[i] + ' '
         }
-        textTotal += textLine
-        ctx.fillText(textTotal , 25, 45)
-        
+        textTotal.push(textLine)
+
+        // add text to canvas
+        for(let i = 0; i < textTotal.length; i++) {
+            ctx.fillText(textTotal[i], 25, 45 + (i * 30))
+        }
+        ctx.fillText(textTotal, 25, 45)
         await loadImage(fs.readFileSync(`./assets/images/icons/logo-icon-${['white', 'black'].includes(cardBack.textColor) ? cardBack.textColor : 'white'}.png`))
         .then(image =>  {
             ctx.drawImage(image, 20, 256, 18, 16)
