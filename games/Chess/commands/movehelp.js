@@ -12,9 +12,9 @@ export default new GameCommand({
     permissions: [],
     args: false,
     run: async function(msg, args, game) {
-        let stream
+        let attachment
         try {
-            stream = await game.renderBoard(game.side)
+            attachment = await game.renderBoard(game.side)
         } catch (err) {
             // Game hasn't fully initialized
             msg.channel.send({
@@ -49,14 +49,11 @@ export default new GameCommand({
         .setFooter({ text: `Refer back to this anytime!`})
         .setColor(options.colors.info)
     
-        if(stream) embed.setImage(`attachment://image.png`)
+        if(attachment) embed.setImage(`attachment://image.png`)
         
         msg.channel.send({
             embeds: [embed],
-            files: [{
-                attachment: stream,
-                name: 'image.png'
-            }]
+            files: [ attachment ]
         })
     }
 })

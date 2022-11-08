@@ -3,7 +3,7 @@ import logger from 'gamebot/logger'
 import GamebotError from '../../types/error/GamebotError.js'
 import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 
-import { ApplicationCommandOptionType } from 'discord.js'
+import { ApplicationCommandOptionType, ButtonStyle } from 'discord.js'
 
 
 import BotCommand from '../../types/command/BotCommand.js'
@@ -73,7 +73,7 @@ export default new BotCommand({
                         .setCustomId('giveaway')
                         .setLabel(amount.toString())
                         .setEmoji(emoji)
-                        .setStyle('PRIMARY')
+                        .setStyle(ButtonStyle.Primary)
                 )
             ]
         })

@@ -3,7 +3,7 @@ import logger from 'gamebot/logger'
 
 import BotCommand from '../../types/command/BotCommand.js'
 
-import Discord from 'discord.js'
+import Discord, { ButtonStyle } from 'discord.js'
 
 export default new BotCommand({
   name: 'draw',
@@ -37,7 +37,7 @@ export default new BotCommand({
       new Discord.ButtonBuilder()
         .setCustomId('drawlink_button')
         .setLabel('View link')
-        .setStyle('PRIMARY'),
+        .setStyle(ButtonStyle.Primary),
     );
 
     // Check permissions

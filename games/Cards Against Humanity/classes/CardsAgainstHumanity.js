@@ -14,6 +14,9 @@ import { whiteCards } from '../assets/cards.js'
 import CAHDeck from './CAHDeck.js'
 import BlackCard from './BlackCard.js'
 
+import { ButtonStyle } from 'discord-api-types/v10'
+import { AttachmentBuilder } from 'discord.js'
+
 const CARD_PACKS = {
     '90sn_pack': '90s',
     'ai_pack': 'ai',
@@ -311,11 +314,9 @@ export default class CardsAgainstHumanity extends Game {
         ctx.fillText('Gamebot for Discord', 50, 270)
         
         const fileName = Math.round(Math.random()*1000000) + '.png'
-        const stream = canvas.createJPEGStream({
-            quality: 1,
-            chromaSubsampling: false,
-            progressive: true
-        })
+
+        const attachment = new AttachmentBuilder(await canvas.encode('png'), { name: fileName });
+
         const embed = new Discord.EmbedBuilder()
         .setTitle('This round\'s black card')
         .setFooter({ text: this.blackCard.clean })
@@ -328,12 +329,9 @@ export default class CardsAgainstHumanity extends Game {
 
         this.msg.channel.send({
             embeds: [embed],
-            files: [{
-                attachment: stream,
-                name: fileName
-            }]
+            files: [ attachment ]
         }).catch(logger.error.bind(logger))
-        return stream
+        return attachment
     }
 
     renderPlayerHand(player) {
@@ -579,7 +577,7 @@ export default class CardsAgainstHumanity extends Game {
                 new Discord.ButtonBuilder()
                     .setCustomId(BUTTONS.VIEW_HAND)
                     .setLabel('View your hand')
-                    .setStyle('PRIMARY'),
+                    .setStyle(ButtonStyle.Primary),
             )
 
         // send an embed to main channel with links to each player hand [Go to hand](m.url)

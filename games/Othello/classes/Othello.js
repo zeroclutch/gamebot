@@ -11,6 +11,7 @@ import canvas from '@napi-rs/canvas'
 const { createCanvas, loadImage } = canvas
 
 import Discord from '../../../discord_mod.js'
+import { AttachmentBuilder } from 'discord.js'
 
 /**
  * The base class for Othello games.
@@ -101,9 +102,9 @@ export default class Othello extends Game {
 
     async giveMoveHelp(msg) {
         if(msg.content.toLowerCase().startsWith(`${this.channel.prefix}movehelp`)) {
-            let stream
+            let attachment
             try {
-                stream = await this.renderBoard(this.side)
+                attachment = await this.renderBoard(this.side)
             } catch (err) {
                 // Game hasn't fully initialized
                 msg.channel.send({
@@ -135,14 +136,11 @@ export default class Othello extends Game {
             .setFooter({ text: `Refer back to this anytime!` })
             .setColor(options.colors.info)
 
-            if(stream) embed.setImage(`attachment://image.png`)
+            if(attachment) embed.setImage(`attachment://image.png`)
             
             msg.channel.send({
                 embeds: [embed],
-                files: [{
-                    attachment: stream,
-                    name: 'image.png'
-                }]
+                files: [ attachment ]
             })
         }
     }
@@ -233,11 +231,10 @@ export default class Othello extends Game {
 
                     }
                 } 
-                resolve(canvas.createJPEGStream({
-                    quality: 1,
-                    chromaSubsampling: false,
-                    progressive: true
-                }))
+
+                // Draw last move
+                const attachment = new AttachmentBuilder(await canvas.encode('png'), { name: 'image.png' });
+                resolve(attachment)
             } catch (err) {
                 reject(err)
             }
@@ -249,7 +246,7 @@ export default class Othello extends Game {
     }
 
     async displayBoard(side) {
-        let stream = await this.renderBoard(side)
+        let attachment = await this.renderBoard(side)
         let pieceCount = this.board.countByPieceType()
         let getPieces = (s) => pieceCount[s] +
                                 (pieceCount[s] > pieceCount[PIECE_TYPES.BLACK]
@@ -292,10 +289,7 @@ export default class Othello extends Game {
         await this.channel.send({
             content: `${this.getPlayer(side).user}, it's your turn to move as ${side.toLowerCase()}!`,
             embeds: [embed],
-            files: [{
-                attachment: stream,
-                name: 'image.png'
-            }]
+            files: [ attachment ]
         }).catch(logger.error.bind(logger))
     }
 

@@ -21,7 +21,7 @@ export default async (client, tester) => {
         // reset data
         message = (await tester.command($ + 'wipe ' + tester.id)).first()
         message = (await tester.command($ + 'bal')).first()
-        assert.strictEqual(`You have **0**${options.creditIcon}.`, message.embeds[0].description)
+        assert.strictEqual(message.embeds[0].description, `You have **0**<:credit:810656538775650344> and **0**<a:gold:810683680556187668>.`)
     })
 
     await test('run daily command and update balance', async () => {
