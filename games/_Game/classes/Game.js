@@ -3,6 +3,8 @@ import { BUTTONS, GAME_OPTIONS, REPLIES } from '../../../config/types.js'
 import Discord from '../../../discord_mod.js'
 import logger, { getMessageData } from 'gamebot/logger'
 
+import { ButtonStyle } from 'discord-api-types/v10'
+
 /**
  * The base class for all games, see {@tutorial getting_started} to get started.
  * @abstract
@@ -283,11 +285,11 @@ export default class Game {
                     new Discord.ButtonBuilder()
                         .setCustomId(BUTTONS.JOIN)
                         .setLabel('Join')
-                        .setStyle('SUCCESS'),
+                        .setStyle(ButtonStyle.Success),
                     new Discord.ButtonBuilder()
                         .setCustomId(BUTTONS.START)
                         .setLabel('Start Game (Leader)')
-                        .setStyle('PRIMARY'),
+                        .setStyle(ButtonStyle.Primary),
                 )
 
                 const joinEmbed = {
@@ -418,7 +420,7 @@ export default class Game {
             new Discord.ButtonBuilder()
                 .setCustomId(BUTTONS.START)
                 .setLabel('Confirm Settings (Leader)')
-                .setStyle('PRIMARY'),
+                .setStyle(ButtonStyle.Primary),
         )
 
         // Display options
@@ -605,7 +607,7 @@ export default class Game {
                 do {
                     await this.displayOptionsMenu(optionMessage)
                     
-                    const buttonFilter = i => i.user.id === this.leader.id && i.customId === BUTTONS.START
+                    const buttonFilter = i => i.customId === BUTTONS.START
 
                     let buttonCollector = optionMessage.createMessageComponentCollector({ filter: buttonFilter, time: 60000 })
 
@@ -821,7 +823,7 @@ export default class Game {
                 }
 
                 // Notify user
-                if(member.id == this.gameMaster.id) {
+                if(member.id === this.gameMaster.id) {
                     await this.msg.channel.sendEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error).catch(logger.error.bind(logger))
                     this.end()
                 } else {

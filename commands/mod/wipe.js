@@ -1,6 +1,6 @@
 import BotCommand from '../../types/command/BotCommand.js'
 
-import { ApplicationCommandOptionType } from 'discord.js'
+import { ApplicationCommandOptionType, ButtonStyle } from 'discord.js'
 
 import logger from 'gamebot/logger'
 import options from '../../config/options.js'
@@ -33,11 +33,11 @@ export default new BotCommand({
                 new Discord.ButtonBuilder()
                 .setCustomId('wipe_confirm')
                 .setLabel('Confirm')
-                .setStyle('DANGER'),
+                .setStyle(ButtonStyle.Danger),
                 new Discord.ButtonBuilder()
                 .setCustomId('wipe_cancel')
                 .setLabel('Cancel')
-                .setStyle('SECONDARY')
+                .setStyle(ButtonStyle.Secondary)
             )
         ]}).then(message => {
             // Create a collector for the buttons

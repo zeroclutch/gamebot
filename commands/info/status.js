@@ -48,7 +48,7 @@ export default new BotCommand({
       // Get the number of active games and shards
       let games = await shard.broadcastEval(client => client.gameManager.games.size)
       gameCount = games.reduce((acc, val) => acc + val)
-      onlineShards = (await shard.broadcastEval(client => client.ws.status)).filter(s => s === Discord.Constants.Status.READY).length
+      onlineShards = (await shard.broadcastEval(client => client.ws.status)).filter(s => s === Discord.Status.Ready).length
       totalShards = shard.count
     }
 

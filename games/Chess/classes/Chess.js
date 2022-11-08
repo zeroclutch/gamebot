@@ -9,6 +9,8 @@ const { createCanvas, loadImage } = canvas
 import Discord from '../../../discord_mod.js'
 import LichessAPI from './../classes/LichessAPI.js'
 
+import { AttachmentBuilder } from 'discord.js'
+
 /**
  * The base class for Chess games.
  */
@@ -155,11 +157,9 @@ export default class Chess extends Game {
                         ctx.drawImage(piece, x, y, 64, 64)
                     }
                 }
-                resolve(canvas.createJPEGStream({
-                    quality: 1,
-                    chromaSubsampling: false,
-                    progressive: true
-                }))
+                // Draw last move
+                const attachment = new AttachmentBuilder(await canvas.encode('png'), { name: 'image.png' });
+                resolve(attachment)
             } catch (err) {
                 reject(err)
             }
@@ -172,7 +172,7 @@ export default class Chess extends Game {
     }
 
     async displayBoard(side) {
-        let stream = await this.renderBoard(side)
+        let attachment = await this.renderBoard(side)
         let embed = new Discord.EmbedBuilder()
         .setDescription(`You have ${this.options['Timer']} seconds to make a move.`)
         .addFields([
@@ -203,10 +203,7 @@ export default class Chess extends Game {
         await this.channel.send({
             content: `${this.getPlayer(side).user}, it's your turn to move as ${side.toLowerCase()}!`,
             embeds: [embed],
-            files: [{
-                attachment: stream,
-                name: 'image.png'
-            }]
+            files: [ attachment ]
         }).catch(logger.error.bind(logger))
     }
 
