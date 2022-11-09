@@ -1,4 +1,3 @@
-import GamebotError from '../error/GamebotError.js'
 import BaseCommand from './BaseCommand.js'
 
 /**

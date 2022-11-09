@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType } from 'discord.js'
+import { ApplicationCommandType, ApplicationCommandOptionType } from 'discord.js'
 import GamebotError from '../error/GamebotError.js'
 
 /**
@@ -23,7 +23,7 @@ export default class BaseCommand {
 
     toSlashCommand() {
         return {
-            type: Constants.ApplicationCommandType.ChatInput, // Slash command
+            type: ApplicationCommandType.ChatInput, // Slash command
             name: this.name,
             description: this.description,
             options: this.args,
