@@ -84,12 +84,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // Update guild count
 let cachedGuilds = null
 const updateGuilds = async () => {
-  const allShardsReady = manager.shards === manager.totalShards
-  if(!allShardsReady) return
+  // const allShardsReady = manager.shards === manager.totalShards
+  // if(!allShardsReady) return
   let guilds = await manager.fetchClientValues('guilds.cache.size')
   if(guilds) cachedGuilds = guilds.reduce((prev, val) => prev + val, 0)
 }
-setInterval(updateGuilds, 60000)
+setInterval(updateGuilds, 60 * 1000 * 5)
 
 import axios from 'axios'
 
