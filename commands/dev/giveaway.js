@@ -104,12 +104,12 @@ export default new BotCommand({
                 await collection.updateOne(
                     { userID: user.id },
                     { $inc: { goldBalance: amount } }
-                ).catch(logger.error)
+                ).catch(logger.error.bind(logger))
             } else {
                 await collection.updateOne(
                     { userID: user.id },
                     { $inc: { balance: amount } }
-                ).catch(logger.error)
+                ).catch(logger.error.bind(logger))
             }
 
             i.reply({

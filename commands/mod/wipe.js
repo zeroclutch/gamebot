@@ -64,12 +64,12 @@ export default new BotCommand({
                         })
                     })
                 } else if(i.customId === 'wipe_cancel') {
-                    i.reply('Wipe cancelled.').catch(logger.error)
+                    i.reply('Wipe cancelled.').catch(logger.error.bind(logger))
                 }
             })
 
             collector.on('end', () => {
-                message.edit({ embeds: [embed], components: []}).catch(logger.error)
+                message.edit({ embeds: [embed], components: []}).catch(logger.error.bind(logger))
             })
         })
     }
