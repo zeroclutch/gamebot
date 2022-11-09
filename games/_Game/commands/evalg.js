@@ -1,9 +1,8 @@
 import GameCommand from '../../../types/command/GameCommand.js'
 
 import Discord from 'discord.js';
-const { Util } = Discord;
 
-import util from 'util'
+import { inspect } from 'util'
 import { GAMEBOT_PERMISSIONS } from '../../../config/types.js'
 import logger from 'gamebot/logger'
 

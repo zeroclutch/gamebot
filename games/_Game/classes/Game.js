@@ -745,7 +745,7 @@ export default class Game {
             if(member === false) return
         }
 
-        if(this.leader.id == member.id) {
+        if(this.leader.id === member.id) {
             await this.channel.send({
                 embeds: [{
                     title: 'Error!',
@@ -753,6 +753,7 @@ export default class Game {
                     color: options.colors.error
                 }]
             }).catch(logger.error.bind(logger))
+            return
         }
         
         if(!this.players.has(member.id) || !member || (member.user.bot && !this.client.isTestingMode)) {
