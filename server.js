@@ -110,7 +110,7 @@ if(process.env.DBL_TOKEN) {
         }
       })
       .then(logger.info)
-      .catch(logger.error)
+      .catch(logger.error.bind(logger))
   }, 1800000)
 }
 
@@ -152,7 +152,7 @@ app.get('/api/shopItems', async (req, res) => {
   if(req.query.userID)
     validated = await oauth2.validate(req.query.userID, req.header('authorization'))
   if(validated)
-    shopItems = await shopGenerator.fetchShopItems(req.query.userID).catch(logger.error)
+    shopItems = await shopGenerator.fetchShopItems(req.query.userID).catch(logger.error.bind(logger))
   else
     shopItems = await shopGenerator.fetchShopItems().catch(logger.error.bind(logger))
   res.send(shopItems)

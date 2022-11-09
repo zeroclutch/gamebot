@@ -18,7 +18,7 @@ const commands = async client => {
             const folder = fs.readdirSync(path.join('.', 'commands', commandFolder))
             for (const file of folder) {
                 if (file === '.DS_Store') continue
-                const { default: command } = await import(`../commands/${commandFolder}/${file}`).catch(logger.error)
+                const { default: command } = await import(`../commands/${commandFolder}/${file}`).catch(logger.error.bind(logger))
                 client.commands.set(command.name, command)
             }
         }

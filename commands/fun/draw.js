@@ -65,7 +65,7 @@ export default new BotCommand({
 
         collector.once('collect', i => {
             i.reply(drawingPayload)
-            .catch(logger.error)
+            .catch(logger.error.bind(logger))
         })
 
         collector.once('end', collected => {

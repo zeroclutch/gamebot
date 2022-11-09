@@ -76,7 +76,7 @@ Discord.DMChannel.prototype.sendEmbed = Discord.TextChannel.prototype.sendEmbed 
  * @example
  * user.createDBInfo()
  * .then(info => console.log(`User was created with ${info.balance} credits`))
- * .catch(logger.error)
+ * .catch(logger.error.bind(logger))
  */
 Discord.User.prototype.createDBInfo = function() {
   return new Promise((resolve, reject) => {
@@ -118,7 +118,7 @@ Discord.Client.prototype.updateStatus = async function(itemID) {
   // try fetching message
   let statusChannel = await this.channels.fetch(options.statusChannel)
   if(statusChannel) {
-    let message = (await statusChannel.messages.fetch({ limit: 1 }).catch(logger.error)).first()
+    let message = (await statusChannel.messages.fetch({ limit: 1 }).catch(logger.error.bind(logger))).first()
     this.latestStatus = { content: message.content, date: message.createdAt.toLocaleDateString() }
     return this.latestStatus
   }
