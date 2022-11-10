@@ -340,7 +340,9 @@ export default class Game {
                     // End all collectors when game is force stopped
                     if(this.ending) return
 
-                    joinMessage.edit({ components: [] })
+                    if(joinMessage) {
+                        joinMessage.edit({ components: [] })
+                    }
 
                     // check if there are enough players
                     let size = this.players.size
