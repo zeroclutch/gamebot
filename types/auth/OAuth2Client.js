@@ -54,8 +54,6 @@ export default class OAuth2Client {
             }
         }).catch(err => logger.error(err))
 
-        console.log(res.data)
-
         // Check if the user is the same
         let isAuthorized = res && res.data && res.data.id == id
 
