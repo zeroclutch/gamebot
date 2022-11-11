@@ -7,10 +7,11 @@ import othello from 'reversi';
 const OthelloGame = othello.Game;
 const PIECE_TYPES = othello.PIECE_TYPES;
 
-import canvas from 'canvas'
+import canvas from '@napi-rs/canvas'
 const { createCanvas, loadImage } = canvas
 
 import Discord from '../../../discord_mod.js'
+import { AttachmentBuilder, time } from 'discord.js'
 
 /**
  * The base class for Othello games.
@@ -101,9 +102,9 @@ export default class Othello extends Game {
 
     async giveMoveHelp(msg) {
         if(msg.content.toLowerCase().startsWith(`${this.channel.prefix}movehelp`)) {
-            let stream
+            let attachment
             try {
-                stream = await this.renderBoard(this.side)
+                attachment = await this.renderBoard(this.side)
             } catch (err) {
                 // Game hasn't fully initialized
                 msg.channel.send({
@@ -121,43 +122,26 @@ export default class Othello extends Game {
 
             let placeableSquares = this.board.getPlaceableSquares(this.side.toUpperCase()).map(s => '`' + this.channel.prefix + columns[s._colIndex] + rows[s._rowIndex] + '`')
 
-            let embed = new Discord.MessageEmbed()
-            .addField('Important Note:', `Remember to start all moves with the Gamebot's prefix, ${this.channel.prefix}.`)
-            .addField('How do I enter my moves?', `Find the square you want to place your tile in. Look for its column letter, and look for its row number. For example, the top left square is h1, and the bottom right one is a8. Then, type ${this.channel.prefix}<letter><number>, and replace <letter> and <number> with your tile's letter and number.`)
-            .addField('Possible moves', `The possible moves right now are: ${placeableSquares.join(',')}`)
+            let embed = new Discord.EmbedBuilder()
+            .addFields([{
+                name: 'Important Note:',
+                value: `Remember to start all moves with the Gamebot's prefix, ${this.channel.prefix}.`
+            }, {
+                name: 'How do I enter my moves?',
+                value: `Find the square you want to place your tile in. Look for its column letter, and look for its row number. For example, the top left square is h1, and the bottom right one is a8. Then, type ${this.channel.prefix}<letter><number>, and replace <letter> and <number> with your tile's letter and number.`
+            }, {
+                name: 'Possible moves',
+                value: `The possible moves right now are: ${placeableSquares.join(',')}`
+            }])
             .setFooter({ text: `Refer back to this anytime!` })
             .setColor(options.colors.info)
 
-            if(stream) embed.setImage(`attachment://image.png`)
+            if(attachment) embed.setImage(`attachment://image.png`)
             
             msg.channel.send({
                 embeds: [embed],
-                files: [{
-                    attachment: stream,
-                    name: 'image.png'
-                }]
+                files: [ attachment ]
             })
-        }
-    }
-
-    getTimer(msg) {
-        if(msg.content.toLowerCase().startsWith(`${this.channel.prefix}timer`)) {
-            if(this.thisTurnEndsAt > -1) {
-                msg.channel.send({
-                    embeds: [{
-                        description: `${this.getPlayer(this.side).user} has ${Math.floor((this.thisTurnEndsAt - Date.now()) / 1000)} seconds left.`,
-                        color: options.colors.info
-                    }]
-                })
-            } else {
-                msg.channel.send({
-                    embeds: [{
-                        title: 'Error!',
-                        description: 'Please wait for the game to begin before using this command.',
-                        color: options.colors.error
-                    }]
-                })
-            }
         }
     }
 
@@ -226,11 +210,10 @@ export default class Othello extends Game {
 
                     }
                 } 
-                resolve(canvas.createJPEGStream({
-                    quality: 1,
-                    chromaSubsampling: false,
-                    progressive: true
-                }))
+
+                // Draw last move
+                const attachment = new AttachmentBuilder(await canvas.encode('png'), { name: 'image.png' });
+                resolve(attachment)
             } catch (err) {
                 reject(err)
             }
@@ -242,24 +225,37 @@ export default class Othello extends Game {
     }
 
     async displayBoard(side) {
-        let stream = await this.renderBoard(side)
+        let attachment = await this.renderBoard(side)
         let pieceCount = this.board.countByPieceType()
         let getPieces = (s) => pieceCount[s] +
                                 (pieceCount[s] > pieceCount[PIECE_TYPES.BLACK]
                                 && pieceCount[s] > pieceCount[PIECE_TYPES.WHITE] ? ' ⭐️' : '')
 
-        
-        let embed = new Discord.MessageEmbed()
-        .setDescription(`You have ${this.options['Timer']} seconds to make a move.`)
+        let turnEndTime = Math.round(Date.now() / 1000 + parseInt(this.options['Timer']))
+
+        let embed = new Discord.EmbedBuilder()
+        .setDescription(`You have to make a move ${time(turnEndTime, 'R')}.`)
         .setFooter({ text: `Type ${this.channel.prefix}movehelp for help.` })
         .setImage(`attachment://image.png`)
         .setColor({ 'White': '#fffffe', 'Black': '#000001' }[side])
-        .addField('Black ⚫️', `${getPieces(PIECE_TYPES.BLACK)}`, true)
-        .addField('White ⚪️', `${getPieces(PIECE_TYPES.WHITE)}`, true)
-        .addField('Remaining', `${pieceCount[PIECE_TYPES.BLANK]}`, true)
-        .addField('⏰', `Type \`${this.channel.prefix}timer\` to see the move time remaining.`, true)
-        .addField('🏳', `Type \`${this.channel.prefix}resign\` to give up.`, true)
-        .addField('ℹ️', `To make a move, enter the bot prefix followed by the name of the square.`, true)
+        .addFields([{
+            name: 'Black ⚫️',
+            value: `${getPieces(PIECE_TYPES.BLACK)}`,
+            inline: true
+        }, {
+            name: 'White ⚪️',
+            value: `${getPieces(PIECE_TYPES.WHITE)}`,
+            inline: true
+        }, {
+            name: 'ℹ️',
+            value: 'To make a move, enter the bot prefix followed by the name of the square.',
+            inline: true
+        },
+        {
+            name: '🏳',
+            value: `Type \`${this.channel.prefix}resign\` to give up.`,
+            inline: true
+        }])
 
         this.client.metrics.log('Generated image', {
             game: this.metadata.id,
@@ -268,10 +264,7 @@ export default class Othello extends Game {
         await this.channel.send({
             content: `${this.getPlayer(side).user}, it's your turn to move as ${side.toLowerCase()}!`,
             embeds: [embed],
-            files: [{
-                attachment: stream,
-                name: 'image.png'
-            }]
+            files: [ attachment ]
         }).catch(logger.error.bind(logger))
     }
 
@@ -296,7 +289,7 @@ export default class Othello extends Game {
                         let report = this.game.proceed(row, column);
                         collector.stop('submitted')
                         resolve(report)
-                    } else {
+                    } else if(!['resign', 'timer', 'end'].includes(move.toLowerCase())) {
                         this.channel.send({
                             embeds: [{
                                 title: 'Invalid move!',

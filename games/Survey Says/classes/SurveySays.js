@@ -7,6 +7,7 @@ import { decrypt } from './../../../types/util/cryptography.js'
 import fs from 'fs'
 import { BUTTONS } from '../../../config/types.js'
 import logger from 'gamebot/logger'
+import { ButtonStyle } from 'discord-api-types/v10'
 
 let questionList
 decrypt(process.env.PASS_KEY, fs.readFileSync('./games/Survey Says/assets/data.enc', 'utf8'))
@@ -210,16 +211,16 @@ export default class SurveySays extends Game {
             submissionList += `${icons[submitted.get(id) || 'none']} **${player.user}**\n`
         })
 
-        const submissionButtonRow = new Discord.MessageActionRow()
+        const submissionButtonRow = new Discord.ActionRowBuilder()
         .addComponents(
-            new Discord.MessageButton()
+            new Discord.ButtonBuilder()
                 .setCustomId(BUTTONS.MORE)
                 .setLabel('More')
-                .setStyle('SUCCESS'),
-            new Discord.MessageButton()
+                .setStyle(ButtonStyle.Success),
+            new Discord.ButtonBuilder()
                 .setCustomId(BUTTONS.LESS)
                 .setLabel('Less')
-                .setStyle('DANGER'),
+                .setStyle(ButtonStyle.Danger),
         )
 
         return {

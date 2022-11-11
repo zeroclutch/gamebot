@@ -8,7 +8,7 @@ export default new GameCommand({
     permissions: [],
     args: false,
     run: async function(msg, args, game) {
-        let member = msg.member
+        let member = msg.member || msg.author.id
         if(game.settings.updatePlayersAnytime) {
             await game.removePlayer(member, null)
             game.updatePlayers()

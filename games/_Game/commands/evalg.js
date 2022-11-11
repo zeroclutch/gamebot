@@ -1,23 +1,38 @@
 import GameCommand from '../../../types/command/GameCommand.js'
 
-import { Util } from 'discord.js'
-import util from 'util'
+import Discord from 'discord.js';
+
+import { inspect } from 'util'
 import { GAMEBOT_PERMISSIONS } from '../../../config/types.js'
 import logger from 'gamebot/logger'
 
-import Discord from 'discord.js-light'
-const { Constants } = Discord
+import { ApplicationCommandOptionType } from 'discord.js'
+
+
+// Via https://stackoverflow.com/a/29202760
+function chunkSubstr(str, size) {
+  const numChunks = Math.ceil(str.length / size)
+  const chunks = new Array(numChunks)
+
+  for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
+    chunks[i] = str.substr(o, size)
+  }
+  
+  return chunks
+}
 
 let responsify = (response, msg, completed='+ eval completed +') => {
-    response = util.inspect(response) 
-    response = Util.splitMessage(response, {maxLength: 1600})
-    response.forEach((res, index, arr) => {
-        const isFirst = index === 0
-        const isLast = index === arr.length - 1
-        const message = `${isFirst ? '**Response**' : ''}\`\`\`js\n${res}\`\`\`${isLast ? `\`\`\`diff\n${completed}\`\`\`\nResponse Time: \`${(Date.now()-msg.createdTimestamp)}ms\`\nType: \`${typeof res}\``
-            : ''}`
-        msg.channel.send(message)
-    })
+  response = inspect(response) 
+  response = chunkSubstr(response, 1600)
+  response.forEach((res, index, arr) => {
+      const isFirst = index === 0
+      const isLast = index === arr.length - 1
+      const content = `${isFirst ? '**Response**' : ''}\`\`\`js\n${res}\`\`\`${isLast ? `\`\`\`diff\n${completed}\`\`\`\nResponse Time: \`${(Date.now()-msg.createdTimestamp)}ms\`\nType: \`${typeof res}\``
+          : ''}`
+      msg.channel.send({
+          content,
+      })
+  })
 }
 
 export default new GameCommand({
@@ -32,7 +47,7 @@ export default new GameCommand({
     name: 'code',
     description: 'The code to test',
     required: true,
-    type: Constants.ApplicationCommandOptionTypes.STRING,
+    type: ApplicationCommandOptionType.String,
   }],
   run: async (msg, args, game) => {
     let response

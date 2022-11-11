@@ -4,10 +4,12 @@ import metadata from '../metadata.js'
 import logger from 'gamebot/logger'
 
 import chess from 'chess'
-import canvas from 'canvas'
+import canvas from '@napi-rs/canvas'
 const { createCanvas, loadImage } = canvas
 import Discord from '../../../discord_mod.js'
 import LichessAPI from './../classes/LichessAPI.js'
+
+import { AttachmentBuilder, time } from 'discord.js'
 
 /**
  * The base class for Chess games.
@@ -155,11 +157,9 @@ export default class Chess extends Game {
                         ctx.drawImage(piece, x, y, 64, 64)
                     }
                 }
-                resolve(canvas.createJPEGStream({
-                    quality: 1,
-                    chromaSubsampling: false,
-                    progressive: true
-                }))
+                // Draw last move
+                const attachment = new AttachmentBuilder(await canvas.encode('png'), { name: 'image.png' });
+                resolve(attachment)
             } catch (err) {
                 reject(err)
             }
@@ -172,12 +172,24 @@ export default class Chess extends Game {
     }
 
     async displayBoard(side) {
-        let stream = await this.renderBoard(side)
-        let embed = new Discord.MessageEmbed()
-        .setDescription(`You have ${this.options['Timer']} seconds to make a move.`)
-        .addField('ℹ️', 'To make a move, enter the bot prefix followed by a valid move in algebraic notation.', true)
-        .addField('⏰', `Type \`${this.channel.prefix}timer\` to see the move time remaining.`, true)
-        .addField('🏳', `Type \`${this.channel.prefix}resign\` to give up.`, true)
+        let attachment = await this.renderBoard(side)
+
+        let turnEndTime = Math.round(Date.now() / 1000 + parseInt(this.options['Timer']))
+
+        let embed = new Discord.EmbedBuilder()
+        .setDescription(`You have to make a move ${time(turnEndTime, 'R')}.`)
+        .addFields([
+            {
+                name: 'ℹ️',
+                value: 'To make a move, enter the bot prefix followed by a valid move in algebraic notation.',
+                inline: true
+            },
+            {
+                name: '🏳',
+                value: `Type \`${this.channel.prefix}resign\` to give up.`,
+                inline: true
+            }
+        ])
         .setFooter({ text: `Type ${this.channel.prefix}movehelp for help.`})
         .setImage(`attachment://image.png`)
         .setColor({ 'White': '#fffffe', 'Black': '#000001' }[side])
@@ -189,10 +201,7 @@ export default class Chess extends Game {
         await this.channel.send({
             content: `${this.getPlayer(side).user}, it's your turn to move as ${side.toLowerCase()}!`,
             embeds: [embed],
-            files: [{
-                attachment: stream,
-                name: 'image.png'
-            }]
+            files: [ attachment ]
         }).catch(logger.error.bind(logger))
     }
 
@@ -236,7 +245,7 @@ export default class Chess extends Game {
                         this.moves.push(move)
                         collector.stop('submitted')
                         resolve(true)
-                    } else {
+                    } else if(!['resign', 'timer', 'end'].includes(move.toLowerCase())) {
                         this.channel.send({
                             embeds: [{
                                 title: 'Invalid move!',

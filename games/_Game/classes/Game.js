@@ -3,6 +3,8 @@ import { BUTTONS, GAME_OPTIONS, REPLIES } from '../../../config/types.js'
 import Discord from '../../../discord_mod.js'
 import logger, { getMessageData } from 'gamebot/logger'
 
+import { ButtonStyle } from 'discord-api-types/v10'
+
 /**
  * The base class for all games, see {@tutorial getting_started} to get started.
  * @abstract
@@ -278,16 +280,16 @@ export default class Game {
                 await this.updatePlayers(true)
 
                 // Construct join message
-                const joinButtonRow = new Discord.MessageActionRow()
+                const joinButtonRow = new Discord.ActionRowBuilder()
                 .addComponents(
-                    new Discord.MessageButton()
+                    new Discord.ButtonBuilder()
                         .setCustomId(BUTTONS.JOIN)
                         .setLabel('Join')
-                        .setStyle('SUCCESS'),
-                    new Discord.MessageButton()
+                        .setStyle(ButtonStyle.Success),
+                    new Discord.ButtonBuilder()
                         .setCustomId(BUTTONS.START)
                         .setLabel('Start Game (Leader)')
-                        .setStyle('PRIMARY'),
+                        .setStyle(ButtonStyle.Primary),
                 )
 
                 const joinEmbed = {
@@ -338,7 +340,9 @@ export default class Game {
                     // End all collectors when game is force stopped
                     if(this.ending) return
 
-                    joinMessage.edit({ components: [] })
+                    if(joinMessage) {
+                        joinMessage.edit({ components: [] })
+                    }
 
                     // check if there are enough players
                     let size = this.players.size
@@ -413,12 +417,12 @@ export default class Game {
     }
 
     async displayOptionsMenu(optionMessage) {
-        const optionsButtonRow = new Discord.MessageActionRow()
+        const optionsButtonRow = new Discord.ActionRowBuilder()
         .addComponents(
-            new Discord.MessageButton()
+            new Discord.ButtonBuilder()
                 .setCustomId(BUTTONS.START)
                 .setLabel('Confirm Settings (Leader)')
-                .setStyle('PRIMARY'),
+                .setStyle(ButtonStyle.Primary),
         )
 
         // Display options
@@ -605,7 +609,7 @@ export default class Game {
                 do {
                     await this.displayOptionsMenu(optionMessage)
                     
-                    const buttonFilter = i => i.user.id === this.leader.id && i.customId === BUTTONS.START
+                    const buttonFilter = i => i.customId === BUTTONS.START
 
                     let buttonCollector = optionMessage.createMessageComponentCollector({ filter: buttonFilter, time: 60000 })
 
@@ -743,7 +747,7 @@ export default class Game {
             if(member === false) return
         }
 
-        if(this.leader.id == member.id) {
+        if(this.leader.id === member.id) {
             await this.channel.send({
                 embeds: [{
                     title: 'Error!',
@@ -751,6 +755,7 @@ export default class Game {
                     color: options.colors.error
                 }]
             }).catch(logger.error.bind(logger))
+            return
         }
         
         if(!this.players.has(member.id) || !member || (member.user.bot && !this.client.isTestingMode)) {
@@ -821,7 +826,7 @@ export default class Game {
                 }
 
                 // Notify user
-                if(member.id == this.gameMaster.id) {
+                if(member.id === this.gameMaster.id) {
                     await this.msg.channel.sendEmbed(`You must change your privacy settings to allow direct messages from members of this server before playing this game. [See this article for more information.](https://support.discordapp.com/hc/en-us/articles/217916488-Blocking-Privacy-Settings-)`, `Error: You could not start this game.`, options.colors.error).catch(logger.error.bind(logger))
                     this.end()
                 } else {

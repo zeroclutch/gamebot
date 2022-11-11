@@ -22,7 +22,7 @@ export default class OAuth2Client {
 
     async clearHashes() {
         this.storedHashes = {}
-        await this.sleep(60 * 60 * 1000)
+        await this.sleep(60 * 60 * 1000 * 2) // 2 hours
         this.clearHashes()
     }
 
@@ -39,8 +39,8 @@ export default class OAuth2Client {
     async validate(id, token) {
         let hash = this.hash(id, token)
         // Check hash storage
-        if(this.storedHashes[hash]) {
-            return true
+        if(this.storedHashes.hasOwnProperty(hash)) {
+            return this.storedHashes[hash]
         } else {
             // Check server
             return await this.validateOnServer(id, token)
@@ -48,16 +48,16 @@ export default class OAuth2Client {
     }
 
     async validateOnServer(id, token) {
-        let res = await axios.get('https://discord.com/api/users/@me', {
+        let res = await axios.get(`https://discord.com/api/users/@me`, {
             headers: {
-                authorization: token
+                authorization: `${token}`
             }
         }).catch(err => logger.error(err))
-        if(res && res.data && res.data.id == id) {
-            this.storedHashes[this.hash(id, token)] = true
-            return true
-        } else {
-            return false
-        }
+
+        // Check if the user is the same
+        let isAuthorized = res && res.data && res.data.id == id
+
+        this.storedHashes[this.hash(id, token)] = isAuthorized
+        return isAuthorized
     }
 }

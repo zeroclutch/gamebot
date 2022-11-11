@@ -1,5 +1,4 @@
-import Discord from 'discord.js-light'
-const { Constants } = Discord
+import { ApplicationCommandType, ApplicationCommandOptionType } from 'discord.js'
 import GamebotError from '../error/GamebotError.js'
 
 /**
@@ -24,7 +23,7 @@ export default class BaseCommand {
 
     toSlashCommand() {
         return {
-            type: Constants.ApplicationCommandTypes.CHAT_INPUT, // Slash command
+            type: ApplicationCommandType.ChatInput, // Slash command
             name: this.name,
             description: this.description,
             options: this.args,

@@ -34,7 +34,16 @@ manager.on('shardCreate', shard => {
 
   setTimeout(() => shard.send({ testMode }), SPAWN_DELAY)
 })
-manager.spawn('auto', SPAWN_DELAY).catch(err => logger.error(err))
+
+try {
+  manager.spawn({
+    amount: 'auto',
+    delay: SPAWN_DELAY,
+    timeout: 60_000,
+  }).catch(err => logger.error(err))
+} catch(err) {
+  console.error(err)
+}
 
 // Add server dependencies
 import bodyParser from 'body-parser'
@@ -75,10 +84,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // Update guild count
 let cachedGuilds = null
 const updateGuilds = async () => {
+  // const allShardsReady = manager.shards === manager.totalShards
+  // if(!allShardsReady) return
   let guilds = await manager.fetchClientValues('guilds.cache.size')
   if(guilds) cachedGuilds = guilds.reduce((prev, val) => prev + val, 0)
 }
-setInterval(updateGuilds, 60000)
+setInterval(updateGuilds, 60 * 1000 * 5)
 
 import axios from 'axios'
 
@@ -99,7 +110,7 @@ if(process.env.DBL_TOKEN) {
         }
       })
       .then(logger.info)
-      .catch(logger.error)
+      .catch(logger.error.bind(logger))
   }, 1800000)
 }
 
@@ -141,7 +152,7 @@ app.get('/api/shopItems', async (req, res) => {
   if(req.query.userID)
     validated = await oauth2.validate(req.query.userID, req.header('authorization'))
   if(validated)
-    shopItems = await shopGenerator.fetchShopItems(req.query.userID).catch(logger.error)
+    shopItems = await shopGenerator.fetchShopItems(req.query.userID).catch(logger.error.bind(logger))
   else
     shopItems = await shopGenerator.fetchShopItems().catch(logger.error.bind(logger))
   res.send(shopItems)

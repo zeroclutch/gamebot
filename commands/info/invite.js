@@ -3,7 +3,7 @@ import options from './../../config/options.js'
 import BotCommand from '../../types/command/BotCommand.js'
 export default new BotCommand({
     name: 'invite',
-        aliases: ['botinfo', 'support', 'donate'],
+        aliases: ['botinfo', 'support'],
     description: 'Invite the bot to your server!',
     category: 'info',
     permissions: [],

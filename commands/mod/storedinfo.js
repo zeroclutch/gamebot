@@ -1,7 +1,6 @@
 import BotCommand from '../../types/command/BotCommand.js'
 
-import Discord from 'discord.js-light'
-const { Constants } = Discord
+import { ApplicationCommandOptionType } from 'discord.js'
 
 export default new BotCommand({
     name: 'storedinfo',
@@ -14,7 +13,7 @@ export default new BotCommand({
         name: 'user',
         description: 'The user to get stored data for',
         required: true,
-        type: Constants.ApplicationCommandOptionTypes.USER,
+        type: ApplicationCommandOptionType.User,
     }],
     run: function(msg, args) {
         const collection = msg.client.database.collection('users')

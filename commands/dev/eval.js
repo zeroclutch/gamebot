@@ -8,9 +8,22 @@ const { Util } = Discord
 import { inspect } from 'util'
 import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 
+
+// Via https://stackoverflow.com/a/29202760
+function chunkSubstr(str, size) {
+    const numChunks = Math.ceil(str.length / size)
+    const chunks = new Array(numChunks)
+  
+    for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
+      chunks[i] = str.substr(o, size)
+    }
+    
+    return chunks
+  }
+
 let responsify = (response, msg, completed='+ eval completed +') => {
     response = inspect(response) 
-    response = Util.splitMessage(response, {maxLength: 1600})
+    response = chunkSubstr(response, 1600)
     response.forEach((res, index, arr) => {
         const isFirst = index === 0
         const isLast = index === arr.length - 1

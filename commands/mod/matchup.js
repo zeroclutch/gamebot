@@ -1,7 +1,6 @@
 import BotCommand from '../../types/command/BotCommand.js'
 
-import Discord from 'discord.js-light'
-const { Constants } = Discord
+import { ApplicationCommandOptionType } from 'discord.js'
 
 export default new BotCommand({
     name: 'matchup',
@@ -14,12 +13,12 @@ export default new BotCommand({
       name: 'user1',
       description: 'Player 1',
       required: true,
-      type: Constants.ApplicationCommandOptionTypes.USER,
+      type: ApplicationCommandOptionType.User,
     }, {
       name: 'user2',
       description: 'Player 2',
       required: true,
-      type: Constants.ApplicationCommandOptionTypes.USER,
+      type: ApplicationCommandOptionType.User,
     }],
     run: async function(msg, args) {
       const user1 = args[0].replace(/\D/g, '')

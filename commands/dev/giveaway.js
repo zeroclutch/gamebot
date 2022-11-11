@@ -3,8 +3,7 @@ import logger from 'gamebot/logger'
 import GamebotError from '../../types/error/GamebotError.js'
 import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 
-import Discord from 'discord.js-light'
-const { Constants } = Discord
+import { ApplicationCommandOptionType, ButtonStyle } from 'discord.js'
 
 
 import BotCommand from '../../types/command/BotCommand.js'
@@ -18,27 +17,27 @@ export default new BotCommand({
     args: [{
         name: 'channel',
         description: 'The channel to start the giveaway in.',
-        type: Constants.ApplicationCommandOptionTypes.CHANNEL,
+        type: ApplicationCommandOptionType.Channel,
         required: true,
     }, {
         name: 'time',
         description: 'The time the giveaway should last, in minutes',
-        type: Constants.ApplicationCommandOptionTypes.INTEGER,
+        type: ApplicationCommandOptionType.Integer,
         required: true,
     }, {
         name: 'amount',
         description: 'The type of reward for the giveaway.',
-        type: Constants.ApplicationCommandOptionTypes.INTEGER,
+        type: ApplicationCommandOptionType.Integer,
         required: true,
     },{
         name: 'type',
         description: 'The type of reward for the giveaway.',
-        type: Constants.ApplicationCommandOptionTypes.STRING,
+        type: ApplicationCommandOptionType.String,
         required: true,
     },{
         name: 'message',
         description: 'The message to send with the giveaway.',
-        type:  Constants.ApplicationCommandOptionTypes.STRING,
+        type:  ApplicationCommandOptionType.String,
         required: false,
     }],
     run: async function(msg, args) {
@@ -69,12 +68,12 @@ export default new BotCommand({
                 color: options.colors.info
             }],
             components: [
-                new Discord.MessageActionRow().addComponents(
-                    new Discord.MessageButton()
+                new Discord.ActionRowBuilder().addComponents(
+                    new Discord.ButtonBuilder()
                         .setCustomId('giveaway')
                         .setLabel(amount.toString())
                         .setEmoji(emoji)
-                        .setStyle('PRIMARY')
+                        .setStyle(ButtonStyle.Primary)
                 )
             ]
         })
@@ -105,12 +104,12 @@ export default new BotCommand({
                 await collection.updateOne(
                     { userID: user.id },
                     { $inc: { goldBalance: amount } }
-                ).catch(logger.error)
+                ).catch(logger.error.bind(logger))
             } else {
                 await collection.updateOne(
                     { userID: user.id },
                     { $inc: { balance: amount } }
-                ).catch(logger.error)
+                ).catch(logger.error.bind(logger))
             }
 
             i.reply({

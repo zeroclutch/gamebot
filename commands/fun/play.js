@@ -1,7 +1,6 @@
 // create Collection<Game> of all the games
 import options from './../../config/options.js'
-import Discord from 'discord.js-light'
-const { Constants, CommandInteraction } = Discord
+import { ApplicationCommandOptionType } from 'discord.js'
 
 import { choices } from '../../types/util/games.js'
 
@@ -15,14 +14,31 @@ export default new BotCommand({
   dmCommand: false,
   args: [{
     name: 'game',
-    type: Constants.ApplicationCommandOptionTypes.STRING,
+    type: ApplicationCommandOptionType.String,
     required: true,
     description: 'The name of the game',
     choices: await Promise.all(choices),
   }],
 
   run: async function(msg, args) {
+    try {
     await msg.reply('Loading...')
+    } catch(err) {
+      // TODO: Test this to see if it works
+      switch(err.code) {  
+        case 10062: // Unknown interaction
+          msg.channel.send({
+            embeds: [{
+              title: 'Error!',
+              description: `Sorry, I don't recognize that game. Make sure you type out the full name of the game correctly.`,
+              color: options.colors.error
+            }]
+          })
+          break;
+        default:
+          throw err
+      } 
+    }
 
     const selection = args.join(' ').toLowerCase()
     const game = msg.client.games.find((_game, meta) => meta.id == selection || meta.name.toLowerCase() == selection)

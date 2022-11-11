@@ -11,7 +11,7 @@ export default new BotCommand({
     dmCommand: true,
     args: [{
         name: 'command',
-        type: Discord.Constants.ApplicationCommandOptionTypes.STRING,
+        type: Discord.ApplicationCommandOptionType.String,
         description: 'The name of the command you need help with',
         required: false,
     }],
@@ -70,7 +70,7 @@ export default new BotCommand({
                 }
             }
 
-            let embed = new Discord.MessageEmbed()
+            let embed = new Discord.EmbedBuilder()
             embed.setTitle('Help - List of Commands for Gamebot')
             embed.setThumbnail(msg.client.user.avatarURL({dynamic: true}))
             embed.setColor(options.colors.economy)
@@ -81,13 +81,18 @@ export default new BotCommand({
                         commandList += `\`${msg.channel.prefix}${cmd.usage}\` - ${cmd.description}\n`
                     }
                 })
-                embed.addField('Category: ' + category.toUpperCase(), commandList)
+                embed.addFields([{
+                    name: 'Category: ' + category.toUpperCase(), 
+                    value: commandList
+                }])
             })
-            embed.addField('Category: IN-GAME',
-                '`' + msg.channel.prefix + 'kick <@user>` - Kick a user from the game (game leader only).\n`' +
+            embed.addFields([{
+                name: 'Category: IN-GAME',
+                value: '`' + msg.channel.prefix + 'kick <@user>` - Kick a user from the game (game leader only).\n`' +
                 msg.channel.prefix + 'add <@user>` - Add a user to the game (game leader only).\n`' +
                 msg.channel.prefix + 'join` - Join the game. Only available at the start of each game.\n`' +
-                msg.channel.prefix + 'leave` - Leave the game you are playing in that channel.\n')
+                msg.channel.prefix + 'leave` - Leave the game you are playing in that channel.\n'
+            }])
             msg.reply({ embeds: [embed] })
         }
         return false

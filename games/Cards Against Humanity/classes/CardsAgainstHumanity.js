@@ -8,11 +8,13 @@ import logger from 'gamebot/logger'
 
 // CAH dependencies
 import Game from '../../_Game/main.js'
-import canvas from 'canvas';
-const { createCanvas, registerFont, loadImage } = canvas;
+import { createCanvas, loadImage, GlobalFonts } from '@napi-rs/canvas';
 import { whiteCards } from '../assets/cards.js'
 import CAHDeck from './CAHDeck.js'
 import BlackCard from './BlackCard.js'
+
+import { ButtonStyle } from 'discord-api-types/v10'
+import { AttachmentBuilder } from 'discord.js'
 
 const CARD_PACKS = {
     '90sn_pack': '90s',
@@ -261,7 +263,7 @@ export default class CardsAgainstHumanity extends Game {
         const ctx = canvas.getContext('2d')
 
         // register fonts
-        registerFont('./assets/fonts/SF-Pro-Display-Bold.otf', {family: 'SF Pro Display Bold'})
+       GlobalFonts.registerFromPath('./assets/fonts/SF-Pro-Display-Bold.otf', 'SF Pro Display Bold')
         
         let cardBack = CARD_BACKS['Default']
         for(let id in CARD_BACKS) {
@@ -290,18 +292,22 @@ export default class CardsAgainstHumanity extends Game {
         ctx.font = '22px SF Pro Display Bold'
         let wordList = cardText.split(/[\n\s]/g),
             textLine = '',
-            textTotal = ''
+            textTotal = []
         for(let i = 0; i < wordList.length; i++) {
             // See if adding the next word would exceed the size
             if(ctx.measureText(textLine + wordList[i]).width > 255) {
-                textTotal += textLine + '\n'
+                textTotal.push(textLine + '\n')
                 textLine = ''
             }
             textLine += wordList[i] + ' '
         }
-        textTotal += textLine
-        ctx.fillText(textTotal , 25, 45)
-        
+        textTotal.push(textLine)
+
+        // add text to canvas
+        for(let i = 0; i < textTotal.length; i++) {
+            ctx.fillText(textTotal[i], 25, 45 + (i * 30))
+        }
+        ctx.fillText(textTotal, 25, 45)
         await loadImage(fs.readFileSync(`./assets/images/icons/logo-icon-${['white', 'black'].includes(cardBack.textColor) ? cardBack.textColor : 'white'}.png`))
         .then(image =>  {
             ctx.drawImage(image, 20, 256, 18, 16)
@@ -311,12 +317,10 @@ export default class CardsAgainstHumanity extends Game {
         ctx.fillText('Gamebot for Discord', 50, 270)
         
         const fileName = Math.round(Math.random()*1000000) + '.png'
-        const stream = canvas.createJPEGStream({
-            quality: 1,
-            chromaSubsampling: false,
-            progressive: true
-        })
-        const embed = new Discord.MessageEmbed()
+
+        const attachment = new AttachmentBuilder(await canvas.encode('png'), { name: fileName });
+
+        const embed = new Discord.EmbedBuilder()
         .setTitle('This round\'s black card')
         .setFooter({ text: this.blackCard.clean })
         .setImage(`attachment://${fileName}`)
@@ -328,12 +332,9 @@ export default class CardsAgainstHumanity extends Game {
 
         this.msg.channel.send({
             embeds: [embed],
-            files: [{
-                attachment: stream,
-                name: fileName
-            }]
+            files: [ attachment ]
         }).catch(logger.error.bind(logger))
-        return stream
+        return attachment
     }
 
     renderPlayerHand(player) {
@@ -574,12 +575,12 @@ export default class CardsAgainstHumanity extends Game {
             player.cards = player.cards.concat(this.cardDeck.draw('white', this.settings.handLimit - player.cards.length))
         }
 
-            const viewHandRow = new Discord.MessageActionRow()
+            const viewHandRow = new Discord.ActionRowBuilder()
             .addComponents(
-                new Discord.MessageButton()
+                new Discord.ButtonBuilder()
                     .setCustomId(BUTTONS.VIEW_HAND)
                     .setLabel('View your hand')
-                    .setStyle('PRIMARY'),
+                    .setStyle(ButtonStyle.Primary),
             )
 
         // send an embed to main channel with links to each player hand [Go to hand](m.url)
@@ -687,7 +688,9 @@ export default class CardsAgainstHumanity extends Game {
             }
 
             // update in chat
-            this.msg.channel.messages.fetch(submissionStatusMessage.id).then(message => {
+            this.msg.channel.messages.fetch({
+                message: submissionStatusMessage.id
+            }).then(message => {
                 message.edit({
                     embeds: [{
                         title: 'Submission status',
