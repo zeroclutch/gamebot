@@ -306,7 +306,7 @@ export default class Game {
                     embeds: [ joinEmbed ],
                     components: [ joinButtonRow ]
                 })
-                .catch(err => this.client.emit('error', err, this.client, joinMessage, this))
+                .catch(err => this.client.emit('error', err, this.client, this.msg, this))
                 
                 // Collect all interactions
                 const collector = joinMessage.createMessageComponentCollector({ time: 120000 })
