@@ -1,9 +1,12 @@
-import axios from 'axios'
 import logger from 'gamebot/logger'
+
+import Requester from './Requester.js'
 
 export default class OAuth2Client {
     constructor() {
         this.storedHashes = {}
+        this.requester = new Requester()
+        this.requester.processQueue()
     }
 
 
@@ -38,9 +41,15 @@ export default class OAuth2Client {
      */
     async validate(id, token) {
         let hash = this.hash(id, token)
+
+        if(token === 'Bearer null') {
+            return new Error('Invalid authorization provided.')
+        }
+
         // Check hash storage
         if(this.storedHashes.hasOwnProperty(hash)) {
-            return this.storedHashes[hash]
+            // If user hash matches id, return true
+            return this.storedHashes[hash] === id
         } else {
             // Check server
             return await this.validateOnServer(id, token)
@@ -48,16 +57,26 @@ export default class OAuth2Client {
     }
 
     async validateOnServer(id, token) {
-        let res = await axios.get(`https://discord.com/api/users/@me`, {
+        let hash = this.hash(id, token)
+
+        let user = await this.requester.request({
+            url: 'https://discordapp.com/api/users/@me',
+            method: 'GET',
             headers: {
-                authorization: `${token}`
+                'Authorization': `${token}`
             }
-        }).catch(err => logger.error(err))
+        }).catch(async (err) => {
+            logger.error(err)
+            this.storedHashes[hash] = false
+        })
 
-        // Check if the user is the same
-        let isAuthorized = res && res.data && res.data.id == id
-
-        this.storedHashes[this.hash(id, token)] = isAuthorized
-        return isAuthorized
+        // Cache hash for 2 hours
+        if(user?.id === id) {
+            this.storedHashes[hash] = id
+        } else {
+            this.storedHashes[hash] = false
+        }
+        
+        return this.storedHashes[hash] === id
     }
 }
