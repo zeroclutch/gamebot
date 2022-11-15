@@ -769,7 +769,7 @@ export default class Game {
             return
         }
 
-        if(message !== null) {
+        if(message || this.settings.defaultUpdatePlayerMessage) {
             await this.channel.sendEmbed(message || this.settings.defaultUpdatePlayerMessage).catch(logger.error.bind(logger))
         }
         
