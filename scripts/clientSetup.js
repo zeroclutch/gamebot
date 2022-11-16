@@ -42,6 +42,20 @@ const events = async client => {
             await handler(...args, client)
         })
     }
+
+
+    const restEvents = fs.readdirSync(path.join('.', 'events', 'rest'))
+
+    // add events classes to collection
+    for (let event of restEvents) {
+        // ignore .DS_Store files
+        if (event === '.DS_Store') continue
+        const { eventName, handler  } = await import(`../events/rest/${event}`)
+        client.rest.on(eventName, async (...args) => {
+            // client is always passed as last event handler argument
+            await handler(...args, client)
+        })
+    }
 }
 
 const games = async client => {
