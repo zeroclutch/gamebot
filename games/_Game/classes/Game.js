@@ -3,7 +3,7 @@ import { BUTTONS, GAME_OPTIONS, REPLIES } from '../../../config/types.js'
 import Discord from '../../../discord_mod.js'
 import logger, { getMessageData } from 'gamebot/logger'
 
-import { ButtonStyle } from 'discord-api-types/v10'
+import { ButtonStyle, PermissionFlagsBits } from 'discord-api-types/v10'
 
 /**
  * The base class for all games, see {@tutorial getting_started} to get started.
@@ -470,7 +470,10 @@ export default class Game {
 
                 // Delete selection
                 const message = collected.first()
-                message.delete().catch(reject)
+
+                // Ensure we have permission to delete the message
+                if(this._hasPermission(PermissionFlagsBits.ManageMessages)) message.delete().catch(reject)
+
                 let option = this.gameOptions[parseInt(message.content) - 1]
 
                 const optionData = {
@@ -521,7 +524,9 @@ export default class Game {
                 }
 
                 const optionResponse = optionResponseMessages.first()
-                optionResponse.delete().catch(reject)
+
+                // Ensure we have permission to delete the message
+                if(this._hasPermission(PermissionFlagsBits.ManageMessages)) optionResponse.delete().catch(reject)
                 
                 // Add custom filter options
                 if(option.filter) {
@@ -836,7 +841,15 @@ export default class Game {
         }
         this.playersToAdd = []
     }
-    
+
+    /**
+     * Identifies whether the bot has a permission within the channel.
+     * @param {PermissionResolvable} permissionResolvable The permission to check for.
+     * @returns {Boolean} Whether the bot has the permission.
+     */
+    _hasPermission(permissionResolvable) {
+        return this.channel.permissionsFor(this.msg.client.user).has(permissionResolvable)
+    }
 
     /**
      * The method called after user configuration. This will be custom for each game.

@@ -13,7 +13,7 @@ import { whiteCards } from '../assets/cards.js'
 import CAHDeck from './CAHDeck.js'
 import BlackCard from './BlackCard.js'
 
-import { ButtonStyle } from 'discord-api-types/v10'
+import { ButtonStyle, PermissionFlagsBits } from 'discord-api-types/v10'
 import { AttachmentBuilder } from 'discord.js'
 
 const CARD_PACKS = {
@@ -645,7 +645,10 @@ export default class CardsAgainstHumanity extends Game {
             let player = this.players.get(m.author.id)
             let cardRemoved = parseInt(m.content) - 1
 
-            m.delete().catch(logger.error.bind(logger))
+            // Check if we have permission to delete the message
+            if(this._hasPermission(PermissionFlagsBits.ManageMessages)) {
+                m.delete().catch(logger.error.bind(logger))
+            }
 
             // save selection for one card
             this.submittedCards.push({
