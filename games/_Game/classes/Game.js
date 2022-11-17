@@ -140,6 +140,7 @@ export default class Game {
         this.settings = {
             isDmNeeded: false,
             updatePlayersAnytime: true,
+            maximumInactiveRounds: 3,
             defaultUpdatePlayerMessage: `✅ The player list will be updated at the start of the next round.`
         }
 
@@ -196,6 +197,7 @@ export default class Game {
          * ]
          */
         this.gameOptions = []
+
         logger.info(getMessageData(this.msg), `Game ${this.constructor.name} initialized.`)
     }
 
@@ -472,7 +474,7 @@ export default class Game {
                 const message = collected.first()
 
                 // Ensure we have permission to delete the message
-                if(this._hasPermission(PermissionFlagsBits.ManageMessages)) message.delete().catch(reject)
+                if(await this._hasPermission(PermissionFlagsBits.ManageMessages)) message.delete().catch(reject)
 
                 let option = this.gameOptions[parseInt(message.content) - 1]
 
@@ -526,7 +528,7 @@ export default class Game {
                 const optionResponse = optionResponseMessages.first()
 
                 // Ensure we have permission to delete the message
-                if(this._hasPermission(PermissionFlagsBits.ManageMessages)) optionResponse.delete().catch(reject)
+                if(await this._hasPermission(PermissionFlagsBits.ManageMessages)) optionResponse.delete().catch(reject)
                 
                 // Add custom filter options
                 if(option.filter) {
@@ -845,10 +847,18 @@ export default class Game {
     /**
      * Identifies whether the bot has a permission within the channel.
      * @param {PermissionResolvable} permissionResolvable The permission to check for.
-     * @returns {Boolean} Whether the bot has the permission.
+     * @returns {Promise<Boolean>} Whether the bot has the permission.
      */
-    _hasPermission(permissionResolvable) {
-        return this.channel.permissionsFor(this.msg.client.user).has(permissionResolvable)
+    async _hasPermission(permissionResolvable) {
+        // Check for user
+        let me = this.msg.guild.members.me
+        if(!me) {
+            me = await this.msg.guild.members.fetchMe({
+                cache: true,
+            })
+        }
+
+        return me.permissionsIn(this.channel).has(permissionResolvable)
     }
 
     /**

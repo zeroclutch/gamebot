@@ -96,23 +96,25 @@ export default class CardsAgainstHumanity extends Game {
     constructor(msg, settings) {
         super(msg, settings)
         this.metadata = metadata
+
+        // Game state
         this.czarIndex = 0
         this.czar
+        this.submittedCards = []
+        this.gameStart = false
+        this.cardDeck
+
         this.playerCount = {
             min: 3,
             max: 20
         }
-        this.submittedCards = []
-        this.gameStart = false
-        this.cardDeck
-        this.playersToKick = []
-        this.playersToAdd = []
+
+        // Automatically end game if no one is playing anymore
+        this.inactiveRounds = 0
 
         // get settings
         this.settings.sets = ['Base', 'CAHe1', 'CAHe2', 'CAHe3', 'CAHe4', 'CAHe5', 'CAHe6']
         this.settings.isDmNeeded = false
-        // Default options, reconfigured later in this.generateOptions()
-        this.gameOptions = []
 
         this.defaultPlayer = {
             cards: 'Array',
@@ -421,7 +423,7 @@ export default class CardsAgainstHumanity extends Game {
             }]
         })
 
-        if(this.submittedCards.length == 0) {
+        if(this.submittedCards.length === 0) {
             this.msg.channel.sendEmbed('There were no submissions for this card!', 'Uh oh...')
             // display the scores
             this.msg.channel.send({
@@ -434,9 +436,19 @@ export default class CardsAgainstHumanity extends Game {
                     }
                 }]
             })
+
+            // Check if we've reached the inactive round limit
+            this.inactiveRounds++
+            if(this.inactiveRounds >= this.settings.maximumInactiveRounds) {
+                this.end(undefined, 'The game has ended due to inactivity.')
+            }
+
             this.play()
             return
+        } else {
+            this.inactiveRounds = 0
         }
+
         // let the Card Czar choose one
         const filter = m => (!isNaN(m.content) &&  m.author.id == this.czar.user.id && parseInt(m.content) <= this.submittedCards.length && parseInt(m.content) > 0)
         this.msg.channel.awaitMessages({ filter, max: 1, time: this.settings.timeLimit })
@@ -646,7 +658,7 @@ export default class CardsAgainstHumanity extends Game {
             let cardRemoved = parseInt(m.content) - 1
 
             // Check if we have permission to delete the message
-            if(this._hasPermission(PermissionFlagsBits.ManageMessages)) {
+            if(await this._hasPermission(PermissionFlagsBits.ManageMessages)) {
                 m.delete().catch(logger.error.bind(logger))
             }
 
