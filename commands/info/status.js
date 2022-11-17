@@ -79,7 +79,7 @@ export default new BotCommand({
             clearInterval(timers[0])
           }
           getStatusFields().catch(logger.error.bind(logger))
-        }, 5000))
+        }, 1000 * 60 * 5 /* 5 minutes */))
 
       } catch (err) {
         logger.error(err)
