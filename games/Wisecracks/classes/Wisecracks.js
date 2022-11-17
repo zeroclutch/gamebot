@@ -232,7 +232,7 @@ export default class Wisecracks extends Game {
                     time: 120000
                 })
                 
-                collector.on('collect', message => {
+                collector.on('collect', async message => {
                     if(this.ending) return
                     votes.push(message.author.id)
                     // Sort votes
@@ -240,7 +240,7 @@ export default class Wisecracks extends Game {
                     if(message.content == '2') submitted[1].score++
                     
                     // Ensure we have permission to delete the message
-                    if(this._hasPermission(PermissionFlagsBits.ManageMessages)) message.delete().catch(reject)
+                    if(await this._hasPermission(PermissionFlagsBits.ManageMessages)) message.delete().catch(reject)
 
                     if(votes.length === this.players.size - 2) {
                         collector.stop('submitted')
