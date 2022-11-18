@@ -310,6 +310,8 @@ export default class Game {
                 })
                 .catch(err => this.client.emit('error', err, this.client, this.msg, this))
                 
+                if(!joinMessage) this.end(undefined, 'There was an issue starting this game.')
+
                 // Collect all interactions
                 const collector = joinMessage.createMessageComponentCollector({ time: 120000 })
                 collector.on('collect', async i => {
