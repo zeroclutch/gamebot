@@ -240,7 +240,7 @@ export default class Wisecracks extends Game {
                     if(message.content == '2') submitted[1].score++
                     
                     // Ensure we have permission to delete the message
-                    if(await this._hasPermission(PermissionFlagsBits.ManageMessages)) message.delete().catch(reject)
+                    if(await this._hasPermission(PermissionFlagsBits.ManageMessages)) message.delete().catch(logger.error.bind(logger))
 
                     if(votes.length === this.players.size - 2) {
                         collector.stop('submitted')
