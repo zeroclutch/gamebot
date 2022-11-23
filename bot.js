@@ -65,6 +65,7 @@ client.once('ready', async () => {
     // Setup bot
     await clientSetup.database(client)
     await clientSetup.games(client)
+    await clientSetup.tournaments(client)
     await clientSetup.commands(client)
     await clientSetup.events(client)
     await clientSetup.moderators(client)

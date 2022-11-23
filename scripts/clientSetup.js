@@ -5,6 +5,8 @@ import logger from 'gamebot/logger'
 
 // import GameManager from '../types/games/GameManager.js'
 import CommandHandler from '../types/command/CommandHandler.js'
+import TournamentManager from '../types/games/TournamentManager.js'
+
 
 const commands = async client => {
     // configuration
@@ -94,7 +96,12 @@ const games = async client => {
             client.games.set(metadata, gameFile)
         }
     }
-    
+
+}
+
+const tournaments = async client => {
+    client.tournaments = new TournamentManager(client)
+    await client.tournaments.setup()
 }
 
 const moderators = async client => {
@@ -140,5 +147,6 @@ export default {
     database,
     events,
     games,
+    tournaments,
     moderators,
 }
