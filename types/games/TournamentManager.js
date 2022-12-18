@@ -1,5 +1,5 @@
 import { ButtonBuilder } from '@discordjs/builders'
-import { ActionRowBuilder } from 'discord.js'
+import { ActionRowBuilder, ShardClientUtil } from 'discord.js'
 import logger from 'gamebot/logger'
 
 import Tournament from './Tournament.js'
@@ -17,9 +17,13 @@ class TournamentManager {
         // Fetch all tournaments using no filter ({})
         const tournaments = await collection.find({}).toArray()
 
-        // Set all tournaments
+        // Set all tournaments on this shard
         for(const tournament of tournaments) {
-            this.set(tournament.id, tournament);
+            const shard = ShardClientUtil.shardIdForGuildId(tournament.id, this.client.shard.count)
+
+            // If this shard is responsible for the tournament, set it
+            if (this.client.shard.ids.includes(shard))
+                this.set(tournament.id, tournament);
         }
     }
     
@@ -29,6 +33,7 @@ class TournamentManager {
      * @param {TournamentOptions} options The options for the tournament.
      */
     set(id, options) {
+        // Create a new tournament
         this.tournaments.set(id, new Tournament(options, this, this.client));
 
         // Save the tournament to the database

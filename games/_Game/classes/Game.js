@@ -5,11 +5,13 @@ import logger, { getMessageData } from 'gamebot/logger'
 
 import { ButtonStyle, PermissionFlagsBits } from 'discord-api-types/v10'
 
+import EventEmitter from 'node:events'
+
 /**
  * The base class for all games, see {@tutorial getting_started} to get started.
  * @abstract
  */
-export default class Game {
+export default class Game extends EventEmitter {
     /**
      * An object with configurable game settings. This field is currently unused.
      * @typedef GameSettings
@@ -922,6 +924,8 @@ export default class Game {
             }]
         }
 
+        // Emit end event
+        this.emit('end', winners)
 
         // Send a message in the game channel that the game is over.
         this.msg.channel.send({
