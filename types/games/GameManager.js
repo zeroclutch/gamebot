@@ -12,9 +12,12 @@ export default class GameManager {
      * Starts a new game
      * @param {Game} game The game to play
      * @param {Discord.Message} msg The Discord message that initiated this game
+     * @param {object} options The options for the game
+     * @returns {Game} the game instance
      */
-    start(game, msg, ...gameOptions) {
+    start(game, msg, { userArgs, skipInit }) {
       let channel = msg.channel
+
       // check if game is playing in channel
       if(this.games.has(channel.id)) {
         channel.sendEmbed(`A game is already playing in this channel! End that game first by using the \`${options.prefix}end\` command.`, 'Uh oh...', 13632027)
@@ -26,16 +29,19 @@ export default class GameManager {
       }
       
       // create new instance of game
-      let gameInstance = new (game)(msg, ...gameOptions)
+      let gameInstance = new (game)(msg, ...userArgs)
       this.games.set(channel.id, gameInstance)
 
       // run initialization of game
-      gameInstance.init().catch(async (err) => {
+      let start = !skipInit ? gameInstance.init : gameInstance.gameInit
+      start().catch(async (err) => {
         this.client.emit('error', err, this.client, msg)
 
         // End game on error to prevent channel freezing
         this.stop(channel)
       })
+
+      return gameInstance
     }
 
     /**

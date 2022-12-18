@@ -1,10 +1,12 @@
 // create Collection<Game> of all the games
 import options from '../../config/options.js'
+import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 
 import { choices } from '../../types/util/games.js'
 
 import {
     ApplicationCommandOptionType,
+    PermissionFlags,
     ActionRowBuilder,
     ButtonBuilder,
     ButtonStyle,
@@ -41,11 +43,23 @@ export default new BotCommand({
     aliases: [],
     description: 'Host a tournament for a game.',
     category: 'mod',
-    permissions: [],
-    dmCommand: true,
+    permissions: [GAMEBOT_PERMISSIONS.MOD],
+    dmCommand: false,
     args: commandArgs,
     run: async function(msg, args) {
-        let [channel, startTime, duration, games] = args
+        // Ensure we have the correct permissions
+        if(!msg.guild.me.permissions.has(PermissionFlags.CreatePublicThreads)) {
+            msg.reply({
+                embeds: [{
+                    title: 'Error!',
+                    description: 'I do not have the correct permissions to host a tournament. Please ensure I have the `Create Public Threads` permission.',
+                    color: options.colors.error
+                }]
+            })
+            return
+        }
+
+        let [channel, startTime, duration, games, message] = args
 
         function abortSetup() {
             msg.reply({
@@ -167,6 +181,28 @@ export default new BotCommand({
             }
         } while(games.length === 0 || typeof games === 'string')
 
+        do {
+            if(!message) {
+                // Games
+                msg.channel.send({
+                    embeds: [{
+                        title: 'Message',
+                        description: 'Optional: enter any additional content to be sent in the tournament message. This can be an event link, for example. If you do not want to send any additional content, type `none`.',
+                        color: options.colors.info
+                    }]
+                })
+
+                message = await getResponse()
+
+                if(message.toLowerCase() === 'none') {
+                    message = ''
+                } else if(message === 'cancel') {
+                    abortSetup()
+                    return
+                }
+            }
+        } while(typeof games !== 'string')
+
         // Find all games that are allowed
         games = games.map(selection => 
             msg.client.games.find((_game, meta) => meta.id == selection || meta.name.toLowerCase() == selection)
@@ -193,31 +229,26 @@ export default new BotCommand({
 
         // Send tournament message
         const joinMessage = await channel.send({
+            content: message,
             embeds: [{
                 title: 'A tournament is starting!',
-                description: `A **${Object.keys(configurations).join(', ')}** tournament is starting in this server! Click the button below to join! The tournament will start <t:${Math.floor(startTime.getTime() / 1000)}:R> and last for **${duration} minutes**.\n\nClick below to join the tournament!`,
+                description: `A **${Object.keys(configurations).join(', ')}** tournament is starting in this server! The tournament will start <t:${Math.floor(startTime.getTime() / 1000)}:R> and last for **${duration} minutes**.`,
                 color: options.colors.info,
                 image: {
                     url: 'https://i.imgur.com/6I4CTZY.png'
                 }
-            }],
-            components: [
-                new ActionRowBuilder().addComponents(
-                    new ButtonBuilder()
-                        .setCustomId('join')
-                        .setLabel('Join')
-                        .setStyle(ButtonStyle.Primary)
-                )
-            ]
+            }]
         })
 
         // Register the tournament to the client
         msg.client.tournaments.set(joinMessage.id, {
+            id: joinMessage.id,
+            guild: msg.guild.id,
             channel: channel.id,
             startTime: startTime.getTime(),
             duration: duration * 60 * 1000,
             games: games.map(game => game.metadata.id),
-            configurations: configurations
+            configurations
         })
     }
 })
