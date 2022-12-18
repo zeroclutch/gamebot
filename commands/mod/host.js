@@ -6,10 +6,7 @@ import { choices } from '../../types/util/games.js'
 
 import {
     ApplicationCommandOptionType,
-    PermissionFlags,
-    ActionRowBuilder,
-    ButtonBuilder,
-    ButtonStyle,
+    PermissionsBitField
 } from 'discord.js'
 
 import BotCommand from '../../types/command/BotCommand.js'
@@ -48,7 +45,8 @@ export default new BotCommand({
     args: commandArgs,
     run: async function(msg, args) {
         // Ensure we have the correct permissions
-        if(!msg.guild.me.permissions.has(PermissionFlags.CreatePublicThreads)) {
+        const me = await msg.guild.members.fetchMe()
+        if(!me.permissions.has(PermissionsBitField.Flags.CreatePublicThreads)) {
             msg.reply({
                 embeds: [{
                     title: 'Error!',
@@ -181,39 +179,39 @@ export default new BotCommand({
             }
         } while(games.length === 0 || typeof games === 'string')
 
-        do {
-            if(!message) {
-                // Games
-                msg.channel.send({
-                    embeds: [{
-                        title: 'Message',
-                        description: 'Optional: enter any additional content to be sent in the tournament message. This can be an event link, for example. If you do not want to send any additional content, type `none`.',
-                        color: options.colors.info
-                    }]
-                })
+        if(!message) {
+            // Games
+            msg.channel.send({
+                embeds: [{
+                    title: 'Message',
+                    description: 'Optional: enter any additional content to be sent in the tournament message. This can be an event link, for example. If you do not want to send any additional content, type `none`.',
+                    color: options.colors.info
+                }]
+            })
 
-                message = await getResponse()
+            message = await getResponse()
 
-                if(message.toLowerCase() === 'none') {
-                    message = ''
-                } else if(message === 'cancel') {
-                    abortSetup()
-                    return
-                }
+            if(message.toLowerCase() === 'none') {
+                message = ''
+            } else if(message === 'cancel') {
+                abortSetup()
+                return
+            } else if(message === '') {
+                message = undefined
             }
-        } while(typeof games !== 'string')
+        }
 
         // Find all games that are allowed
-        games = games.map(selection => 
+        let gameClasses = games.map(selection => 
             msg.client.games.find((_game, meta) => meta.id == selection || meta.name.toLowerCase() == selection)
         )
-        games = games.filter(game => game !== undefined)
+        gameClasses = gameClasses.filter(game => game !== undefined)
         
         let configurations = {}
 
         // For each game, perform the setup
-        for(const game of games) {
-            const instance = new game(msg)
+        for(const gameClass of gameClasses) {
+            const instance = new gameClass(msg)
             
             // Generate the game-specific option lists
             await instance.generateOptions()
@@ -224,7 +222,7 @@ export default new BotCommand({
                 await instance.configureOptions()
             }
 
-            configurations[instance.metadata.name] = instance.options
+            configurations[instance.metadata.id] = instance.options
         }
 
         // Send tournament message
@@ -247,7 +245,7 @@ export default new BotCommand({
             channel: channel.id,
             startTime: startTime.getTime(),
             duration: duration * 60 * 1000,
-            games: games.map(game => game.metadata.id),
+            games,
             configurations
         })
     }

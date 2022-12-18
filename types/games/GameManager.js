@@ -29,19 +29,21 @@ export default class GameManager {
       }
       
       // create new instance of game
-      let gameInstance = new (game)(msg, ...userArgs)
-      this.games.set(channel.id, gameInstance)
+      const instance = new (game)(msg, userArgs)
+      this.games.set(channel.id, instance)
 
       // run initialization of game
-      let start = !skipInit ? gameInstance.init : gameInstance.gameInit
-      start().catch(async (err) => {
+      let start = !skipInit ? instance.init.bind(instance) : instance.gameInit.bind(instance)
+      try {
+        start()
+      } catch(err){
         this.client.emit('error', err, this.client, msg)
 
         // End game on error to prevent channel freezing
         this.stop(channel)
-      })
+      }
 
-      return gameInstance
+      return instance
     }
 
     /**

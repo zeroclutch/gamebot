@@ -52,11 +52,11 @@ class TournamentManager {
         // Create a timer to start the tournament
         setTimeout(function() {
             if(this.tournaments.has(id)) {
-                this.tournaments.get(id).start();
+                this.tournaments.get(id).initialize();
             } else {
                 logger.error(`Tournament ${id} does not exist`);
             }
-        }.bind(this), options.startTime.getTime() - Date.now())
+        }.bind(this), Math.max(options.startTime - Date.now(), 0))
     }
     
     get(id) {
@@ -70,18 +70,6 @@ class TournamentManager {
         this.client.database.collection('tournaments').deleteOne({
             id
         })
-    }
-
-    /**
-     * Start a match in a tournament
-     * @param {Discord.Snowflake} options.id The id of the tournament  
-     * @param {string} options.game The id of the game to start
-     * @param {Discord.Snowflake[]} options.players The players to start the game with
-     * @param {Discord.Snowflake} options.channel The channel to start the game in
-     */
-    startMatch({ id, game, players, channel}) {
-        // Get the tournament
-        const tournament = this.tournaments.get(id);
     }
 
 

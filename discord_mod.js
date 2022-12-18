@@ -60,7 +60,9 @@ Discord.TextChannel.prototype.startTypingAsync = function (channelResolvable) {
  * @see {@link https://discord.js.org/#/docs/main/11.5.1/typedef/ColorResolvable|Discord.ColorResolvable}
  * @returns {Promise<Discord.Message>}
  */
-Discord.DMChannel.prototype.sendEmbed = Discord.TextChannel.prototype.sendEmbed = function(description, title, embedColor) {
+Discord.DMChannel.prototype.sendEmbed =
+  Discord.BaseGuildTextChannel.prototype.sendEmbed =
+  Discord.ThreadChannel.prototype.sendEmbed = function(description, title, embedColor) {
   return this.send({
     embeds: [{
       color:  embedColor || 3789311,

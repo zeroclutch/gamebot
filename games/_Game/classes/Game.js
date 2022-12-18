@@ -24,6 +24,7 @@ export default class Game extends EventEmitter {
      * @param {GameSettings} settings An optional object with custom settings for the game
      */
     constructor(msg, settings) {
+        super()
         /**
          * The metadata for a given game.
          * @typedef GameMetadata
