@@ -925,13 +925,13 @@ export default class Game extends EventEmitter {
             }]
         }
 
-        // Emit end event
-        this.emit('end', winners)
-
         // Send a message in the game channel that the game is over.
         this.msg.channel.send({
             embeds: [gameEmbed]
         }).then(msg => {
+            // Emit end event
+            this.emit('end', winners)
+
             // Remove all event listeners created during this game.
             this.msg.channel.gamePlaying = false
             this.msg.channel.game = undefined

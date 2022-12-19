@@ -2,10 +2,13 @@
 import options from '../../config/options.js'
 import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 
+import { TOURNAMENT_MODES } from '../../config/types.js'
+
 import { choices } from '../../types/util/games.js'
 
 import {
     ApplicationCommandOptionType,
+    DiscordjsErrorCodes,
     PermissionsBitField
 } from 'discord.js'
 
@@ -33,6 +36,16 @@ const commandArgs = [{
     type: ApplicationCommandOptionType.String,
     required: false,
     description: 'The allowed games by id, comma-separated.'
+}, {
+    name: 'mode',
+    type: ApplicationCommandOptionType.String,
+    required: false,
+    description: 'The type of game, either `wins` or `cumulative`. Wins mode will provide 1 point for a loss and 3 for a win, while cumulative mode will carry over points between rounds. `wins` mode is default.',
+}, {
+    name: 'message',
+    type: ApplicationCommandOptionType.String,
+    required: false,
+    description: 'A message to send with the join message.'
 }]
 
 export default new BotCommand({
@@ -57,7 +70,7 @@ export default new BotCommand({
             return
         }
 
-        let [channel, startTime, duration, games, message] = args
+        let [channel, startTime, duration, games, mode, message] = args
 
         function abortSetup() {
             msg.reply({
@@ -82,14 +95,18 @@ export default new BotCommand({
         const filter = m => m.author.id === msg.author.id
 
         // Get first message from user
-        const getResponse = async () => (await msg.channel.awaitMessages({filter, max: 1, time: 60000})).first()?.content
+        const getResponse = async () => (await msg.channel.awaitMessages({filter, max: 1, time: 60000})).first()?.content || ''
 
         // Get channel
         do {
             if(channel) {
                 // Find the channel
                 channel = channel.replace(/<#|>/g, '')
-                channel = await msg.client.channels.fetch(channel)
+                try {
+                    channel = await msg.client.channels.fetch(channel)
+                } catch(e) {
+                    channel = null
+                }
             } else {
                 msg.channel.send({
                     embeds: [{
@@ -179,6 +196,30 @@ export default new BotCommand({
             }
         } while(games.length === 0 || typeof games === 'string')
 
+        do {
+            if(mode && Object.values(TOURNAMENT_MODES).includes(mode)) {
+                // Find the games
+                mode = mode.toLowerCase()
+
+            } else {
+                // Games
+                msg.channel.send({
+                    embeds: [{
+                        title: 'Mode',
+                        description: 'Please enter the mode of the tournament, either `wins` or `cumulative`. `wins` mode will provide 1 point for a loss and 3 for a win, while `cumulative` mode will provide users with points that carry over between games. `wins` mode is default.',
+                        color: options.colors.info
+                    }]
+                })
+
+                mode = await getResponse()
+
+                if(mode === 'cancel') {
+                    abortSetup()
+                    return
+                }
+            }
+        } while(!(mode && Object.values(TOURNAMENT_MODES).includes(mode)))
+
         if(!message) {
             // Games
             msg.channel.send({
@@ -246,6 +287,7 @@ export default new BotCommand({
             startTime: startTime.getTime(),
             duration: duration * 60 * 1000,
             games,
+            mode,
             configurations
         })
     }
