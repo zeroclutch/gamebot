@@ -181,7 +181,16 @@ class Tournament {
                 name: threadName,
                 autoArchiveDuration: ThreadAutoArchiveDuration.OneHour,
                 reason: `Match thread for game ${this.nextGameId}`,
-                type: ChannelType.PrivateThread,
+                type: ChannelType.PublicThread,
+            })
+
+            // Delete the starter message
+            thread.fetchStarterMessage().then(msg => {
+                if(msg) {
+                    msg.delete()
+                }
+            }).catch(e => {
+                // Do nothing, the message doesn't exist
             })
 
             if(this.averagePlayerJoinTime !== 0) {
