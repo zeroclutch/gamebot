@@ -77,7 +77,7 @@ class Tournament {
         this.message = null
         this.messageUpdateInterval = null
 
-        this.startTime = Date.now()
+        this.startTime = -1
 
         this.threadNames = ['Adventurous', 'Amazing', 'Amusing', 'Awesome', 'Big', 'Bewitching',
         'Captivating', 'Charming', 'Cool', 'Compelling', 'Delightful', 'Dramatic', 'Epic',
@@ -335,6 +335,9 @@ class Tournament {
         // Delete the tournament from the manager
         // The manager no longer needs to track started tournaments
         this.manager.delete(this.id)
+
+        // Update the start time
+        this.startTime = Date.now()
 
         // Resolve guild, channel, and message
         try {

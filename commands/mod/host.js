@@ -243,14 +243,14 @@ export default new BotCommand({
 
             message = await getResponse()
 
-            if(message.toLowerCase() === 'none') {
-                message = ''
-            } else if(message === 'cancel') {
+            if(message === 'cancel') {
                 abortSetup()
                 return
-            } else if(message === '') {
-                message = undefined
             }
+        }
+
+        if(message.toLowerCase() === 'none') {
+            message = ''
         }
 
         // Find all games that are allowed
@@ -304,7 +304,7 @@ export default new BotCommand({
 
         // Send confirmation message
         const awaitConfirmation = () => new Promise(async (resolve, reject) => {
-            await msg.channel.send({
+            let setupConfirmation = await msg.channel.send({
                 embeds: [{
                     title: 'Tournament Setup Complete',
                     description: 'The tournament has been set up. Please confirm that you would like to start the tournament.',
@@ -327,7 +327,7 @@ export default new BotCommand({
                         },
                         {
                             name: 'Message',
-                            value: message ?? 'None',
+                            value: message || 'No message.',
                             inline: true
                         }
                     ]
@@ -358,6 +358,23 @@ export default new BotCommand({
                     i.reply('Tournament cancelled.')
                     resolve(false)
                 }
+
+                setupConfirmation.edit({
+                    components: [
+                        new ActionRowBuilder().addComponents(
+                            new ButtonBuilder()
+                                .setCustomId('confirm')
+                                .setLabel('Confirm')
+                                .setStyle(ButtonStyle.Success)
+                                .setDisabled(true),
+                            new ButtonBuilder()
+                                .setCustomId('cancel')
+                                .setLabel('Cancel')
+                                .setStyle(ButtonStyle.Danger)
+                                .setDisabled(true)
+                        )
+                    ]
+                })
             })
 
             collector.on('end', async collected => {
