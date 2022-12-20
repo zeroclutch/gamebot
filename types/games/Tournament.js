@@ -20,6 +20,9 @@ class Tournament {
         this.id = options.id
         this.options = options
 
+        this.JOIN_TIMEOUT = 15
+        this.SCOREBOARD_UPDATE_INTERVAL = 30 
+
         this.manager = manager
         this.client = client
 
@@ -75,15 +78,38 @@ class Tournament {
         this.messageUpdateInterval = null
 
         this.startTime = Date.now()
-    }
 
-    
+        this.threadNames = ['Adventurous', 'Amazing', 'Amusing', 'Awesome', 'Big', 'Bewitching',
+        'Captivating', 'Charming', 'Cool', 'Compelling', 'Delightful', 'Dramatic', 'Epic',
+        'Enchanting', 'Enthralling', 'Exciting', 'Fantastic', 'Fascinating', 'Festive', 'Garbage',
+        'Glamorous', 'Gleeful', 'Glorious', 'Graceful', 'Grand', 'Great', 'Gripping', 'Hilarious',
+        'Humorous', 'Imaginative', 'Inspiring', 'Intense', 'Intriguing', 'Involving', 'Joyful',
+        'Legendary', 'Magnificent', 'Majestic', 'Marvelous', 'Mesmerizing', 'Mighty', 'Mirthful',
+        'Monstrous', 'Mythic', 'Noble', 'Notable', 'Noteworthy', 'Odd', 'Outstanding', 'Peculiar',
+        'Phenomenal', 'Pleasant', 'Pleasurable', 'Pleasing', 'Precious', 'Prestigious', 'Questionable',
+        'Rare', 'Rapturous', 'Remarkable', 'Resplendent', 'Rousing', 'Satisfying', 'Sensational',
+        'Sensuous', 'Spectacular', 'Splendid', 'Stimulating', 'Stirring', 'Strange', 'Superb',
+        'Superior', 'Tremendous', 'Unbelievable', 'Uncommon', 'Unfathomable', 'Unheard Of', 'Unimaginable',
+        'Unlikely', 'Unparalleled', 'Unprecedented', 'Unrivaled', 'Unsurpassed', 'Unusual', 'Unforgettable',
+        'Unique', 'Unrivaled', 'Uplifting', 'Venerable', 'Vibrant', 'Vivacious', 'Witty', 'Wondrous',
+        'Worthy', 'Wow', 'Zany', 'Zealous', 'Zestful']
+    }
 
     updateAverageJoinTime() {
         let newTime = Date.now() - this.lastPlayerJoinTime
         this.lastPlayerJoinTime = Date.now()
         this.averagePlayerJoinTime = (this.averagePlayerJoinTime * this.playerJoinCount + newTime) / (this.playerJoinCount + 1)
         this.playerJoinCount++
+    }
+
+    shuffleThreadNames() {
+        // Shuffle this.threadNames array
+        return this.threadNames.sort(() => Math.random() - 0.5)
+    }
+
+
+    getThreadName(id) {
+        return this.threadNames[id % this.threadNames.length]
     }
 
     async handleJoin(i) {
@@ -124,25 +150,44 @@ class Tournament {
         })
 
         let gameToJoin = gameScores[0]
-        let game = this.joinableMatches[gameToJoin.id]
+
+        if(!gameToJoin) {
+            // There are no games that can be joined, the tournament is over.
+            i.reply({
+                content: 'The tournament is over! Thanks for playing!',
+                ephemeral: true
+            })
+            return false
+        }
+
         let gameInfo = this.gameInfo[gameToJoin.id]
 
-        if(!game) {
+        if(!this.joinableMatches[gameToJoin.id]) {
             throw new Error(`An invalid game was attempted to be loaded.`)
         }
 
-        if(!game.channel) {
+        if(!this.joinableMatches[gameToJoin.id].channel) {
             // Create a new thread
+            const adjective = this.getThreadName(this.nextGameId)
+            let threadName = `Tournament - `
+            if(adjective[0].match(/[aeiou]/i)) {
+                threadName += `An `
+            } else {
+                threadName += `A `
+            }
+            threadName += `${adjective} Match`
+
             const thread = await this.channel.threads.create({
-                name: `Tournament - Game ${this.nextGameId}`,
+                name: threadName,
                 autoArchiveDuration: ThreadAutoArchiveDuration.OneHour,
                 reason: `Match thread for game ${this.nextGameId}`,
                 type: ChannelType.PrivateThread,
             })
 
             if(this.averagePlayerJoinTime !== 0) {
+                const timeToWait = Math.round((Math.round(this.averagePlayerJoinTime * gameInfo.metadata.playerCount.min / 1000) + this.JOIN_TIMEOUT) / 10) * 10
                 await thread.send({
-                    content: `The game will begin once enough players have joined! You can expect to wait around ${Math.round(this.averagePlayerJoinTime * gameInfo.metadata.playerCount.min / 1000)} seconds.`,
+                    content: `The game will begin once enough players have joined! You can expect to wait around ${timeToWait} seconds.`,
                 })
             } else {
                 await thread.send({
@@ -192,11 +237,11 @@ class Tournament {
             if(!this.joinableMatches[gameToJoin.id].timeout) {
 
                 this.joinableMatches[gameToJoin.id].channel.send({
-                    content: `The game will begin within 15 seconds!`,
+                    content: `Last call for more players! The **${gameInfo.metadata.name}** game will begin within ${this.JOIN_TIMEOUT} seconds!`,
                 })
 
                 this.joinableMatches[gameToJoin.id].timeout = setTimeout(() => {
-                    if(this.joinableMatches[gameToJoin.id].id !== id) {
+                    if(this.joinableMatches[gameToJoin.id]?.id !== id) {
                         // Game has already been started
                         return
                     }
@@ -204,18 +249,23 @@ class Tournament {
 
                     // Remove game from this.joinableMatches
                     this.joinableMatches[gameInfo.metadata.id] = {}
-                }, 15_000)
+                }, this.JOIN_TIMEOUT * 1000)
             }
         } else {
             // Not enough players to start the game. Do nothing.
         }
     }
 
-    renderScoreboard() {
-        let scoreboard = Array.from(this.scoreboard.entries())
+    get _scoreboard() {
+        return Array.from(this.scoreboard.entries())
         .sort((a, b) => {
             return b[1] - a[1]
         })
+
+    }
+
+    renderScoreboard() {
+        const scoreboard = this._scoreboard
         .map(([id, score], index) => {
             if(index < 5) return `**${index + 1}.** <@${id}> - ${score} points`
             else return ``
@@ -231,6 +281,20 @@ class Tournament {
         return scoreboard.join('\n')
     }
 
+    handleMyScore(i) {
+        if(this.players.get(i.user.id)) {
+            i.reply({
+                content: `You have ${this.scoreboard.get(i.user.id) ?? 0} points! That puts you at **#${(this._scoreboard.findIndex(([id]) => id === i.user.id) + 1) || '?'}**!`,
+                ephemeral: true,
+            })
+        } else {
+            i.reply({
+                content: `You are not in the tournament!`,
+                ephemeral: true,
+            })
+        }
+    }
+
     async updateMessage() {
         const endTime = (this.startTime + this.options.duration) / 1000
         this.message.edit({
@@ -243,6 +307,9 @@ class Tournament {
                     value: this.renderScoreboard(),
                     inline: false,
                 }],
+                footer: {
+                    text: `The scoreboard will be updated every ${Math.floor(this.SCOREBOARD_UPDATE_INTERVAL)} seconds.`
+                }
             }],
             components: [
                 new ActionRowBuilder().addComponents(
@@ -268,12 +335,22 @@ class Tournament {
             // If the message is not found, stop the tournament
             return
         }
+
+        // Setup thread names
+        this.shuffleThreadNames()
         
+        // Construct the gameInfo and joinableMatches objects
         this.options.games.forEach(id => {
             for (let [metadata, game] of this.client.games) {
                 if(metadata.id === id) {
                     this.gameInfo[metadata.id] = {
-                        metadata,
+                        metadata: {
+                            ...metadata,
+                            playerCount: {
+                                min: this.options.configurations[id]['Minimum Players'],
+                                max: this.options.configurations[id]['Maximum Players'],
+                            }
+                        },
                         game,
                     }
 
@@ -294,7 +371,10 @@ class Tournament {
                         name: 'Scoreboard',
                         value: this.renderScoreboard(),
                         inline: false,
-                    }]
+                    }],
+                    footer: {
+                        text: `The scoreboard will be updated every ${Math.floor(this.SCOREBOARD_UPDATE_INTERVAL)} seconds.`
+                    }
                 }],
                 components: [
                     new ActionRowBuilder().addComponents(
@@ -305,7 +385,7 @@ class Tournament {
                     )
                 ]
             })
-            this.messageUpdateInterval = setInterval(this.updateMessage.bind(this), 1000 * 60)
+            this.messageUpdateInterval = setInterval(this.updateMessage.bind(this), this.SCOREBOARD_UPDATE_INTERVAL * 1000)
         } catch (err) {
             logger.error(err, `Failed to update tournament message`)
         }
@@ -325,8 +405,11 @@ class Tournament {
     async startGame({ id, channel, players, game }) {
 
         let msg = await channel.send({
-            content: `**The game will start in 5 seconds!**`,
+            content: `**Starting now!** The players are ${players.map(player => `<@${player.id}>`).join(', ')}!`
         })
+
+        // Allow new players to get ready
+        await this.sleep(3000)
 
         const gameClass = this.client.games.find((_game, meta) => game === meta.id) 
 
@@ -335,7 +418,6 @@ class Tournament {
 
         // Configure options
         instance.options = this.options.configurations[game]
-        console.log(this.options.configurations)
 
         // Add players to the game silently
         for (let player of players) {
@@ -350,7 +432,6 @@ class Tournament {
         // Add game to the tournament
         this.games.set(channel.id, instance)
 
-
         // Create a listener on the end event
         instance.on('end', function (winners) {
             // End game
@@ -358,8 +439,8 @@ class Tournament {
         }.bind(this))
 
         try {
-            await this.sleep(5000)
             instance.play()
+            instance.gameInit()
         } catch (err) {
             this.client.emit('error', err, this.client, msg)
     
@@ -429,7 +510,7 @@ class Tournament {
                 embeds: [{
                     title: `Scoreboard`,
                     color: options.colors.info,
-                    description: `${game.players.map(p => `${p.user} - ${this.scoreboard.get(p.user.id)} points`).join('\n')}`,
+                    description: `${game.players.map(p => `${p.user} - ${this.scoreboard.get(p.user.id)} points`).join('\n')}\n\nJoin a new match from the join button in ${this.channel}`,
                 }],
                 components: []
             })
@@ -440,8 +521,34 @@ class Tournament {
     }
 
     async endTournament() {
+        // Clear the scoreboard update interval
+        clearInterval(this.messageUpdateInterval)
+
         // Prevent players from joining
         this.joinableMatches = {}
+
+        const endMessageEmbeds = () => [{
+            title: `The tournament has ended!`,
+            color: options.colors.info,
+            description: `Thanks for playing!`,
+            fields: [{
+                name: `Scoreboard`,
+                value: `${this.renderScoreboard()}`,
+            }]
+        }]
+
+        const endMessageComponents = () => [
+            new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
+                    .setCustomId('tournament-my-score')
+                    .setLabel('View my score')
+                    .setStyle(ButtonStyle.Primary),
+                new ButtonBuilder()
+                    .setLabel('Add Gamebot to your server!')
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(process.env.BASE_URL)
+            )
+        ]
 
         this.message.edit({
             embeds: [{
@@ -453,7 +560,20 @@ class Tournament {
                     value: `${this.renderScoreboard()}`,
                 }]
             }],
-            components: []
+            components: endMessageComponents()
+        })
+
+        this.message.createMessageComponentCollector({
+            filter: i => i.customId === 'tournament-my-score',
+            time: 20 * 60 * 1000,
+        })
+        .on('collect', this.handleMyScore.bind(this))
+        .on('end', () => {
+            // Edit the message
+            this.message.edit({
+                embeds: endMessageEmbeds(),
+                components: []
+            })
         })
 
         // Wait for all games to end
@@ -463,20 +583,9 @@ class Tournament {
 
         // End the tournament
         this.message.edit({
-            embeds: [{
-                title: `Tournament has ended!`,
-                color: options.colors.info,
-                description: `Thanks for playing!`,
-                fields: [{
-                    name: `Scoreboard`,
-                    value: `${this.renderScoreboard()}`,
-                }]
-            }],
-            components: []
+            embeds: endMessageEmbeds(),
+            components: endMessageComponents()
         })
-
-        // Clear the interval
-        clearInterval(this.messageUpdateInterval)
     }
 
     sleep(ms) {

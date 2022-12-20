@@ -7,7 +7,10 @@ import { TOURNAMENT_MODES } from '../../config/types.js'
 import { choices } from '../../types/util/games.js'
 
 import {
+    ActionRowBuilder,
     ApplicationCommandOptionType,
+    ButtonBuilder,
+    ButtonStyle,
     DiscordjsErrorCodes,
     PermissionsBitField
 } from 'discord.js'
@@ -177,6 +180,13 @@ export default new BotCommand({
                 // Find the games
                 games = games.split(',').map(game => game.trim())
 
+                // Validate games
+                const isValid = games.every(g => msg.client.games.find((_game, meta) => meta.id === g))
+
+                if(!isValid) {
+                    games = ''
+                }
+
             } else {
                 // Games
                 msg.channel.send({
@@ -194,6 +204,7 @@ export default new BotCommand({
                     return
                 }
             }
+
         } while(games.length === 0 || typeof games === 'string')
 
         do {
@@ -248,30 +259,125 @@ export default new BotCommand({
         )
         gameClasses = gameClasses.filter(game => game !== undefined)
         
+        let gameNames = []
         let configurations = {}
 
         // For each game, perform the setup
         for(const gameClass of gameClasses) {
             const instance = new gameClass(msg)
+
+            msg.channel.send('Setting up ' + instance.metadata.name + '...')
+
+            // Add the name to the list
+            gameNames.push(instance.metadata.name)
             
             // Generate the game-specific option lists
             await instance.generateOptions()
-            
-            if(instance.gameOptions) {
-                instance.stage = 'options'
-                // Allow this host to configure options. Configured options will be outputted to instance.options
-                await instance.configureOptions()
-            }
+
+            instance.gameOptions = instance.gameOptions ?? []
+
+            // Add custom game options for player count configuration
+            const min = instance.metadata.playerCount.min
+            const max = instance.metadata.playerCount.max
+            instance.gameOptions.push({
+                friendlyName: 'Minimum Players',
+                type: 'number',
+                default: min,
+                note: `Enter a new value of players, between ${min}-${max}. This must be less than or equal to than the maximum players.`,
+                filter: m => parseInt(m.content) >= min && parseInt(m.content) <= max
+            })
+
+            instance.gameOptions.push({
+                friendlyName: 'Maximum Players',
+                type: 'number',
+                default: max,
+                note: `Enter a new value of players, between ${min}-${max}. This must be greater than or equal to the minimum players.`,
+                filter: m => parseInt(m.content) >= min && parseInt(m.content) <= max
+            })
+
+            instance.stage = 'options'
+            // Allow this host to configure options. Configured options will be outputted to instance.options
+            await instance.configureOptions()
 
             configurations[instance.metadata.id] = instance.options
         }
+
+        // Send confirmation message
+        const awaitConfirmation = () => new Promise(async (resolve, reject) => {
+            await msg.channel.send({
+                embeds: [{
+                    title: 'Tournament Setup Complete',
+                    description: 'The tournament has been set up. Please confirm that you would like to start the tournament.',
+                    color: options.colors.info,
+                    fields: [
+                        {
+                            name: 'Games',
+                            value: gameNames.join(', '),
+                            inline: true
+                        },
+                        {
+                            name: 'Duration',
+                            value: duration + ' minutes',
+                            inline: true
+                        },
+                        {
+                            name: 'Mode',
+                            value: mode,
+                            inline: true
+                        },
+                        {
+                            name: 'Message',
+                            value: message ?? 'None',
+                            inline: true
+                        }
+                    ]
+                }],
+                components: [
+                    new ActionRowBuilder().addComponents(
+                        new ButtonBuilder()
+                            .setCustomId('confirm')
+                            .setLabel('Confirm')
+                            .setStyle(ButtonStyle.Success),
+                        new ButtonBuilder()
+                            .setCustomId('cancel')
+                            .setLabel('Cancel')
+                            .setStyle(ButtonStyle.Danger)
+                    )
+                ]
+            })
+
+            // Create a listener for the confirmation
+            const filter = i => i.customId === 'confirm' || i.customId === 'cancel' && i.user.id === msg.author.id
+            const collector = msg.channel.createMessageComponentCollector({ filter, time: 60000 })
+
+            collector.on('collect', async i => {
+                if(i.customId === 'confirm') {
+                    i.reply('Tournament confirmed. Sending initial message...')
+                    resolve(true)
+                } else {
+                    i.reply('Tournament cancelled.')
+                    resolve(false)
+                }
+            })
+
+            collector.on('end', async collected => {
+                resolve(false)
+            })
+        })
+
+        const result = await awaitConfirmation()
+
+        if(!result) {
+            return
+        }
+
 
         // Send tournament message
         const joinMessage = await channel.send({
             content: message,
             embeds: [{
                 title: 'A tournament is starting!',
-                description: `A **${Object.keys(configurations).join(', ')}** tournament is starting in this server! The tournament will start <t:${Math.floor(startTime.getTime() / 1000)}:R> and last for **${duration} minutes**.`,
+                description: `A tournament for **${gameNames.join(', ')}** is starting in this server! The tournament will start <t:${Math.floor(startTime.getTime() / 1000)}:R> and last for **${duration} minutes**.`,
                 color: options.colors.info,
                 image: {
                     url: 'https://i.imgur.com/6I4CTZY.png'

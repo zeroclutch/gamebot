@@ -33,9 +33,8 @@ export default class GameManager {
       this.games.set(channel.id, instance)
 
       // run initialization of game
-      let start = !skipInit ? instance.init.bind(instance) : instance.gameInit.bind(instance)
       try {
-        start()
+        if(!skipInit) instance.init()
       } catch(err){
         this.client.emit('error', err, this.client, msg)
 
