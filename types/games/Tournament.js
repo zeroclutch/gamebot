@@ -470,7 +470,12 @@ class Tournament {
             player.game = null
         })
 
-        winners = [winners].flat()
+        // Handle cases with no winners
+        if(winners) {
+            winners = [winners].flat()
+        } else {
+            winners = []
+        }
 
         game.players.forEach(player => {
             // Remove the game from the player
@@ -481,7 +486,7 @@ class Tournament {
             let score = this.scoreboard.get(player.user.id) || 0
 
             if(this.options.mode === TOURNAMENT_MODES.WINS) {
-                if(winners.find(w => w.user.id === user.id)) {
+                if(winners && winners.find && winners.find(w => w?.user?.id === user.id)) {
                     this.scoreboard.set(player.user.id, score + this.scores.win)
                 } else {
                     this.scoreboard.set(player.user.id, score + this.scores.loss)
