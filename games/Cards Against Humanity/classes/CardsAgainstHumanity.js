@@ -13,7 +13,7 @@ import { whiteCards } from '../assets/cards.js'
 import CAHDeck from './CAHDeck.js'
 import BlackCard from './BlackCard.js'
 
-import { ButtonStyle } from 'discord-api-types/v10'
+import { ButtonStyle, PermissionFlagsBits } from 'discord-api-types/v10'
 import { AttachmentBuilder } from 'discord.js'
 
 const CARD_PACKS = {
@@ -96,23 +96,25 @@ export default class CardsAgainstHumanity extends Game {
     constructor(msg, settings) {
         super(msg, settings)
         this.metadata = metadata
+
+        // Game state
         this.czarIndex = 0
         this.czar
+        this.submittedCards = []
+        this.gameStart = false
+        this.cardDeck
+
         this.playerCount = {
             min: 3,
             max: 20
         }
-        this.submittedCards = []
-        this.gameStart = false
-        this.cardDeck
-        this.playersToKick = []
-        this.playersToAdd = []
+
+        // Automatically end game if no one is playing anymore
+        this.inactiveRounds = 0
 
         // get settings
         this.settings.sets = ['Base', 'CAHe1', 'CAHe2', 'CAHe3', 'CAHe4', 'CAHe5', 'CAHe6']
         this.settings.isDmNeeded = false
-        // Default options, reconfigured later in this.generateOptions()
-        this.gameOptions = []
 
         this.defaultPlayer = {
             cards: 'Array',
@@ -421,7 +423,7 @@ export default class CardsAgainstHumanity extends Game {
             }]
         })
 
-        if(this.submittedCards.length == 0) {
+        if(this.submittedCards.length === 0) {
             this.msg.channel.sendEmbed('There were no submissions for this card!', 'Uh oh...')
             // display the scores
             this.msg.channel.send({
@@ -434,9 +436,19 @@ export default class CardsAgainstHumanity extends Game {
                     }
                 }]
             })
+
+            // Check if we've reached the inactive round limit
+            this.inactiveRounds++
+            if(this.inactiveRounds >= this.settings.maximumInactiveRounds) {
+                this.end(undefined, 'The game has ended due to inactivity.')
+            }
+
             this.play()
             return
+        } else {
+            this.inactiveRounds = 0
         }
+
         // let the Card Czar choose one
         const filter = m => (!isNaN(m.content) &&  m.author.id == this.czar.user.id && parseInt(m.content) <= this.submittedCards.length && parseInt(m.content) > 0)
         this.msg.channel.awaitMessages({ filter, max: 1, time: this.settings.timeLimit })
@@ -639,13 +651,35 @@ export default class CardsAgainstHumanity extends Game {
         // await X messages, depending on how many white cards are needed
         let selectionCollector = this.channel.createMessageCollector({ filter: messageFilter, time: this.settings.timeLimit });
 
+        let lastSubmissionStatus = this.renderSubmissionStatus()
+
+        // Update submission status every 5 seconds
+        const statusUpdateInterval = setInterval(() => {
+            const newSubmissionStatus = this.renderSubmissionStatus()
+
+            // Don't update if nothing has changed
+            if(newSubmissionStatus === lastSubmissionStatus) return
+            lastSubmissionStatus = newSubmissionStatus
+
+            submissionStatusMessage.edit({
+                embeds: [{
+                    title: 'Submission status',
+                    description: newSubmissionStatus,
+                    color: 4513714
+                }]
+            })
+        }, 3500)
+
         selectionCollector.on('collect', async m => {
             if(this.ending) return
 
             let player = this.players.get(m.author.id)
             let cardRemoved = parseInt(m.content) - 1
 
-            m.delete().catch(logger.error.bind(logger))
+            // Check if we have permission to delete the message
+            if(await this._hasPermission(PermissionFlagsBits.ManageMessages)) {
+                m.delete().catch(logger.error.bind(logger))
+            }
 
             // save selection for one card
             this.submittedCards.push({
@@ -653,15 +687,6 @@ export default class CardsAgainstHumanity extends Game {
                 card: [player.cards[cardRemoved]]
             })
             player.submitted = true
-
-            // update in chat
-            submissionStatusMessage.edit({
-                embeds: [{
-                    title: 'Submission status',
-                    description: this.renderSubmissionStatus(),
-                    color: 4513714
-                }]
-            })
 
             // remove cards from hand
             player.cards.splice(cardRemoved, 1, '')
@@ -671,8 +696,19 @@ export default class CardsAgainstHumanity extends Game {
 
                 // Clean up submission status message
                 viewHandCollector.stop()
-            }
 
+                // Stop the interval
+                clearInterval(statusUpdateInterval)
+
+                // Update one last time
+                submissionStatusMessage.edit({
+                    embeds: [{
+                        title: 'Submission status',
+                        description: this.renderSubmissionStatus(),
+                        color: 4513714
+                    }],
+                })
+            }
         })
 
         selectionCollector.on('end', (collected, reason) => {

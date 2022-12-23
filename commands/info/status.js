@@ -71,7 +71,7 @@ export default new BotCommand({
 
         assert.strictEqual(onlineShards === totalShards, true, 'Not all shards are online.')
 
-        // Update status fields every 5 minutes
+        // Update status fields every 15 minutes
         timers.push(setInterval(function () {
           if(timers.length > 1) {
             logger.warn(`${timers.length} timers are running. This can occur when the status command is called multiple times on launch. Clearing...`)
@@ -79,7 +79,7 @@ export default new BotCommand({
             clearInterval(timers[0])
           }
           getStatusFields().catch(logger.error.bind(logger))
-        }, 5000))
+        }, 1000 * 60 * 15/* 15 minutes */))
 
       } catch (err) {
         logger.error(err)

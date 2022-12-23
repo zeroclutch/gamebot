@@ -9,7 +9,7 @@ import logger from 'gamebot/logger'
 /**
  * Accesses and sets the prefix for a specific channel, regardless of channel caching
  */
-Object.defineProperty(Discord.TextChannel.prototype, 'prefix', {
+Object.defineProperty(Discord.BaseChannel.prototype, 'prefix', {
   get() {
     return this.client.commandHandler.getPrefix(this) || options.prefix
   },
@@ -23,7 +23,8 @@ Object.defineProperty(Discord.TextChannel.prototype, 'prefix', {
 /**
  * Accesses the game for the current channel
  */
-Object.defineProperty(Discord.TextChannel.prototype, 'game', {
+
+Object.defineProperty(Discord.BaseChannel.prototype, 'game', {
   get() {
     return this.client.gameManager.games.get(this.id)
   },
@@ -41,7 +42,7 @@ Object.defineProperty(Discord.TextChannel.prototype, 'game', {
  * Asynchronous version of {@link https://discord.js.org/#/docs/main/11.5.1/class/TextChannel?scrollTo=startTyping|Discord.TextChannel.startTyping()}
  * @returns {Promise<Boolean>} Always resolves to true.
  */
-Discord.TextChannel.prototype.startTypingAsync = function (channelResolvable) {
+Discord.BaseChannel.prototype.startTypingAsync = function (channelResolvable) {
   return new Promise((resolve, reject) => { 
     try {
       channelResolvable.startTyping()
@@ -60,7 +61,7 @@ Discord.TextChannel.prototype.startTypingAsync = function (channelResolvable) {
  * @see {@link https://discord.js.org/#/docs/main/11.5.1/typedef/ColorResolvable|Discord.ColorResolvable}
  * @returns {Promise<Discord.Message>}
  */
-Discord.DMChannel.prototype.sendEmbed = Discord.TextChannel.prototype.sendEmbed = function(description, title, embedColor) {
+Discord.BaseChannel.prototype.sendEmbed = function(description, title, embedColor) {
   return this.send({
     embeds: [{
       color:  embedColor || 3789311,
@@ -78,7 +79,7 @@ Discord.DMChannel.prototype.sendEmbed = Discord.TextChannel.prototype.sendEmbed 
  * .then(info => console.log(`User was created with ${info.balance} credits`))
  * .catch(logger.error.bind(logger))
  */
-Discord.User.prototype.createDBInfo = function() {
+Discord.BaseChannel.prototype.createDBInfo = function() {
   return new Promise((resolve, reject) => {
     this.client.dbClient.createDBInfo(this.id).then(resolve).catch(reject)
   })

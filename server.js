@@ -150,8 +150,8 @@ app.get('/invite', (req,res) => {
 app.get('/api/shopItems', async (req, res) => {
   let validated, shopItems
   if(req.query.userID)
-    validated = await oauth2.validate(req.query.userID, req.header('authorization'))
-  if(validated)
+    validated = await oauth2.validate(req.query.userID, req.header('authorization')).catch(logger.error.bind(logger))
+  if(validated === true)
     shopItems = await shopGenerator.fetchShopItems(req.query.userID).catch(logger.error.bind(logger))
   else
     shopItems = await shopGenerator.fetchShopItems().catch(logger.error.bind(logger))
@@ -173,7 +173,8 @@ app.post('/api/purchase', async (req, res) => {
   const userID = req.body.userID
   const itemID = req.body.itemID
   // validate request
-  if(await oauth2.validate(userID, req.header('authorization'))) {
+  let isValidated = await oauth2.validate(userID, req.header('authorization')).catch(logger.error.bind(logger))
+  if(isValidated === true) {
     // Checkout
     // check if user has enough currency
     let info = await dbClient.fetchDBInfo(userID) || {}
@@ -274,7 +275,8 @@ app.get('/api/fetchCommands', (req, res) => {
 app.get('/api/userInfo', async (req, res) => {
   const userID = req.query.userID
   // validate request
-  if(await oauth2.validate(userID, req.header('authorization'))) {
+  let validated = await oauth2.validate(userID, req.header('authorization')).catch(logger.error.bind(logger))
+  if(validated === true) {
     try {
       let info = await dbClient.fetchDBInfo(userID)
       res.status(200)
@@ -406,7 +408,7 @@ subscriptionManager.init()
 app.post('/api/checkout/generateHostedPage', async (req, res) => {
   //logger.info(req.body.customerID, req.header('authorization'))
   let validated = await oauth2.validate(req.body.customerID, req.header('authorization'))
-  if(!validated) {
+  if(validated !== true) {
     res.status(401)
     res.send({
       error: 'Invalid authorization, log in and try again.',

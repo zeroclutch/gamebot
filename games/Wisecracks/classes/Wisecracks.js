@@ -4,6 +4,8 @@ import options from '../../../config/options.js'
 import metadata from '../metadata.js'
 import logger from 'gamebot/logger'
 
+import { PermissionFlagsBits } from 'discord-api-types/v10'
+
 /**
  * The base class for Wisecracks games.
  * 
@@ -230,13 +232,15 @@ export default class Wisecracks extends Game {
                     time: 120000
                 })
                 
-                collector.on('collect', message => {
+                collector.on('collect', async message => {
                     if(this.ending) return
                     votes.push(message.author.id)
                     // Sort votes
                     if(message.content == '1') submitted[0].score++
                     if(message.content == '2') submitted[1].score++
-                    message.delete()
+                    
+                    // Ensure we have permission to delete the message
+                    if(await this._hasPermission(PermissionFlagsBits.ManageMessages)) message.delete().catch(logger.error.bind(logger))
 
                     if(votes.length === this.players.size - 2) {
                         collector.stop('submitted')

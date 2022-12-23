@@ -5,6 +5,8 @@ import logger from 'gamebot/logger'
 
 // import GameManager from '../types/games/GameManager.js'
 import CommandHandler from '../types/command/CommandHandler.js'
+import TournamentManager from '../types/games/TournamentManager.js'
+
 
 const commands = async client => {
     // configuration
@@ -38,6 +40,20 @@ const events = async client => {
         if (event === '.DS_Store') continue
         const { eventName, handler  } = await import(`../events/client/${event}`)
         client.on(eventName, async (...args) => {
+            // client is always passed as last event handler argument
+            await handler(...args, client)
+        })
+    }
+
+
+    const restEvents = fs.readdirSync(path.join('.', 'events', 'rest'))
+
+    // add events classes to collection
+    for (let event of restEvents) {
+        // ignore .DS_Store files
+        if (event === '.DS_Store') continue
+        const { eventName, handler  } = await import(`../events/rest/${event}`)
+        client.rest.on(eventName, async (...args) => {
             // client is always passed as last event handler argument
             await handler(...args, client)
         })
@@ -80,7 +96,12 @@ const games = async client => {
             client.games.set(metadata, gameFile)
         }
     }
-    
+
+}
+
+const tournaments = async client => {
+    client.tournaments = new TournamentManager(client)
+    await client.tournaments.setup()
 }
 
 const moderators = async client => {
@@ -126,5 +147,6 @@ export default {
     database,
     events,
     games,
+    tournaments,
     moderators,
 }

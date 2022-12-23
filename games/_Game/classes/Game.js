@@ -3,13 +3,15 @@ import { BUTTONS, GAME_OPTIONS, REPLIES } from '../../../config/types.js'
 import Discord from '../../../discord_mod.js'
 import logger, { getMessageData } from 'gamebot/logger'
 
-import { ButtonStyle } from 'discord-api-types/v10'
+import { ButtonStyle, PermissionFlagsBits } from 'discord-api-types/v10'
+
+import EventEmitter from 'node:events'
 
 /**
  * The base class for all games, see {@tutorial getting_started} to get started.
  * @abstract
  */
-export default class Game {
+export default class Game extends EventEmitter {
     /**
      * An object with configurable game settings. This field is currently unused.
      * @typedef GameSettings
@@ -22,6 +24,7 @@ export default class Game {
      * @param {GameSettings} settings An optional object with custom settings for the game
      */
     constructor(msg, settings) {
+        super()
         /**
          * The metadata for a given game.
          * @typedef GameMetadata
@@ -140,6 +143,7 @@ export default class Game {
         this.settings = {
             isDmNeeded: false,
             updatePlayersAnytime: true,
+            maximumInactiveRounds: 3,
             defaultUpdatePlayerMessage: `✅ The player list will be updated at the start of the next round.`
         }
 
@@ -196,6 +200,7 @@ export default class Game {
          * ]
          */
         this.gameOptions = []
+
         logger.info(getMessageData(this.msg), `Game ${this.constructor.name} initialized.`)
     }
 
@@ -306,8 +311,10 @@ export default class Game {
                     embeds: [ joinEmbed ],
                     components: [ joinButtonRow ]
                 })
-                .catch(err => this.client.emit('error', err, this.client, joinMessage, this))
+                .catch(err => this.client.emit('error', err, this.client, this.msg, this))
                 
+                if(!joinMessage) this.end(undefined, 'There was an issue starting this game.')
+
                 // Collect all interactions
                 const collector = joinMessage.createMessageComponentCollector({ time: 120000 })
                 collector.on('collect', async i => {
@@ -470,7 +477,10 @@ export default class Game {
 
                 // Delete selection
                 const message = collected.first()
-                message.delete().catch(reject)
+
+                // Ensure we have permission to delete the message
+                if(await this._hasPermission(PermissionFlagsBits.ManageMessages)) message.delete().catch(reject)
+
                 let option = this.gameOptions[parseInt(message.content) - 1]
 
                 const optionData = {
@@ -521,7 +531,9 @@ export default class Game {
                 }
 
                 const optionResponse = optionResponseMessages.first()
-                optionResponse.delete().catch(reject)
+
+                // Ensure we have permission to delete the message
+                if(await this._hasPermission(PermissionFlagsBits.ManageMessages)) optionResponse.delete().catch(reject)
                 
                 // Add custom filter options
                 if(option.filter) {
@@ -769,7 +781,7 @@ export default class Game {
             return
         }
 
-        if(message !== null) {
+        if(message || this.settings.defaultUpdatePlayerMessage) {
             await this.channel.sendEmbed(message || this.settings.defaultUpdatePlayerMessage).catch(logger.error.bind(logger))
         }
         
@@ -836,7 +848,23 @@ export default class Game {
         }
         this.playersToAdd = []
     }
-    
+
+    /**
+     * Identifies whether the bot has a permission within the channel.
+     * @param {PermissionResolvable} permissionResolvable The permission to check for.
+     * @returns {Promise<Boolean>} Whether the bot has the permission.
+     */
+    async _hasPermission(permissionResolvable) {
+        // Check for user
+        let me = this.msg.guild.members.me
+        if(!me) {
+            me = await this.msg.guild.members.fetchMe({
+                cache: true,
+            })
+        }
+
+        return me.permissionsIn(this.channel).has(permissionResolvable)
+    }
 
     /**
      * The method called after user configuration. This will be custom for each game.
@@ -897,11 +925,13 @@ export default class Game {
             }]
         }
 
-
         // Send a message in the game channel that the game is over.
         this.msg.channel.send({
             embeds: [gameEmbed]
         }).then(msg => {
+            // Emit end event
+            this.emit('end', winners)
+
             // Remove all event listeners created during this game.
             this.msg.channel.gamePlaying = false
             this.msg.channel.game = undefined
