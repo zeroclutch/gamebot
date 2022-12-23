@@ -5,11 +5,13 @@ import logger, { getMessageData } from 'gamebot/logger'
 
 import { ButtonStyle, PermissionFlagsBits } from 'discord-api-types/v10'
 
+import EventEmitter from 'node:events'
+
 /**
  * The base class for all games, see {@tutorial getting_started} to get started.
  * @abstract
  */
-export default class Game {
+export default class Game extends EventEmitter {
     /**
      * An object with configurable game settings. This field is currently unused.
      * @typedef GameSettings
@@ -22,6 +24,7 @@ export default class Game {
      * @param {GameSettings} settings An optional object with custom settings for the game
      */
     constructor(msg, settings) {
+        super()
         /**
          * The metadata for a given game.
          * @typedef GameMetadata
@@ -922,11 +925,13 @@ export default class Game {
             }]
         }
 
-
         // Send a message in the game channel that the game is over.
         this.msg.channel.send({
             embeds: [gameEmbed]
         }).then(msg => {
+            // Emit end event
+            this.emit('end', winners)
+
             // Remove all event listeners created during this game.
             this.msg.channel.gamePlaying = false
             this.msg.channel.game = undefined

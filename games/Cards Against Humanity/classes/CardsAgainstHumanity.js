@@ -651,6 +651,25 @@ export default class CardsAgainstHumanity extends Game {
         // await X messages, depending on how many white cards are needed
         let selectionCollector = this.channel.createMessageCollector({ filter: messageFilter, time: this.settings.timeLimit });
 
+        let lastSubmissionStatus = this.renderSubmissionStatus()
+
+        // Update submission status every 5 seconds
+        const statusUpdateInterval = setInterval(() => {
+            const newSubmissionStatus = this.renderSubmissionStatus()
+
+            // Don't update if nothing has changed
+            if(newSubmissionStatus === lastSubmissionStatus) return
+            lastSubmissionStatus = newSubmissionStatus
+
+            submissionStatusMessage.edit({
+                embeds: [{
+                    title: 'Submission status',
+                    description: newSubmissionStatus,
+                    color: 4513714
+                }]
+            })
+        }, 3500)
+
         selectionCollector.on('collect', async m => {
             if(this.ending) return
 
@@ -669,15 +688,6 @@ export default class CardsAgainstHumanity extends Game {
             })
             player.submitted = true
 
-            // update in chat
-            submissionStatusMessage.edit({
-                embeds: [{
-                    title: 'Submission status',
-                    description: this.renderSubmissionStatus(),
-                    color: 4513714
-                }]
-            })
-
             // remove cards from hand
             player.cards.splice(cardRemoved, 1, '')
 
@@ -686,8 +696,19 @@ export default class CardsAgainstHumanity extends Game {
 
                 // Clean up submission status message
                 viewHandCollector.stop()
-            }
 
+                // Stop the interval
+                clearInterval(statusUpdateInterval)
+
+                // Update one last time
+                submissionStatusMessage.edit({
+                    embeds: [{
+                        title: 'Submission status',
+                        description: this.renderSubmissionStatus(),
+                        color: 4513714
+                    }],
+                })
+            }
         })
 
         selectionCollector.on('end', (collected, reason) => {

@@ -43,8 +43,8 @@ export default new BotCommand({
     const selection = args.join(' ').toLowerCase()
     const game = msg.client.games.find((_game, meta) => meta.id == selection || meta.name.toLowerCase() == selection)
     
-    const gameOptions = args.slice(1).join(' ')
+    const userArgs = args.slice(1).join(' ')
 
-    msg.client.gameManager.start(game, msg, gameOptions)
+    msg.client.gameManager.start(game, msg, { userArgs })
   }
 })

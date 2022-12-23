@@ -38,6 +38,11 @@ export const BUTTONS = {
     LESS: 'less',
 }
 
+export const TOURNAMENT_MODES = {
+    WINS: 'wins',
+    CUMULATIVE: 'cumulative',
+}
+
 export const REPLIES = {
     DISALLOWED_ACTION: {
         embeds: [{ description: `You can't click that!`, color: options.colors.error }],
