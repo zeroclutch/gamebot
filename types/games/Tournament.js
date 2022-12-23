@@ -194,7 +194,7 @@ class Tournament {
             })
 
             if(this.averagePlayerJoinTime !== 0) {
-                const timeToWait = Math.round((Math.round(this.averagePlayerJoinTime * gameInfo.metadata.playerCount.min / 1000) + this.JOIN_TIMEOUT) / 10) * 10
+                const timeToWait = Math.round((Math.round(this.averagePlayerJoinTime * (gameInfo.metadata.playerCount.min - 1) / 1000) + this.JOIN_TIMEOUT) / 10) * 10
                 await thread.send({
                     content: `The game will begin once enough players have joined! You can expect to wait around ${timeToWait} seconds.`,
                 })
