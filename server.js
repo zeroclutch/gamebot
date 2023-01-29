@@ -204,8 +204,18 @@ app.post('/api/purchase', async (req, res) => {
       return
     }
 
+    // Validate costs
+    if(item.cost < 0 || isNaN(item.cost) || item.goldCost < 0 || isNaN(item.goldCost)) {
+      res.send({
+        error: 'Invalid cost, purchase could not be completed.'
+      })
+
+      logger.warn({ userID, itemID }, 'Invalid cost')
+      return
+    }
+
     // submit purchase
-    let updatedUser = await dbClient.database.collection('users').findOneAndUpdate(
+    await dbClient.database.collection('users').updateOne(
         { userID },
         { 
             $push: { unlockedItems: item.itemID },
@@ -217,6 +227,7 @@ app.post('/api/purchase', async (req, res) => {
       res.status(500)
     })
 
+    let updatedUser = await dbClient.fetchDBInfo(userID)
 
     // This should never happen, but just in case
     if(updatedUser.balance < 0)     logger.warn({ userID }, 'User has negative balance') 
@@ -518,7 +529,8 @@ app.post('/api/checkout/confirmHostedPage', async (req, res) => {
         })
         return
       }
-
+      
+      // Create user if not exists
       await dbClient.fetchDBInfo(userID)
 
       // Handle payment
@@ -527,18 +539,12 @@ app.post('/api/checkout/confirmHostedPage', async (req, res) => {
         'credit_0001': { $inc: { balance: Math.floor(content.subscription.plan_quantity), amountDonated: content.invoice.total } },
         'gold_0001':   { $inc: { goldBalance: Math.round(content.subscription.plan_quantity), amountDonated: content.invoice.total } },
       }
-      let newUser = await dbClient.database.collection('users').findOneAndUpdate(
+      await dbClient.database.collection('users').updateOne(
         { userID },
-        PLAN_IDS[content.subscription.plan_id],
-        { returnOriginal: false }
-      ).then(() => {
-        logger.info({
-          user: userID,
-          plan_id: content.subscription.plan_id,
-          plan_quantity: content.subscription.plan_quantity,
-          content: content.invoice.total,
-        }, 'User purchased credits.')
-      }).catch(() => {
+        PLAN_IDS[content.subscription.plan_id]
+      )
+ 
+      let newUser = await dbClient.fetchDBInfo(userID).catch(() => {
         logger.error({
           user: userID,
           plan_id: content.subscription.plan_id,
@@ -546,6 +552,11 @@ app.post('/api/checkout/confirmHostedPage', async (req, res) => {
           content: content.invoice.total
         }, 'Error purchasing credits.')
       })
+
+      if(newUser) {
+        logger.info(newUser, 'User successfully purchased credits.')
+      }
+
       res.status(200).send(newUser)
       return
     }
