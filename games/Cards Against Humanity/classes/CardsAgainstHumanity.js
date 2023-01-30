@@ -113,8 +113,13 @@ export default class CardsAgainstHumanity extends Game {
         this.inactiveRounds = 0
 
         // get settings
+        this.mode = 'DEFAULT'
         this.settings.sets = ['Base', 'CAHe1', 'CAHe2', 'CAHe3', 'CAHe4', 'CAHe5', 'CAHe6']
         this.settings.isDmNeeded = false
+
+        // load packs
+        this.CARD_PACKS = CARD_PACKS
+        this.defaultFriendlySetList = ['**Base Set** *(460 cards)*', '**The First Expansion** *(80 cards)*', '**The Second Expansion** *(75 cards)*', '**The Third Expansion** *(75 cards)*', '**The Fourth Expansion** *(70 cards)*', '**The Fifth Expansion** *(75 cards)*', '**The Sixth Expansion** *(75 cards)*']
 
         this.defaultPlayer = {
             cards: 'Array',
@@ -139,7 +144,7 @@ export default class CardsAgainstHumanity extends Game {
         this.settings.pointsToWin = parseInt(this.options['Points to Win'])
 
         // update set list
-        this.settings.sets = await this.getSets(this.options['Sets'])
+        this.settings.sets =  await this.getSets(this.options['Sets'])
         
         // create and shuffle the deck
         this.cardDeck = new CAHDeck(this.settings.sets)
@@ -172,16 +177,16 @@ export default class CardsAgainstHumanity extends Game {
             {
                 friendlyName: 'Sets',
                 choices: await this.renderSetList(),
-                default: ['**Base Set** *(460 cards)*', '**The First Expansion** *(80 cards)*', '**The Second Expansion** *(75 cards)*', '**The Third Expansion** *(75 cards)*', '**The Fourth Expansion** *(70 cards)*', '**The Fifth Expansion** *(75 cards)*', '**The Sixth Expansion** *(75 cards)*'],
+                default: this.defaultFriendlySetList,
                 type: 'checkboxes',
-                note: `You can purchase more packs in the shop, using the command \`${this.channel.prefix}shop cah\``
+                note: `You can purchase more packs in the shop, using the command \`${this.channel.prefix}shop\``
             },
             {
                 friendlyName: 'Card Back',
                 type: 'radio',
                 choices: await this.renderCardBackList(),
                 default: 'Default',
-                note: `Select a card back. Type \`${this.channel.prefix}shop cah\` to view the card backs available for purchase.`
+                note: `Select a card back. Type \`${this.channel.prefix}shop\` to view the card backs available for purchase.`
             },
             {
                 friendlyName: 'Timer',
@@ -209,13 +214,18 @@ export default class CardsAgainstHumanity extends Game {
         // check available setLists
         this.availableSets = this.settings.sets.slice(0)
         // add defaults
-        this.availableSets = this.settings.sets.concat(['BaseUK'])
+        if(this.mode === 'DEFAULT') {
+            this.availableSets = this.availableSets.concat(['BaseUK'])
+        } else if(this.mode === 'FAMILY') {
+            this.availableSets = this.availableSets.filter(set => set !== 'family')
+        }
+
         await this.gameMaster.fetchDBInfo().then(info => {
             // get unlocked items
             info.unlockedItems.forEach(item => {
-                if(CARD_PACKS[item]) {
+                if(this.CARD_PACKS[item]) {
                     // map item ids to availableSets
-                    let packs = CARD_PACKS[item]
+                    let packs = this.CARD_PACKS[item]
                     if(typeof packs == 'string') this.availableSets.push(packs)
                     else this.availableSets = this.availableSets.concat(packs)
                 }
