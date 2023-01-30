@@ -5,7 +5,6 @@ export default class CAHDeck {
     constructor(sets) {
         // adds all appropriate sets to the collection of cards
         this.sets = sets.length === 0 ? ['Base Set'] : sets
-        console.log(sets)
         this.whiteCards = []
         this.blackCards = []
         this.discards = {
