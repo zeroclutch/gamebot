@@ -882,11 +882,20 @@ export default class Game extends EventEmitter {
     }
 
     /**
+     * The method called before the game ends. This will be custom for each game.
+     * @abstract 
+     */
+    beforeEnd() {
+        return
+    }
+
+    /**
      * End a game. This will be called when a player wins or the game is force stopped.
      * @param {Object|Array<Object>} winners The game winner
      * @param {String} endPhrase The message to be sent at the end of the game.
      */
     end(winners, endPhrase) {
+        this.beforeEnd()
         this.ending = true
         this.stage = 'over'
 
