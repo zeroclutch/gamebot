@@ -363,8 +363,71 @@ class Poker extends Game {
         return { minBet, maxBet }
     }
 
+    getValidBets(player, validActions) {
+        const { minBet, maxBet } = this.getBetLimits(validActions)
+        
+        // Find the size of the current pot
+        let currentPot = this.table.pots().reduce((acc, pot) => acc + pot.size, 0)
+        let currentRoundBets = this.table.handPlayers().reduce((acc, p) => acc + (p.betSize || 0), 0)
+        let pot = currentPot + currentRoundBets
+
+        // Calculate the amounts the player can bet
+        const standardBets = [{
+            name: '1/3 Pot',
+            value: Math.floor(pot / 3),
+        }, {
+            name: '1/2 Pot',
+            value: Math.floor(pot / 2)
+        }, {
+            name: 'Pot',
+            value: pot
+        }, {
+            name: '2x Pot',
+            value: pot * 2
+        }]
+
+        let validBets = []
+
+        // Find the bets that the player can make
+        for(let i = 0; i < standardBets.length; i++) {
+            let standardBet = standardBets[i].value
+            if(standardBet >= maxBet) {}
+            else if(standardBet <= minBet) {}
+            else {
+                // Limit betting to pot depending on options
+                if(this.options['Betting Limits'] === 'Pot Limit' || (this.options['Betting Limits'] === 'Pot Limit' && standardBet <= pot)) {
+                    validBets.push(
+                        new ButtonBuilder()
+                            .setCustomId(standardBets[i].name)
+                            .setLabel(`${standardBets[i].name} (${standardBets[i].value})`)
+                            .setStyle(this.getButtonStyle('bet'))
+                    )
+                }
+            }
+        }
+
+        // Add the custom bet button
+        validBets.push(
+            new ButtonBuilder()
+                .setCustomId('Custom Bet')
+                .setLabel('Custom Bet')
+                .setStyle(this.getButtonStyle('bet'))
+        )
+
+
+        return validBets
+    }
+
     awaitPlayerBetSize(player, validActions) {
         return new Promise(async (resolve, reject) => {
+            // Create a button collector to wait for the player to select a bet size
+            const betSize = await this.channel.send({
+                content: 'Select a bet size.',
+                components: [new ActionRowBuilder().addComponents(
+                    // this.getValidBets(player, validActions) TODO: get buttons to work
+                )]
+            })
+
             // Find valid bet size range
             const { minBet, maxBet } = this.getBetLimits(validActions)
 
