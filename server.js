@@ -237,8 +237,9 @@ app.post('/api/purchase', async (req, res) => {
       itemID: item.itemID,
       item: item.friendlyName,
       cost: item.cost,
-      remainingBalance: updatedUser.value.balance
+      remainingBalance: updatedUser.balance
     }
+
     res.status(200)
     res.send(result)
     metrics.log('Item Purchased', result)
