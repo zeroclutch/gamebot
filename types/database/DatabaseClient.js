@@ -102,7 +102,9 @@ export default class DatabaseClient {
         wins: [],
         achievements: [],
         quests: [],
-        lastQuest: -1000000000000
+        lastQuest: -1000000000000,
+        xp: 0,
+        level: -1
       }
 
       this.database.collection('users').findOne({
