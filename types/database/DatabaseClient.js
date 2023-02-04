@@ -2,7 +2,6 @@ import { MongoClient } from 'mongodb';
 import logger from 'gamebot/logger'
 
 export default class DatabaseClient {
-
   /**
    * Initializes a new instance of a DatabaseClient
    */
@@ -120,14 +119,11 @@ export default class DatabaseClient {
   }
 
   fetchDBInfo(userID) {
-    return new Promise(async (resolve, reject) => {
-      await this.createDBInfo(userID)
-      await this.database.collection('users').findOne({
-          userID
-        })
-        .then(resolve)
-        .catch(reject)
-    })
+    return this.createDBInfo(userID)
+  }
+
+  updateXP(userID) {
+    return this.database.collection('users').updateOne({userID})
   }
 
   fetchItemInfo(itemID) {
@@ -215,5 +211,4 @@ export default class DatabaseClient {
       resolve(response)
     })
   }
-
 }

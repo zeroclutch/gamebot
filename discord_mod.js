@@ -80,9 +80,7 @@ Discord.BaseChannel.prototype.sendEmbed = function(description, title, embedColo
  * .catch(logger.error.bind(logger))
  */
 Discord.BaseChannel.prototype.createDBInfo = function() {
-  return new Promise((resolve, reject) => {
-    this.client.dbClient.createDBInfo(this.id).then(resolve).catch(reject)
-  })
+  return new Promise(this.client.dbClient.createDBInfo(this.id))
 }
 
 /**
@@ -97,9 +95,7 @@ Discord.BaseChannel.prototype.createDBInfo = function() {
  * @returns {Promise<UserData>}
  */
 Discord.User.prototype.fetchDBInfo = function() {
-  return new Promise((resolve, reject) => {
-    this.client.dbClient.fetchDBInfo(this.id).then(resolve).catch(reject)
-  })
+  return this.client.dbClient.fetchDBInfo(this.id)
 }
 
 /**
@@ -107,9 +103,7 @@ Discord.User.prototype.fetchDBInfo = function() {
  * @returns {Boolean}
  */
 Discord.User.prototype.hasItem = function (itemID) {
-  return new Promise((resolve, reject) => {
-    this.client.dbClient.hasItem(this.id, itemID).then(resolve).catch(reject)
-  })
+  return this.client.dbClient.hasItem(this.id, itemID)
 }
 
 /**
