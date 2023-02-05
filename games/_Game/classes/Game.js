@@ -65,6 +65,13 @@ export default class Game extends EventEmitter {
         this.msg = msg
 
         /**
+         * The start time of this game.
+         * @type {Date}
+         * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date|Date}
+         */
+        this.startTime = new Date(Date.now())
+
+        /**
          * The Discord channel that this game is played in.
          * @type {Discord.TextChannel}
          * @see {@link https://discord.js.org/#/docs/main/11.5.1/class/TextChannel|Discord.TextChannel}
@@ -460,7 +467,7 @@ export default class Game extends EventEmitter {
 
                 if(this.ending || optionStatus.isConfigured) resolve(false)
 
-                const messageFilter = m => m.author.id === this.leader.id && ((!isNaN(m.content) && parseInt(m.content) <= this.gameOptions.length && parseInt(m.content) > 0) || m.content.toLowerCase() === this.channel.prefix + 'start')
+                const messageFilter = m => m.author.id === this.leader.id && (!isNaN(m.content) && parseInt(m.content) <= this.gameOptions.length && parseInt(m.content) > 0)
 
                 let collected = await this.channel.awaitMessages({ 
                     filter: messageFilter,
