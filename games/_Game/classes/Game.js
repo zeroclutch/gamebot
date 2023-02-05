@@ -460,7 +460,7 @@ export default class Game extends EventEmitter {
 
                 if(this.ending || optionStatus.isConfigured) resolve(false)
 
-                const messageFilter = m => m.author.id === this.leader.id && ((!isNaN(m.content) && parseInt(m.content) <= this.gameOptions.length && parseInt(m.content) > 0) || m.content.toLowerCase() === this.channel.prefix + 'start')
+                const messageFilter = m => m.author.id === this.leader.id && (!isNaN(m.content) && parseInt(m.content) <= this.gameOptions.length && parseInt(m.content) > 0)
 
                 let collected = await this.channel.awaitMessages({ 
                     filter: messageFilter,
