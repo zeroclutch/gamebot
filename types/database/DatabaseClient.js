@@ -148,6 +148,8 @@ export default class DatabaseClient {
   }
 
 
+
+
 /**
  * Sees if a user has an item in their inventory.
  * @returns {Boolean}

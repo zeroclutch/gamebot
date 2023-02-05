@@ -53,10 +53,10 @@ class Poker extends Game {
             },
             {
                 friendlyName: 'Betting Limits',
-                default: 'Fixed Limit',
+                default: 'No Limit',
                 choices: ['No Limit', 'Pot Limit', 'Fixed Limit'],
                 type: 'radio',
-                note: 'Fixed limit betting means that the amount you can raise the bet by is fixed. Pot limit means that you can bet a maximum of the number of chips in the pot. No limit means that you can bet any amount of chips.'
+                note: 'Fixed limit betting means that the amount you can raise the bet by is fixed. This is the simplest form of betting. Pot limit means that you can bet a maximum of the number of chips in the pot. No limit means that you can bet any amount of chips.'
             },
             {
                 friendlyName: 'Big Bet',
@@ -93,6 +93,7 @@ class Poker extends Game {
         this.deck = new CardDeck()
         this.pokerChip = '<:pokerchip:1071006783683964958>'
 
+        this.playersInHand = []
     }
 
     gameInit() {
@@ -154,6 +155,10 @@ class Poker extends Game {
         )
     }
 
+    getTotalChips(player) {
+        return this.table.seats()[player.seatIndex]?.totalChips
+    }
+
     resolveIndex(seatIndex) {
         return this.players.find(p => p.seatIndex === seatIndex)
     }
@@ -192,7 +197,6 @@ class Poker extends Game {
     renderShowdownMessage(table) {
         return {
             color: options.colors.info,
-            //description: winners[0].map(([seatIndex, {}, cards]) => `${this.resolveIndex(seatIndex).user} won with a ${this.renderHand(cards)}!`).join(', '),
             fields: [
                 {
                     name: 'Player Hands',
@@ -207,11 +211,10 @@ class Poker extends Game {
     }
 
     renderWinnerMessage(table) {
-        const winners = table.winners
-        console.log(winners)
+        const winners = table.winners()
         return {
             color: options.colors.info,
-            description: winners[0].map(([seatIndex, { handRanking }, cards]) => `${this.resolveIndex(seatIndex).user} won with a ${this.resolveHandRanking(handRanking)}!`).join(', '),
+            description: winners[0].map(([seatIndex, { ranking }, cards]) => `${this.resolveIndex(seatIndex).user} won with a ${this.resolveHandRanking(ranking)}!`).join(', '),
         }
     }
 
@@ -321,6 +324,11 @@ class Poker extends Game {
                         resolve([selectedAction, validActions.chipRange.min])
                     } else {
                         const betSize = await this.awaitPlayerBetSize(player, validActions)
+                        if(!betSize) {
+                            // If the player didn't select a bet size in time, fold
+                            resolve(['fold', null])
+                            return
+                        }
                         resolve([selectedAction, betSize])
                     }
                 } else if(selectedAction === 'big bet') {
@@ -368,39 +376,49 @@ class Poker extends Game {
         
         // Find the size of the current pot
         let currentPot = this.table.pots().reduce((acc, pot) => acc + pot.size, 0)
-        let currentRoundBets = this.table.handPlayers().reduce((acc, p) => acc + (p.betSize || 0), 0)
+        let currentRoundBets = this.table.handPlayers().reduce((acc, p) => acc + (p?.betSize || 0), 0)
         let pot = currentPot + currentRoundBets
 
-        // Calculate the amounts the player can bet
-        const standardBets = [{
-            name: '1/3 Pot',
-            value: Math.floor(pot / 3),
-        }, {
-            name: '1/2 Pot',
-            value: Math.floor(pot / 2)
-        }, {
-            name: 'Pot',
-            value: pot
-        }, {
-            name: '2x Pot',
-            value: pot * 2
-        }]
+        let standardBets = []
+        if(this.table.roundOfBetting() === 'preflop') {
+            standardBets = [{
+                name: 'Minimum Bet',
+                value: minBet,
+            }, {
+                name: '2x Min Bet',
+                value: minBet * 2
+            }]
+        } else {
+            standardBets = [{
+                name: '1/3 Pot',
+                value: Math.floor(pot / 3),
+            }, {
+                name: '1/2 Pot',
+                value: Math.floor(pot / 2)
+            }, {
+                name: 'Pot',
+                value: pot
+            }, {
+                name: '2x Pot',
+                value: pot * 2
+            }]
+        }
 
         let validBets = []
 
         // Find the bets that the player can make
         for(let i = 0; i < standardBets.length; i++) {
             let standardBet = standardBets[i].value
-            if(standardBet >= maxBet) {}
-            else if(standardBet <= minBet) {}
+            if(standardBet > maxBet) {}
+            else if(standardBet < minBet) {}
             else {
                 // Limit betting to pot depending on options
-                if(this.options['Betting Limits'] === 'Pot Limit' || (this.options['Betting Limits'] === 'Pot Limit' && standardBet <= pot)) {
+                if(this.options['Betting Limits'] === 'No Limit' || (this.options['Betting Limits'] === 'Pot Limit' && standardBet <= pot)) {
                     validBets.push(
                         new ButtonBuilder()
                             .setCustomId(standardBets[i].name)
                             .setLabel(`${standardBets[i].name} (${standardBets[i].value})`)
-                            .setStyle(this.getButtonStyle('bet'))
+                            .setStyle(ButtonStyle.Secondary)
                     )
                 }
             }
@@ -415,43 +433,85 @@ class Poker extends Game {
         )
 
 
-        return validBets
+        return [validBets, standardBets]
     }
 
     awaitPlayerBetSize(player, validActions) {
         return new Promise(async (resolve, reject) => {
             // Create a button collector to wait for the player to select a bet size
-            const betSize = await this.channel.send({
+            const [validBets, standardBets] = this.getValidBets(player, validActions)
+            const betSizeMessage = await this.channel.send({
                 content: 'Select a bet size.',
                 components: [new ActionRowBuilder().addComponents(
-                    // this.getValidBets(player, validActions) TODO: get buttons to work
+                    validBets
                 )]
-            })
+            }).catch(reject)
 
-            // Find valid bet size range
-            const { minBet, maxBet } = this.getBetLimits(validActions)
+            const componentList = betSizeMessage.components[0].components
 
-            await this.channel.send(`${player.user}, type in a bet size from **${minBet}** to **${maxBet}**`)
-            
-            const betSizeFilter = m => m.author.id === player.user.id && !isNaN(m.content) && (parseInt(m.content) <= maxBet) && (parseInt(m.content) >= minBet)
-            const betSizeCollector = this.channel.createMessageCollector({ filter: betSizeFilter, time: this.getTimer() })
+            let betSizeFilter = i => componentList.find(component => component.customId === i.customId) && i.user.id === player.user.id
 
-            betSizeCollector.on('collect', async m => {
-                betSizeCollector.stop(m.content)
+            let betSizeCollector = betSizeMessage.createMessageComponentCollector({ filter: betSizeFilter, time: this.getTimer() })
+
+            betSizeCollector.on('collect', async i => {
+                betSizeCollector.stop(i.customId)
+                await i.reply({ content: `${player.user} selected ${i.customId}!` })
             })
 
             betSizeCollector.on('end', async (collected, reason) => {
                 if (reason === 'time') {
-                    // If the player didn't select an action in time, fold
-                    resolve(['fold', null])
+                    // If the player didn't select a bet size in time, fold
+                    resolve(null)
                     return
                 }
 
-                const betSize = parseInt(collected.first().content)
+                // Wait a moment for the message to be viewed
+                await this.sleep(500)
 
-                // Select the bet size
-                resolve(betSize)
+                const selectedBetSize = collected.last().customId
+
+                // Wait for the player to select a bet size
+                if (selectedBetSize === 'Custom Bet') {
+                    const betSize = await this.awaitPlayerCustomBetSize(player, validActions)
+                    resolve(betSize)
+                } else {
+                    // General case
+                    resolve(standardBets.find(bet => bet.name === selectedBetSize).value)
+                }
             })
+        })
+    }
+
+    awaitPlayerCustomBetSize(player, validActions) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                // Find valid bet size range
+                const { minBet, maxBet } = this.getBetLimits(validActions)
+
+                await this.channel.send(`${player.user}, type in a bet size from **${minBet}** to **${maxBet}**`)
+
+                const betSizeFilter = m => m.author.id === player.user.id && !isNaN(m.content) && (parseInt(m.content) <= maxBet) && (parseInt(m.content) >= minBet)
+                const betSizeCollector = this.channel.createMessageCollector({ filter: betSizeFilter, time: this.getTimer() })
+
+                betSizeCollector.on('collect', async m => {
+                    betSizeCollector.stop(m.content)
+                })
+
+                betSizeCollector.on('end', async (collected, reason) => {
+                    if (reason === 'time') {
+                        // If the player didn't select an action in time, fold
+                        resolve(['fold', null])
+                        return
+                    }
+
+                    const betSize = parseInt(collected.first().content)
+
+                    // Select the bet size
+                    resolve(betSize)
+                })
+            } catch(e) {
+                reject(e)
+            }
         })
     }
 
@@ -460,6 +520,7 @@ class Poker extends Game {
         table.startHand();
 
         while (table.isHandInProgress()) {
+            this.playersInHand = Array.from(this.players.keys());
             while (table.isBettingRoundInProgress()) {
                 const seatIndex = table.playerToAct();
                 
@@ -467,31 +528,42 @@ class Poker extends Game {
                 //const [action, betSize] = getPlayerActionSomehow(seatIndex);
                 const [action, betSize] = await this.awaitPlayerAction(seatIndex);
 
+                if(action === 'fold') {
+                    this.playersInHand.splice(this.resolveIndex(seatIndex), 1)
+                }
+
                 table.actionTaken(action, betSize);
             }
             
             table.endBettingRound()
             
             if (table.areBettingRoundsCompleted()) {
-                if(table.holeCards().filter(h => h).length > 1) {
-                    await this.channel.send({
-                        embeds: [this.renderShowdownMessage(table)]
-                    })
-                } else {
-                    let player = this.resolveIndex(table.holeCards().findIndex(player => player))
-                    await this.channel.send(`${this.players.get(player.user.id).user} won the hand!`)
-                }
+                // Only show the showdown message if there are more than 1 players
+                const showDownMessage = this.renderShowdownMessage(table)
 
                 table.showdown()
+
+                // Show what the winner had
+                if(table.winners() && table.winners().length) {
+                    await this.channel.send({
+                        embeds: [showDownMessage]
+                    })
+                    await this.channel.send({
+                        embeds: [this.renderWinnerMessage(table)]
+                    })
+                } else if(this.playersInHand.length === 1) {
+                    let player = this.players.get(this.playersInHand[0])
+                    await this.channel.send(`${player.user} won the hand!`)
+                } else {
+                    // This should not happen
+                    await this.channel.send('The hand is over.')
+                }
 
                 // Check if we have reached enough inactive rounds
                 if(this.inactiveRounds >= this.players.size * this.settings.maximumInactiveRounds) {
                     this.end(undefined, 'The game has ended due to inactivity.')
                     return
                 }
-
-                // Delay for 2 seconds
-                await this.sleep(2000)
 
                 // Add and remove players
                 // We don't need to worry about player restraints here,
@@ -503,21 +575,26 @@ class Poker extends Game {
                     table.sitDown(nextFreeSeat, this.options['Buy-in'])
                     newSeats[member.id] = nextFreeSeat
                 })
+                
                 await this.updatePlayers()
+
                 // Update players with their seats
                 this.players.forEach(player => {
                     if(player.user.id in newSeats) player.seatIndex = newSeats[player.user.id]
                 })
 
-                // Delay for 2 seconds
-                await this.sleep(2000)
-
                 // Check if we only have 1 player left
-                if(this.players.size <= 1) {
-                    this.end(this.players.first())
+                let playersLeft = table.seats().map((p, i) => p ? i : null).filter(p => p !== null)
+                console.log(playersLeft)
+                if(playersLeft.length === 1) {
+                    this.end(this.resolveIndex(playersLeft[0]))
                     return
                 }
 
+
+                // Delay for 2 seconds
+                await this.sleep(2000)
+                
                 // Start a new hand
                 table.startHand()
             }
