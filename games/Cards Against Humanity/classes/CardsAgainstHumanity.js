@@ -678,7 +678,7 @@ export default class CardsAgainstHumanity extends Game {
                     color: 4513714
                 }]
             })
-        }, 3500)
+        }, 5000)
 
         selectionCollector.on('collect', async m => {
             if(this.ending) return
