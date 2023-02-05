@@ -65,6 +65,13 @@ export default class Game extends EventEmitter {
         this.msg = msg
 
         /**
+         * The start time of this game.
+         * @type {Date}
+         * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date|Date}
+         */
+        this.startTime = new Date(Date.now())
+
+        /**
          * The Discord channel that this game is played in.
          * @type {Discord.TextChannel}
          * @see {@link https://discord.js.org/#/docs/main/11.5.1/class/TextChannel|Discord.TextChannel}
