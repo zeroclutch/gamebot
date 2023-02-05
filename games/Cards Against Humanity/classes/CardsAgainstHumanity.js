@@ -17,6 +17,7 @@ import { ButtonStyle, PermissionFlagsBits } from 'discord-api-types/v10'
 import { AttachmentBuilder } from 'discord.js'
 
 const CARD_PACKS = {
+    '00s_pack': '00s',
     '90sn_pack': '90s',
     'ai_pack': 'ai',
     'can_pack': 'Canadian',
@@ -678,7 +679,7 @@ export default class CardsAgainstHumanity extends Game {
                     color: 4513714
                 }]
             })
-        }, 3500)
+        }, 5000)
 
         selectionCollector.on('collect', async m => {
             if(this.ending) return
