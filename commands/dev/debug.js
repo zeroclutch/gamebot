@@ -35,8 +35,7 @@ export default new BotCommand({
     msg.channel.game = new (game)(msg, gameOptions)
 
     // configure dev options
-    msg.channel.game.metadata.playerCount.min = 0
-    msg.channel.game.playerCount.min = 0
+    // Setting player count to 0 will adjust the actual metadata of the game.
 
     // run initialization of game
     msg.channel.game.init()
