@@ -1,11 +1,25 @@
 import { Collection } from '../../discord_mod.js'
 import options from '../../config/options.js'
+import logger, { getMessageData } from 'gamebot/logger'
 
 export default class GameManager {
     constructor(client) {
         // A list of active games, keyed by channel id
         this.games = new Collection()
         this.client = client
+
+        this.sweeperOptions = {
+          interval: 1000 * 60 * 15, // 15 minutes
+          maxGameLength: 1000 * 60 * 60 * 6 // 6 hours
+        }
+
+        this.sweeper = setInterval(() => {
+          for(let [_channelId, game] of this.games) {
+            if(Date.now() - game.startTime > this.sweeperOptions.maxInactiveTime) {
+              this.stop(game.channel)
+            }
+          }
+        })
     }
 
     /**
@@ -32,6 +46,11 @@ export default class GameManager {
       const instance = new (game)(msg, userArgs)
       this.games.set(channel.id, instance)
 
+      // attach deletion listener to game, it's ok if we "remove" it twice
+      instance.on('end', () => {
+        this.games.delete(channel.id)
+      })
+      
       // run initialization of game
       try {
         if(!skipInit) instance.init()
