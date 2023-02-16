@@ -1,5 +1,6 @@
 import { MongoClient } from 'mongodb';
 import logger from 'gamebot/logger'
+import RewardsManager from './RewardsManager';
 
 export default class DatabaseClient {
   /**
@@ -20,6 +21,9 @@ export default class DatabaseClient {
 
     // Development mode converts this class to a mock shell to avoid throwing errors without a URI string
     this.developmentMode = this.URI == undefined
+
+    // RewardsManager manages the calculations for determining a user's level and achievement
+    this.rewardsManager = new RewardsManager()
   }
 
   /**
@@ -124,8 +128,11 @@ export default class DatabaseClient {
     return this.createDBInfo(userID)
   }
 
-  updateXP(userID) {
-    return this.database.collection('users').updateOne({userID})
+  updateXP(userID, xp) {
+    let level = this.rewardsManager.calculateLevel(xp);
+    this.fetchDBInfo(userID).then(() => {
+      this.database.collection('users').updateOne({userID}, {xp, level})
+    })
   }
 
   fetchItemInfo(itemID) {
