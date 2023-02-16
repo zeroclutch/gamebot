@@ -1,11 +1,4 @@
 class RewardsManager {
-    /**
-     * 
-     * @param {*} achievementID short unique string that identifies the achievement.
-     * @param {*} gameID 
-     * @param {*} validationFunction 
-     */
-
     constructor() {
         this.XP_LEVELS = Object.freeze([1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11500, 13000, 14500, 16000, 17500, 19000, 20500, 22000, 23500, 25000, 26500, 28000, 30000, 32000, 34000, 36000, 38000, 40000, 42000, 44000, 46000, 48000, 50500, 53000, 55500, 58000, 60500, 63000, 65500, 68500, 71500, 74500, 77500, 80500, 83500, 87000, 90500, 94000, 97500, 101000])
     }
@@ -39,3 +32,5 @@ class RewardsManager {
         return hi + 1; 
     }
 }
+
+export default RewardsManager;
