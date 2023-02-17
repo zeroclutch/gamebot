@@ -129,8 +129,9 @@ export default class DatabaseClient {
   }
 
   updateXP(userID, xp) {
-    let level = this.rewardsManager.calculateLevel(xp);
-    this.fetchDBInfo(userID).then(() => {
+    this.fetchDBInfo(userID).then(user => {
+      xp += user.xp // Increment += Previous XP
+      let level = this.rewardsManager.calculateLevel(xp);
       this.database.collection('users').updateOne({userID}, {xp, level})
     })
   }
