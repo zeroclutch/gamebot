@@ -1,6 +1,6 @@
 import { MongoClient } from 'mongodb';
 import logger from 'gamebot/logger'
-import RewardsManager from './RewardsManager';
+import RewardsManager from './rewardsmanager.js';
 
 export default class DatabaseClient {
   /**
@@ -23,7 +23,7 @@ export default class DatabaseClient {
     this.developmentMode = this.URI == undefined
 
     // RewardsManager manages the calculations for determining a user's level and achievement
-    this.rewardsManager = new RewardsManager()
+    this.rewards = new RewardsManager()
   }
 
   /**
@@ -129,10 +129,10 @@ export default class DatabaseClient {
   }
 
   updateXP(userID, xp) {
-    this.fetchDBInfo(userID).then(user => {
-      xp += user.xp // Increment += Previous XP
-      let level = this.rewardsManager.calculateLevel(xp);
-      this.database.collection('users').updateOne({userID}, {xp, level})
+    return this.fetchDBInfo(userID).then(user => {
+      xp += isFinite(user.xp) ? user.xp : 0 // If old user doesn't have xp field set, assume they have zero xp
+      let level = this.rewards.calculateLevel(xp);
+      this.database.collection('users').updateOne({userID}, { $set: {xp, level} })
     })
   }
 
