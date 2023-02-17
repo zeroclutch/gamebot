@@ -529,7 +529,9 @@ class Poker extends Game {
                 const [action, betSize] = await this.awaitPlayerAction(seatIndex);
 
                 if(action === 'fold') {
-                    this.playersInHand.splice(this.resolveIndex(seatIndex), 1)
+                    let foldingPlayer = this.resolveIndex(seatIndex).user.id
+                    let foldingPlayerIndex = this.playersInHand.indexOf(foldingPlayer)
+                    this.playersInHand.splice(foldingPlayerIndex, 1)
                 }
 
                 table.actionTaken(action, betSize);
@@ -585,15 +587,15 @@ class Poker extends Game {
 
                 // Check if we only have 1 player left
                 let playersLeft = table.seats().map((p, i) => p ? i : null).filter(p => p !== null)
-                console.log(playersLeft)
+
                 if(playersLeft.length === 1) {
                     this.end(this.resolveIndex(playersLeft[0]))
                     return
                 }
 
 
-                // Delay for 2 seconds
-                await this.sleep(2000)
+                // Delay for 3 seconds
+                await this.sleep(3000)
                 
                 // Start a new hand
                 table.startHand()
