@@ -4,11 +4,12 @@ class RewardsManager {
     }
     
     /**
-     * 
      * @param {number} xp amount of XP user has
      * @returns {number} level
      */
     calculateLevel(xp) {
+        if(!isFinite(xp)) return -1;
+
         // Binary search to find lowest level with experience <= xp
         let lo = 0;
         let hi = this.XP_LEVELS.length - 1;
@@ -32,5 +33,4 @@ class RewardsManager {
         return hi + 1; 
     }
 }
-
 export default RewardsManager;
