@@ -131,6 +131,7 @@ export default class DatabaseClient {
   updateXP(userID, xp) {
     return this.fetchDBInfo(userID).then(user => {
       xp += isFinite(user.xp) ? user.xp : 0 // If old user doesn't have xp field set, assume they have zero xp
+      xp = Math.max(xp, 0) // No negative XP values allowed
       let level = this.rewards.calculateLevel(xp);
       this.database.collection('users').updateOne({userID}, { $set: {xp, level} })
     })
