@@ -7,6 +7,8 @@ import metadata from '../metadata.js';
 import options from '../../../config/options.js';
 import CardDeck from './CardDeck.js';
 
+import logger from 'gamebot/logger'
+
 // 🎉 🎉 🎉 Congrats to the `table.winners()` 🎉 🎉 🎉 
 
 class Poker extends Game {
@@ -20,6 +22,8 @@ class Poker extends Game {
 
         // Configure Poker
         this.table = new PokerGame.Table({ smallBlind: 50, bigBlind: 100 }, this.metadata.playerCount.max)
+
+        const isBetween = (value, min, max) => !isNaN(parseInt(value)) && parseInt(value) >= +min && parseInt(value) <= +max
         
         // Set configurable options
         this.gameOptions = [
@@ -27,29 +31,30 @@ class Poker extends Game {
                 friendlyName: 'Timer',
                 default: '0',
                 type: 'number',
-                filter: m => !isNaN(m.content) && (((parseInt(m.content) >= 20) && (parseInt(m.content) <= 500)) || m.content === '0'),
+                filter: m => !isNaN(m.content) && (isBetween(m.content, 20, 500) || m.content === '0'),
                 note: 'The time allowed for an action in seconds. Enter 0 to disable the timer.'
             },
             {
                 friendlyName: 'Small Blind',
                 default: 50,
-                type: 'number',
-                filter: m => !isNaN(m.content) && (parseInt(m.content) <= 0) && (parseInt(m.content) <= this.gameOptions['Big Blind'].value),
-                note: 'The amount of chips the small blind is worth. Must be smaller than the Big Blind'
+                default: '1/2 Big Blind',
+                choices: ['None', '1/3 Big Blind', '1/2 Big Blind', '2/3 Big Blind'],
+                type: 'radio',
+                note: 'The amount of chips the small blind is worth. It\'s always a fraction of the big blind.'
             },
             {
                 friendlyName: 'Big Blind',
                 default: 100,
                 type: 'number',
-                filter: m => !isNaN(m.content) && (parseInt(m.content) <= 0) && (parseInt(m.content) >= this.gameOptions['Small Blind'].value),
-                note: 'The amount of chips the big blind is worth.'
+                filter: m => isBetween(m.content, 100, 1000),
+                note: 'The amount of chips the big blind is worth. Must be between 100 and 1000 chips.'
             },
             {
                 friendlyName: 'Buy-in',
-                default: 10000,
-                filter: m => !isNaN(m.content) && (parseInt(m.content) <= 0) && (parseInt(m.content) >= this.gameOptions['Big Blind'].value),
+                default: 10_000,
+                filter: m => isBetween(m.content, 1000, 100_000),
                 type: 'number',
-                note: 'The amount of chips each player starts with.'
+                note: 'The amount of chips each player starts with. Must be between 1000 and 100,000 chips.'
             },
             {
                 friendlyName: 'Betting Limits',
@@ -99,10 +104,25 @@ class Poker extends Game {
     gameInit() {
         const table = this.table
 
+        this.options['Big Blind'] = parseInt(this.options['Big Blind'])
+
+        const calculateSmallBlind = (smallBlind) => {
+            switch(smallBlind) {
+                case 'None':
+                    return 0
+                case '1/3 Big Blind':
+                    return Math.floor(this.options['Big Blind'] / 3)
+                case '1/2 Big Blind':
+                    return Math.floor(this.options['Big Blind'] / 2)
+                case '2/3 Big Blind':
+                    return Math.floor(this.options['Big Blind'] * 2 / 3)
+            }
+        }
+
         // Configure table settings
         table.setForcedBets({
-            smallBlind: parseInt(this.options['Small Blind']),
-            bigBlind: parseInt(this.options['Big Blind'])
+            smallBlind: calculateSmallBlind(this.options['Small Blind']),
+            bigBlind: this.options['Big Blind'],
         });
 
         for(let i = 0; i < this.players.size; i++) {
@@ -194,13 +214,14 @@ class Poker extends Game {
         }
     }
 
-    renderShowdownMessage(table) {
+    renderShowdownMessage(table, playersInHand) {
         return {
             color: options.colors.info,
             fields: [
                 {
                     name: 'Player Hands',
-                    value: table.holeCards().map((cards, seatIndex) => cards ? `${this.resolveIndex(seatIndex).user} | ${this.renderHand(cards)}` : '').filter(h => h).join('\n')
+                    value: table.holeCards()
+                        .map((cards, seatIndex) => (cards && playersInHand.includes(this.resolveIndex(seatIndex).user.id)) ? `${this.resolveIndex(seatIndex).user} | ${this.renderHand(cards)}` : '').filter(h => h).join('\n')
                 },
                 {
                     name: 'Community Cards',
@@ -541,7 +562,7 @@ class Poker extends Game {
             
             if (table.areBettingRoundsCompleted()) {
                 // Only show the showdown message if there are more than 1 players
-                const showDownMessage = this.renderShowdownMessage(table)
+                const showDownMessage = this.renderShowdownMessage(table, this.playersInHand)
 
                 table.showdown()
 
@@ -558,6 +579,7 @@ class Poker extends Game {
                     await this.channel.send(`${player.user} won the hand!`)
                 } else {
                     // This should not happen
+                    logger.warn('No winners found, but there are still players in the hand.')
                     await this.channel.send('The hand is over.')
                 }
 
@@ -578,7 +600,7 @@ class Poker extends Game {
                     newSeats[member.id] = nextFreeSeat
                 })
                 
-                await this.updatePlayers()
+                await this.updatePlayers(false)
 
                 // Update players with their seats
                 this.players.forEach(player => {
@@ -594,8 +616,9 @@ class Poker extends Game {
                 }
 
 
-                // Delay for 3 seconds
-                await this.sleep(3000)
+                // Delay for 5 seconds
+                await this.channel.send('The next hand will start in 5 seconds. Shuffling cards...')
+                await this.sleep(5000)
                 
                 // Start a new hand
                 table.startHand()
