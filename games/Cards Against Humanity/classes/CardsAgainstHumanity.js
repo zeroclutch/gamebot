@@ -84,6 +84,12 @@ const CARD_BACKS = {
     },
 }
 
+// register fonts
+GlobalFonts.registerFromPath('./assets/fonts/SF-Pro-Display-Bold.otf', 'SF Pro Display Bold')
+
+// image cache
+const imageCache = new Map()
+
 export default class CardsAgainstHumanity extends Game {
     /**
      * name: the name of the game 
@@ -274,9 +280,6 @@ export default class CardsAgainstHumanity extends Game {
     async renderCard (cardText) {
         const canvas = createCanvas(300, 300)
         const ctx = canvas.getContext('2d')
-
-        // register fonts
-       GlobalFonts.registerFromPath('./assets/fonts/SF-Pro-Display-Bold.otf', 'SF Pro Display Bold')
         
         let cardBack = CARD_BACKS['Default']
         for(let id in CARD_BACKS) {
@@ -294,10 +297,15 @@ export default class CardsAgainstHumanity extends Game {
 
         // Add background image
         if(cardBack.backgroundImage) {
-            await loadImage(fs.readFileSync(`./assets/images/card-backs/${cardBack.backgroundImage}`))
-            .then(image =>  {
-                ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
-            })
+            let image
+            if(imageCache.has(cardBack.backgroundImage)) {
+                image = imageCache.get(cardBack.backgroundImage)
+            } else {
+                image = await loadImage(fs.readFileSync(`./assets/images/card-backs/${cardBack.backgroundImage}`))
+                imageCache.set(cardBack.backgroundImage, image)
+            }
+
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
         }
         
         // add text
@@ -321,10 +329,14 @@ export default class CardsAgainstHumanity extends Game {
             ctx.fillText(textTotal[i], 25, 45 + (i * 30))
         }
         ctx.fillText(textTotal, 25, 45)
-        await loadImage(fs.readFileSync(`./assets/images/icons/logo-icon-${['white', 'black'].includes(cardBack.textColor) ? cardBack.textColor : 'white'}.png`))
-        .then(image =>  {
-            ctx.drawImage(image, 20, 256, 18, 16)
-        })
+        let image
+        if(imageCache.has(`logo-icon-${cardBack.textColor}`)) {
+            image = imageCache.get(`logo-icon-${cardBack.textColor}`)
+        } else {
+            image = await loadImage(fs.readFileSync(`./assets/images/icons/logo-icon-${['white', 'black'].includes(cardBack.textColor) ? cardBack.textColor : 'white'}.png`))
+            imageCache.set(`logo-icon-${cardBack.textColor}`, image)
+        }
+        ctx.drawImage(image, 20, 256, 18, 16)
 
         ctx.font = '16px SF Pro Display Bold'
         ctx.fillText('Gamebot for Discord', 50, 270)
