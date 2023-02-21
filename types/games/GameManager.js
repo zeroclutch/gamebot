@@ -19,7 +19,7 @@ export default class GameManager {
               this.stop(game.channel)
             }
           }
-        })
+        }, this.sweeperOptions.interval)
     }
 
     /**
