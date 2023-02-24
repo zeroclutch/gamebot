@@ -5,45 +5,7 @@ import logger from 'gamebot/logger'
 import Discord from './discord_mod.js'
 import options from './config/options.js'
 
-// Detect and enable testing
-const testMode = process.argv.includes('--test') 
 
-// Initialize ShardingManager that handles bot shards
-const totalShards = process.env.SHARD_COUNT ? parseInt(process.env.SHARD_COUNT) : 'auto'
-const manager = new Discord.ShardingManager('./bot.js', {
-  token: options.token,
-  respawn: testMode ? false : true,
-  mode: 'process',
-  totalShards
-})
-
-const SPAWN_DELAY = 5000
-
-manager.on('shardCreate', shard => {
-  // Intentional nesting of event handlers
-  // Log messages on each shard through IPC, do not create duplicate listeners
-  if(!shard.hasLogListener) {
-    shard.on('message', async message => {
-      shard.hasLogListener = true
-      if(message.type === 'log') {
-        const [level, ...args] = message.data
-        logger[level](...args)
-      }
-    })
-  }
-
-  setTimeout(() => shard.send({ testMode }), SPAWN_DELAY)
-})
-
-try {
-  manager.spawn({
-    amount: 'auto',
-    delay: SPAWN_DELAY,
-    timeout: 60_000,
-  }).catch(err => logger.error(err))
-} catch(err) {
-  console.error(err)
-}
 
 // Add server dependencies
 import bodyParser from 'body-parser'
@@ -80,6 +42,48 @@ const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'))
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Detect and enable testing
+const testMode = process.argv.includes('--test') 
+
+// Initialize ShardingManager that handles bot shards
+const totalShards = process.env.SHARD_COUNT ? parseInt(process.env.SHARD_COUNT) : 'auto'
+const manager = new Discord.ShardingManager('./bot.js', {
+  token: options.token,
+  respawn: testMode ? false : true,
+  mode: 'process',
+  totalShards
+})
+
+const SPAWN_DELAY = 5000
+
+manager.on('shardCreate', shard => {
+  // Intentional nesting of event handlers
+  // Log messages on each shard through IPC, do not create duplicate listeners
+  if(!shard.hasLogListener) {
+    shard.on('message', async message => {
+      shard.hasLogListener = true
+      if(message.type === 'log') {
+        const [level, ...args] = message.data
+        logger[level](...args)
+      } else if(message.type === 'webui') {
+        webUIManager.create(message.data)
+      }
+    })
+  }
+
+  setTimeout(() => shard.send({ testMode }), SPAWN_DELAY)
+})
+
+try {
+  manager.spawn({
+    amount: 'auto',
+    delay: SPAWN_DELAY,
+    timeout: 60_000,
+  }).catch(err => logger.error(err))
+} catch(err) {
+  console.error(err)
+}
 
 // Update guild count
 let cachedGuilds = null
@@ -308,20 +312,25 @@ app.get('/api/userInfo', async (req, res) => {
 })
 
 // Handle GAMEPLAY endpoint
-app.get('/game/:ui_id', (req, res) => {
+app.get('/api/ui/:ui_id', (req, res) => {
   // Fetch the webpage from the WebUIManager
   const UI_ID = req.params.ui_id
   // Return the webpage
-  webUIManager.getWebpage(UI_ID).then(webpage => {
-    res.send(webpage)
-  }).catch(err => {
+  try {
+    let ui = webUIManager.get(UI_ID)
+
+    res.status(200)
+    res.send(ui)
+  } catch (err) {
     logger.error(err)
-    res.status(404).redirect('/404')
-  })
+    res.status(404)
+    res.redirect('/404')
+  }
+
 })
 
 // Handle GAMEPLAY RESPONSE endpoint
-app.post('/response/:ui_id', (req, res) => {
+app.post('/api/ui/:ui_id', (req, res) => {
   // Fetch the webpage from the WebUIManager
   const UI_ID = req.params.ui_id
   const UI = webUIManager.UIs.get(UI_ID)
@@ -329,7 +338,7 @@ app.post('/response/:ui_id', (req, res) => {
   // Check if UI ID is registered
   if(!UI) {
     res.status(404)
-    res.send(path.join(__dirname, 'dist', 'index.html'))
+    res.redirect('/404')
     return
   }
 
@@ -350,21 +359,11 @@ app.post('/response/:ui_id', (req, res) => {
     webUIManager.UIs.delete(UI_ID)
   })
   .catch(err => {
-    logger.error(err)
     res.status(404)
     res.redirect('/404')
+    webUIManager.UIs.delete(UI_ID)
+    logger.error(err)
   })
-})
-
-app.post('/createui', (req, res) => {
-  // check for authentication
-  if(req.headers['web-ui-client-token'] != process.env.WEB_UI_CLIENT_TOKEN) {
-    res.status(403)
-    res.redirect('/404')
-    throw new Error('Invalid credentials when creating a new Web UI.')
-  }
-  webUIManager.create(req.body)
-  res.status(200).end('success')
 })
 
 app.post('/voted', async (req, res) => {

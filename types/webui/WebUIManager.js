@@ -49,41 +49,15 @@ export default class WebUIManager {
         this.UIs.set(UI.id, {...UI})
     }
 
-    generatePage(webUI) {
-        // TODO: Load page directly into memory to prevent expensive file IO
-        let page = fs.readFileSync(`./web-ui/ui-${webUI.type}.html`, 'utf8')
-        let variables = webUI.variables || []
-        try {
-            variables = webUI.variables
-            variables.push(['{id}', webUI.id])
-            variables.push(['{killAt}', webUI.killAt])
-        } catch(err) {
-            logger.error(err)
-            return false
+    get(id) {
+        let webUI = this.UIs.get(id)
+
+        // Check if ID exists
+        if(!webUI || !webUI.type) {
+            throw new Error('WebUI is not registered.')
+            return
         }
-        variables.forEach(v => page = page.replace(v[0], v[1]))
-        return page
-    }
-
-    getWebpage(id) {
-        return new Promise((resolve, reject) => {
-            let webUI = this.UIs.get(id)
-
-            // Check if ID exists
-            if(!webUI || !webUI.type) {
-                reject(new Error('WebUI is not registered.'))
-                return
-            }
-            
-            let generatedPage = this.generatePage(webUI)
-
-            // Check if page was successfully generated
-            if (!generatedPage) {
-                reject(new Error('WebUI was not able to be generated.'))
-                return
-            }
-                
-            resolve(generatedPage)
-        })
+        
+        return webUI
     }
 }
