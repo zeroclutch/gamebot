@@ -54,8 +54,7 @@ export default class WebUIManager {
 
         // Check if ID exists
         if(!webUI || !webUI.type) {
-            throw new Error('WebUI is not registered.')
-            return
+            return null
         }
         
         return webUI

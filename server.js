@@ -319,12 +319,18 @@ app.get('/api/ui/:ui_id', (req, res) => {
   try {
     let ui = webUIManager.get(UI_ID)
 
-    res.status(200)
-    res.send(ui)
+    if(ui) {
+      res.status(200)
+      res.send(ui)
+    }
   } catch (err) {
-    logger.error(err)
-    res.status(404)
-    res.redirect('/404')
+    try {
+      logger.error(err)
+      res.status(404)
+      res.redirect('/404')
+    } catch (err) {
+      logger.error(err)
+    }
   }
 
 })
