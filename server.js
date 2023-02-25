@@ -322,15 +322,14 @@ app.get('/api/ui/:ui_id', (req, res) => {
     if(ui) {
       res.status(200)
       res.send(ui)
+    } else {
+      res.status(404)
+      res.send({
+        error: 'UI not found'
+      })
     }
   } catch (err) {
-    try {
-      logger.error(err)
-      res.status(404)
-      res.redirect('/404')
-    } catch (err) {
-      logger.error(err)
-    }
+    logger.error(err)
   }
 
 })
