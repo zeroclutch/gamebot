@@ -125,6 +125,8 @@ export default class Wisecracks extends Game {
                 }).catch(reject)
 
                 result.then((response) => {
+                    response = response.substring(0, 2048).trim()
+                    
                     player.user.send({
                         embeds: [{
                             title: 'Successfully submitted!',
