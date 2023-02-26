@@ -92,6 +92,8 @@ export default class Wisecracks extends Game {
         return new Promise((resolve, reject) => {
             try {
                 this.msg.client.webUIClient.createWebUI(player.user, response => {
+                    response = response.substring(0, 2048).trim()
+                    
                     player.user.send({
                         embeds: [{
                             title: 'Successfully submitted!',
