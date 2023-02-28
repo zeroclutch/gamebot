@@ -41,6 +41,7 @@ export default new BotCommand({
     );
 
     const { url, result } = msg.client.webUIClient.createWebUI(msg.member ?? msg.author, {
+      message: '',
       type: 'drawing',
       duration: 1800,
     })
