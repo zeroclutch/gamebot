@@ -13,7 +13,7 @@ export default new BotCommand({
   permissions: [],
   dmCommand: false,
   args: [],
-  run: function (msg, args) {
+  run: async function (msg, args) {
     // Callback function for when the user sends a message
     const sendMessage = data => msg.channel.send({
       embeds: [{
@@ -40,56 +40,49 @@ export default new BotCommand({
         .setStyle(ButtonStyle.Primary),
     );
 
-    // Check permissions
-    msg.client.webUIClient.createWebUI(msg.member || msg.author, sendMessage, {
+    const { url, result } = msg.client.webUIClient.createWebUI(msg.member ?? msg.author, {
+      message: '',
       type: 'drawing',
       duration: 1800,
-    }).then(async url => {
-      // The message with the drawing URL
-      const drawingPayload = {
-        embeds: [{
-          description: `[**Click here** for your drawing page](${url}), <@${msg.author.id}>! Your drawing will be sent in ${msg.channel}!`,
-          color: options.colors.info,
-        }],
-        ephemeral: true
-      }
-
-      if(msg instanceof Discord.Message) {
-        let interactionMessage = await msg.reply({
-          content: `Click the button below to receive your drawing link!`,
-          components: [ row ]
-        })
-
-        const filter = i => i.customId === 'drawlink_button' && i.user.id === msg.author.id
-        const collector = msg.channel.createMessageComponentCollector({ filter, time: 10 * 60 * 1000, max: 1 });
-
-        collector.once('collect', i => {
-            i.reply(drawingPayload)
-            .catch(logger.error.bind(logger))
-        })
-
-        collector.once('end', collected => {
-          let response = 'The button was not clicked in time.'
-          if(collected.size > 0) {
-            response = `${msg.author.tag} is drawing...`
-          }
-
-          interactionMessage.edit({
-            content: response, components: []
-          })
-        })
-      } else if (msg instanceof Discord.CommandInteraction) {
-        msg.reply(drawingPayload)
-      }
-    }).catch(err => {
-      msg.reply({
-        embeds: [{
-          title: 'Error!',
-          description: `There was an error loading the drawing page.`,
-          color: 5301186
-        }]
-      })
-      logger.error(err)
     })
+
+    result.then(sendMessage).catch(logger.error.bind(logger))
+  
+    // The message with the drawing URL
+    const drawingPayload = {
+      embeds: [{
+        description: `[**Click here** for your drawing page](${url}), <@${msg.author.id}>! Your drawing will be sent in ${msg.channel}!`,
+        color: options.colors.info,
+      }],
+      ephemeral: true
+    }
+
+    if(msg instanceof Discord.Message) {
+      let interactionMessage = await msg.reply({
+        content: `Click the button below to receive your drawing link!`,
+        components: [ row ]
+      })
+
+      const filter = i => i.customId === 'drawlink_button' && i.user.id === msg.author.id
+      const collector = msg.channel.createMessageComponentCollector({ filter, time: 10 * 60 * 1000, max: 1 });
+
+      collector.once('collect', i => {
+          i.reply(drawingPayload)
+          .catch(logger.error.bind(logger))
+      })
+
+      collector.once('end', collected => {
+        let response = 'The button was not clicked in time.'
+        if(collected.size > 0) {
+          response = `${msg.author.tag} is drawing...`
+        }
+
+        interactionMessage.edit({
+          content: response, components: []
+        })
+      })
+    } else if (msg instanceof Discord.CommandInteraction) {
+      msg.reply(drawingPayload)
+    }
   }
 })

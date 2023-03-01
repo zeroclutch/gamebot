@@ -91,7 +91,42 @@ export default class Wisecracks extends Game {
         const duration = 120
         return new Promise((resolve, reject) => {
             try {
-                this.msg.client.webUIClient.createWebUI(player.user, response => {
+                const { url, result } = this.msg.client.webUIClient.createWebUI(player.user, {
+                    message: `Enter your response to the prompt: <b>${this.prompt.raw}</b>`,
+                    duration
+                })
+
+                //  Automatically end if the player doesn't respond
+                setTimeout(() => {
+                    if(this.ending) reject()
+                    resolve()
+                }, duration * 1000)
+
+                player.user.createDM()
+                .then(channel => {
+                    channel.send({
+                    embeds: [{
+                        description: `[**Click here** to enter your response](${url}), ${player.user}! It will be sent in ${this.msg.channel}.`,
+                        color: 5301186
+                    }]
+                    }).then(m => {
+                        this.msg.channel.sendEmbed(`${player.user}, [click here to go to your DMs directly.](${m.url}) The link to enter your response is in your DMs!`)
+                    }).catch(err => {
+                            this.msg.channel.send({
+                                embeds: [{
+                                    title: 'There was an error sending you a DM!',
+                                    description: `Make sure you have DMs from server members enabled in your Privacy settings.`,
+                                    color: options.colors.error
+                                }]
+                            })
+                            logger.error(err)
+                        }
+                    )
+                }).catch(reject)
+
+                result.then((response) => {
+                    response = response.substring(0, 2048).trim()
+                    
                     player.user.send({
                         embeds: [{
                             title: 'Successfully submitted!',
@@ -100,43 +135,12 @@ export default class Wisecracks extends Game {
                         }]
                     })
                     resolve(response)
-                }, {
-                    message: `Enter your response to the prompt: <b>${this.prompt.raw}</b>`,
-                    duration
-                }).then(url => {
-                    // Set timer 120 seconds
-                    setTimeout(() => {
-                        if(this.ending) reject()
-                        resolve()
-                    }, duration * 1000)
-
-                    player.user.createDM()
-                    .then(channel => {
-                        channel.send({
-                        embeds: [{
-                            description: `[**Click here** to enter your response](${url}), ${player.user}! It will be sent in ${this.msg.channel}.`,
-                            color: 5301186
-                        }]
-                        }).then(m => {
-                            this.msg.channel.sendEmbed(`${player.user}, [click here to go to your DMs directly.](${m.url}) The link to enter your response is in your DMs!`)
-                        }).catch(err => {
-                                this.msg.channel.send({
-                                    embeds: [{
-                                        title: 'There was an error sending you a DM!',
-                                        description: `Make sure you have DMs from server members enabled in your Privacy settings.`,
-                                        color: options.colors.error
-                                    }]
-                                })
-                                logger.error(err)
-                            }
-                        )
-                    })
                 }).catch(err => {
-                    this.msg.channel.send({
+                    player.user.send({
                         embeds: [{
                             title: 'Error!',
-                            description: `There was an error loading the response page.`,
-                            color: 5301186
+                            description: `There was an error submitting your response. Please try again.`,
+                            color: options.colors.error
                         }]
                     })
                     reject(err)
@@ -207,7 +211,7 @@ export default class Wisecracks extends Game {
         // Allow players to submit their Wisecracks™
         let submitted = []
         players.forEach(async player => {
-            let response = await this.getWisecracks(player).catch(() => false)
+            let response = await this.getWisecracks(player).catch(logger.error.bind(logger))
             if(this.ending) return
             submitted.push({response, player, score: 0})
             if(submitted.length == players.length) {

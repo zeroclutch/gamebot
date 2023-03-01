@@ -8,7 +8,7 @@ import { Collection } from '../../discord_mod.js'
  * An API for creating WebUIs, which allow users to enter responses from a webpage
  * @class
  */
-const WebUIClient = class WebUIClient {
+export default class WebUIClient {
     /**
      * Instantiates a WebUIClient.
      * @param {Discord.Client} client Constructor
@@ -66,43 +66,43 @@ const WebUIClient = class WebUIClient {
      * @param {Number} duration How long to keep the webpage alive, in seconds
      * @param {handlePlayerWebResponse} callback The callback function that handles the data from the Web UI
      */
-    create(user, message='Enter your response here', callback, variables=[['{name}', user.nickname || user.username], ['{message}', message]], type='text', duration=300) {
-        return new Promise(async (resolve, reject)=> {
-            const id = WebUIManager.generateUIID(user.id)
+    create(user, message='Enter your response here', variables={}, type='text', duration=300) {
+        const id = WebUIManager.generateUIID(user.id)
 
-            const UI = {
-                id,
-                user,
-                type,
-                variables,
-                killAt: Date.now() + (duration * 1000),
-                callback
-            }
-            
-            // Create a new UI on the manager
-            axios({
-                url: `${process.env.BASE_URL}/createui`,
-                method: 'post',
-                headers: {
-                    'Connection': 'close',
-                    'Web-UI-Client-Token': process.env.WEB_UI_CLIENT_TOKEN
-                },
-                data: {
-                    id,
-                    user: user.id,
-                    variables,
-                    type,
-                    shard: this.client.shard.ids[0],
-                    killAt: Date.now() + (duration * 1000)
-                }
-            })
-            .then(() => {
-                // Register UI
-                this.UIs.set(id, UI)
-                resolve(UI)
-            })
-            .catch(reject)
+        // Add default variables
+        Object.assign(variables, { name: (user.nickname ?? user.username), message })
+
+        const UI = {
+            id,
+            user,
+            type,
+            variables,
+            shard: this.client.shard.ids[0],
+            killAt: Date.now() + (duration * 1000),
+        }
+
+        // Notify master process/worker
+        this.client.shard.send({ type: 'webui', data: UI })
+
+        UI.result = new Promise((resolve, reject) => {
+            UI.resolve = resolve
+            UI.reject = reject
         })
+
+        UI.url = this.toURL(id)
+
+        // Register UI
+        this.UIs.set(id, UI)
+        return UI
+    }
+
+    toURL(id) {
+        let url = process.env.BASE_URL
+
+        // Proxy requests during development
+        if(url === 'http://localhost:8080') url = 'http://localhost:8081'
+
+        return `${url}/ui/${id}`
     }
 
     /**
@@ -114,26 +114,25 @@ const WebUIClient = class WebUIClient {
         if(!UI) throw new Error('UI was not found on the WebUIClient.')
         
         // Run callback
-        this.UIs.get(data.id).callback(data.value, UI, this.client)
+        this.UIs.get(data.id).resolve(data.value)
         process.nextTick(() => this.UIs.delete(data.id))
     }
 
     /**
      * Helper function for creating a Web UI.
      * @param {Discord.Member} member The Discord member this UI is for.
-     * @param {handlePlayerWebResponse} callback The callback function that handles the data from the Web UI
      * @param {WebUIOptions} [options] The options for this WebUI.
-     * @returns The UI's link
+     * @returns {object} containing the URL and the result promise
      */
-    createWebUI(user, callback, options={}) {
+    createWebUI(user, options={}) {
         if(!user) throw new Error('User is a required field.')
-        return new Promise((resolve, reject) => {
-            // Create new UI
-            this.create(user, options.message, callback, options.variables, options.type, options.duration)
-            .then(UI => resolve(`${process.env.BASE_URL}/game/${UI.id}`))
-            .catch(reject)
-        })
+
+        // Create new UI
+        let UI = this.create(user, options.message, options.variables, options.type, options.duration)
+
+        return {
+            url: UI.url,
+            result: UI.result
+        }
     }
 }
-
-export default WebUIClient
