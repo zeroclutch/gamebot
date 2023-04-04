@@ -42,7 +42,7 @@ const CARD_BACKS = {
         backgroundColor: 'black',
         textColor: 'white'
     },
-    'whi_back': {
+    'white_back': {
         friendlyName: 'White Card Back',
         backgroundColor: 'white',
         textColor: 'black'
