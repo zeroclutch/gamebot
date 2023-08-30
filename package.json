@@ -28,7 +28,7 @@
     "express": "^4.17.1",
     "hot-shots": "^9.2.0",
     "mixpanel": "^0.13.0",
-    "mongodb": "^4.10",
+    "mongodb": "^4.17",
     "paypal-rest-sdk": "^1.8.1",
     "pino": "^7.6.4",
     "pino-datadog-transport": "^1.2.2",
