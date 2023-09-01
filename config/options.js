@@ -9,6 +9,9 @@ export default {
   },
   loggingChannel: process.env.LOGGING_CHANNEL,
   statusChannel: '618344167759675413',
+  status: {
+    updateInterval: 1000 * 60 * 30, // 30 minutes
+  },
   serverInvite: 'https://gamebot.rocks/discord',
   links: {
     shop: `https://gamebot.rocks/shop`,
