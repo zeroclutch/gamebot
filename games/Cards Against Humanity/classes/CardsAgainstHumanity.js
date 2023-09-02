@@ -707,15 +707,6 @@ export default class CardsAgainstHumanity extends Game {
 
                 // Clean up submission status message
                 viewHandCollector.stop()
-
-                // Update one last time
-                submissionStatusMessage.edit({
-                    embeds: [{
-                        title: 'Submission status',
-                        description: this.renderSubmissionStatus(),
-                        color: 4513714
-                    }],
-                })
             }
         })
 
