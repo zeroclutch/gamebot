@@ -1,6 +1,6 @@
 import { MongoClient } from 'mongodb';
 import logger from 'gamebot/logger'
-import RewardsManager from './rewardsmanager.js';
+import RewardsManager from './RewardsManager.js';
 
 export default class DatabaseClient {
   /**
