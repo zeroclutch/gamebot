@@ -110,14 +110,27 @@ Discord.User.prototype.hasItem = function (itemID) {
  * Updates the current status message.
  */
 Discord.Client.prototype.updateStatus = async function(itemID) {
-  // try fetching message
+  // Check if we don't have access to the status channel
+  if(this.latestStatus?.error) {
+    return null
+  }
+  
+  // Check if we have a cached status
+  if(this.latestStatus) {
+    // Check if we need to update the status
+    if(Date.now() - this.latestStatus.lastUpdated < options.status.updateInterval)
+      return this.latestStatus
+  }
+  
+  // If this shard is unable to find the status channel once, it will never find it
   let statusChannel = await this.channels.fetch(options.statusChannel)
   if(statusChannel) {
     let message = (await statusChannel.messages.fetch({ limit: 1 }).catch(logger.error.bind(logger))).first()
-    this.latestStatus = { content: message.content, date: message.createdAt.toLocaleDateString() }
-    return this.latestStatus
+    this.latestStatus = { content: message.content, date: message.createdAt.toLocaleDateString(), lastUpdated: Date.now() }
+  } else {
+    this.latestStatus = { error: 'Unable to find status channel' }
   }
-  return null
+  return this.latestStatus
 }
 
 const Collection = Discord.Collection

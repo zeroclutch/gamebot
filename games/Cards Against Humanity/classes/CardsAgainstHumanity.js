@@ -374,7 +374,9 @@ export default class CardsAgainstHumanity extends Game {
     }
 
     renderSubmissionStatus() {
-        let links = ''
+        const loadingEmoji = '<a:loading:1146968632174325820>'
+        let submissions = ''
+        let isPending = false
         for(let item of this.players) {
             // create reference variables
             let key = item[0]
@@ -384,14 +386,17 @@ export default class CardsAgainstHumanity extends Game {
             if(key == this.czar.user.id) continue
 
             if(player.submitted == 'time') {
-                links += `${player.user} ⚠️ Time ran out!\n`
+                submissions += `⚠️ ${player.user} Time ran out!\n`
             } else if(player.submitted) {
-                links += `${player.user} ✅ Submitted!\n`
+                submissions += `✅ ${player.user} Submitted!\n`
             } else {
-                links += `${player.user} ⛔ Not submitted.\n`
+                isPending = true
+                submissions += `${loadingEmoji} ${player.user}\n`
             }
         }
-        return links
+
+        if(isPending) submissions += '\n*Waiting for everyone to submit a card...*'
+        return submissions
     }
 
     renderCardChoices() {
@@ -676,23 +681,6 @@ export default class CardsAgainstHumanity extends Game {
 
         let lastSubmissionStatus = this.renderSubmissionStatus()
 
-        // Update submission status every 5 seconds
-        const statusUpdateInterval = setInterval(() => {
-            const newSubmissionStatus = this.renderSubmissionStatus()
-
-            // Don't update if nothing has changed
-            if(newSubmissionStatus === lastSubmissionStatus) return
-            lastSubmissionStatus = newSubmissionStatus
-
-            submissionStatusMessage.edit({
-                embeds: [{
-                    title: 'Submission status',
-                    description: newSubmissionStatus,
-                    color: 4513714
-                }]
-            })
-        }, 5000)
-
         selectionCollector.on('collect', async m => {
             if(this.ending) return
 
@@ -719,18 +707,6 @@ export default class CardsAgainstHumanity extends Game {
 
                 // Clean up submission status message
                 viewHandCollector.stop()
-
-                // Stop the interval
-                clearInterval(statusUpdateInterval)
-
-                // Update one last time
-                submissionStatusMessage.edit({
-                    embeds: [{
-                        title: 'Submission status',
-                        description: this.renderSubmissionStatus(),
-                        color: 4513714
-                    }],
-                })
             }
         })
 
@@ -744,20 +720,22 @@ export default class CardsAgainstHumanity extends Game {
 
                 // remove the empty cards
                 player.cards = player.cards.filter(card => card != '')
+
+                if(!player.submitted) {
+                    player.submitted = 'time'
+                }
             }
 
             // update in chat
-            this.msg.channel.messages.fetch({
-                message: submissionStatusMessage.id
-            }).then(message => {
-                message.edit({
-                    embeds: [{
-                        title: 'Submission status',
-                        description: this.renderSubmissionStatus(),
-                        color: 4513714
-                    }],
-                    components: []
-                })
+            submissionStatusMessage.delete()
+            
+            this.channel.send({
+                embeds: [{
+                    title: 'Submission status',
+                    description: this.renderSubmissionStatus(),
+                    color: 4513714
+                }],
+                components: []
             })
 
             if(this.stage != 'selection') {
