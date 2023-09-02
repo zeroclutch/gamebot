@@ -274,17 +274,21 @@ class Tournament {
     }
 
     renderScoreboard() {
+        const LB_LENGTH = 5
         const scoreboard = this._scoreboard
         .map(([id, score], index) => {
-            if(index < 5) return `**${index + 1}.** <@${id}> - ${score} points`
+            if(index < LB_LENGTH) return `**${index + 1}.** <@${id}> - ${score} points`
             else return ``
         })
 
+        scoreboard.slice(0, LB_LENGTH)
+
         if(scoreboard.length === 0) {
             scoreboard.push(`No players have joined yet!`)
-        } else if (scoreboard.length > 5) {
-            let plural = scoreboard.length - 5 === 1 ? '' : 's'
-            scoreboard.push(`**...${scoreboard.length - 5} player${plural}**`)
+        } else if (this._scoreboard.length > LB_LENGTH) {
+            let remaining = this._scoreboard.length - LB_LENGTH
+            let plural = remaining === 1 ? '' : 's'
+            scoreboard.push(`**...${remaining} more player${plural}**`)
         }
 
         return scoreboard.join('\n')

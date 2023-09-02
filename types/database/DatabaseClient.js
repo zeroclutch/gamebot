@@ -1,8 +1,8 @@
 import { MongoClient } from 'mongodb';
 import logger from 'gamebot/logger'
+import RewardsManager from './RewardsManager.js';
 
 export default class DatabaseClient {
-
   /**
    * Initializes a new instance of a DatabaseClient
    */
@@ -21,6 +21,9 @@ export default class DatabaseClient {
 
     // Development mode converts this class to a mock shell to avoid throwing errors without a URI string
     this.developmentMode = this.URI == undefined
+
+    // RewardsManager manages the calculations for determining a user's level and achievement
+    this.rewards = new RewardsManager()
   }
 
   /**
@@ -103,7 +106,9 @@ export default class DatabaseClient {
         wins: [],
         achievements: [],
         quests: [],
-        lastQuest: -1000000000000
+        lastQuest: -1000000000000,
+        xp: 0,
+        level: -1
       }
 
       this.database.collection('users').findOne({
@@ -120,13 +125,15 @@ export default class DatabaseClient {
   }
 
   fetchDBInfo(userID) {
-    return new Promise(async (resolve, reject) => {
-      await this.createDBInfo(userID)
-      await this.database.collection('users').findOne({
-          userID
-        })
-        .then(resolve)
-        .catch(reject)
+    return this.createDBInfo(userID)
+  }
+
+  updateXP(userID, xp) {
+    return this.fetchDBInfo(userID).then(user => {
+      xp += isFinite(user.xp) ? user.xp : 0 // If old user doesn't have xp field set, assume they have zero xp
+      xp = Math.max(xp, 0) // No negative XP values allowed
+      let level = this.rewards.calculateLevel(xp);
+      this.database.collection('users').updateOne({userID}, { $set: {xp, level} })
     })
   }
 
@@ -215,5 +222,4 @@ export default class DatabaseClient {
       resolve(response)
     })
   }
-
 }
