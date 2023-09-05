@@ -1,6 +1,6 @@
 {
   "name": "gamebot",
-  "version": "3.3.2",
+  "version": "3.4.0",
   "description": "Add multiplayer games to Discord with Gamebot!",
   "main": "server.js",
   "type": "module",
@@ -23,7 +23,7 @@
     "chargebee": "^2.6.5",
     "chess": "^0.4.3",
     "discord-oauth2": "^2.6.0",
-    "discord.js": "^14.9.0",
+    "discord.js": "^14.13.0",
     "dotenv": "^8.0.0",
     "express": "^4.17.1",
     "hot-shots": "^9.2.0",
