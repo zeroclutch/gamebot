@@ -3,6 +3,8 @@ import fs from 'fs'
 import path from 'path'
 import logger from 'gamebot/logger'
 
+import options from '../config/options.js'
+
 // import GameManager from '../types/games/GameManager.js'
 import CommandHandler from '../types/command/CommandHandler.js'
 import TournamentManager from '../types/games/TournamentManager.js'
@@ -131,15 +133,33 @@ const database = async client => {
     // configure downtime notifications
     client.getTimeToDowntime = () => {
         return new Promise((resolve, reject) => {
-        client.database.collection('status').findOne( { type: 'downtime' }).then((data, err) => {
-            if(err || !data) {
-            reject(logger.error(err))
-            return
-            }
-            resolve(data.downtimeStart - Date.now())
-        })
+            client.database.collection('status').findOne( { type: 'downtime' }).then((data, err) => {
+                if(err || !data) {
+                    reject(logger.error(err))
+                    return
+                }
+                    resolve(data.downtimeStart - Date.now())
+            })
         })
     }
+
+    // configure end phrases
+    Object.defineProperty(client, 'getEndPhrase', {
+        value: async () => {
+            const DEFAULT_END_PHRASE = `To play games with the community, [join our server](${options.serverInvite}?ref=gameEnd)!`
+
+            const data = await client.database.collection('status').findOne({ type: 'phrases' })
+            let phrase = DEFAULT_END_PHRASE
+
+            if(data?.phrases) phrase = data.phrases[Math.floor(Math.random() * data.phrases.length)]
+            if(data?.broadcastPhrase && data.broadcastPhrase.length > 0) phrase = data.broadcastPhrase
+            
+            return phrase
+        },
+        writable: false,
+        enumerable: true
+    })
+    
 }
 
 export default {
