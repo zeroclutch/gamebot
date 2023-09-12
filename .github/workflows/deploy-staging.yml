@@ -14,7 +14,7 @@ concurrency:
 jobs:
   run-tests:
     runs-on: ubuntu-latest
-    environment: production
+    environment: gamebot-staging
     concurrency: production
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
