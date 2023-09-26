@@ -1,0 +1,47 @@
+name: Deploy Staging
+
+run-name: ${{ github.actor }} is deploying Gamebot to staging
+
+on:
+  # Allow for automatic deployment on branches that aren't concerned about downtime
+  push:
+    branches:
+      - staging
+  workflow_dispatch:
+    inputs:
+      branch:
+        type: string
+        default: staging
+        required: false
+      log_level:
+        description: 'Log level'
+        type: choice
+        options:
+          - trace
+          - debug
+          - info
+          - warn
+          - error
+        default: info
+        required: false
+  # Workflow calls allow for this action to be called by other actions
+  workflow_call:
+    inputs:
+      branch:
+        type: string
+        default: staging
+        required: false
+      log_level:
+        description: 'Log level'
+        type: string
+        default: info
+        required: false
+  
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: staging
+      log_level:  ${{ inputs.log_level }}
+      branch: ${{ inputs.branch }}
+    secrets: inherit
