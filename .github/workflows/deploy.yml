@@ -7,10 +7,7 @@ on:
     inputs:
       environment:
         description: 'Deployment environment'
-        type: choice
-        options:
-          - staging
-          - production
+        type: string
         required: true
       log_level:
         description: 'Log level'
