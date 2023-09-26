@@ -38,7 +38,7 @@ jobs:
     needs: run-unit-tests
     runs-on: ubuntu-latest
     steps:
-    - name: executing remote ssh commands using key
+    - name: Run deployment script
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.SSH_HOST }}
