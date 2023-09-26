@@ -1,11 +1,12 @@
-name: GitHub Actions Demo
+name: Deploy Staging
 
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+run-name: ${{ github.actor }} is deploying Gamebot to staging
 
 on:
   push:
     branches:
       - feature/github-actions
+      - staging
 
 concurrency:
   group: production
@@ -39,4 +40,4 @@ jobs:
         username: ${{ secrets.SSH_USER }}
         port: 22
         key: ${{ secrets.SSH_KEY }}
-        script: ~/deploy/bot.sh -e staging
+        script: /home/ubuntu/deploy/bot.sh -e staging
