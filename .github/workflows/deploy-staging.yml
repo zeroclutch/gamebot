@@ -42,6 +42,6 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       environment: staging
-      log-level:  ${{ inputs.log_level }}
+      log_level:  ${{ inputs.log_level }}
       branch: ${{ inputs.branch }}
     secrets: inherit
