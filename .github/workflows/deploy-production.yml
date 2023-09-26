@@ -1,0 +1,26 @@
+name: Deploy Production
+
+run-name: ${{ github.actor }} is deploying Gamebot to production
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        type: string
+        default: master
+        required: false
+
+jobs:
+  deploy-staging:
+    uses: ./.github/workflows/deploy-staging.yml
+    with:
+      branch: master
+    secrets: inherit
+  deploy:
+    needs: deploy-staging
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: production
+      log_level: info
+      branch: master
+    secrets: inherit
