@@ -5,7 +5,7 @@ run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on:
   push:
     branches:
-      - staging
+      - feature/github-actions
 
 concurrency:
   group: production
