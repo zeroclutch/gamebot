@@ -7,7 +7,6 @@ on:
   push:
     branches:
       - staging
-      - feature/github-actions
   workflow_dispatch:
     inputs:
       branch:
@@ -25,6 +24,7 @@ on:
           - error
         default: info
         required: false
+  # Workflow calls allow for this action to be called by other actions
   workflow_call:
     inputs:
       branch:
