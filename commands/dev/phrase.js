@@ -6,7 +6,7 @@ import { ButtonBuilder } from '@discordjs/builders'
 
 export default new BotCommand({
     name: 'phrase',
-    aliases: ['broadcast'],
+    aliases: ['phrases'],
     description: 'Sets the end message',
     category: 'dev',
     permissions: [GAMEBOT_PERMISSIONS.OWNER],
@@ -116,7 +116,7 @@ export default new BotCommand({
                 if(!phrase) {
                     confirmationMessage = `Are you sure you'd like to reset the broadcast message?`
                 }
-                
+
                 confirm(confirmationMessage)
                 .then(i => {
                     // Confirm action
