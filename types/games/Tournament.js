@@ -281,17 +281,17 @@ class Tournament {
             else return ``
         })
 
-        scoreboard.slice(0, LB_LENGTH)
+        let leaderboard = scoreboard.slice(0, LB_LENGTH)
 
-        if(scoreboard.length === 0) {
-            scoreboard.push(`No players have joined yet!`)
+        if(leaderboard.length === 0) {
+            leaderboard.push(`No players have joined yet!`)
         } else if (this._scoreboard.length > LB_LENGTH) {
             let remaining = this._scoreboard.length - LB_LENGTH
             let plural = remaining === 1 ? '' : 's'
-            scoreboard.push(`**...${remaining} more player${plural}**`)
+            leaderboard.push(`**...${remaining} more player${plural}**`)
         }
 
-        return scoreboard.join('\n')
+        return leaderboard.join('\n')
     }
 
     handleMyScore(i) {
