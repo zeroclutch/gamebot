@@ -316,10 +316,10 @@ export default class Chess extends Game {
         }))
     }
 
-    analyzeBoard(side) {
+    async analyzeBoard(side) {
         if(this.status.isStalemate || this.status.isRepetition) {
             this.importGameToLichess('draw')
-            this.end(undefined, `The game is a draw.\nTo play games with the community, [join our server](${options.serverInvite}?ref=gameEnd)!`)
+            this.end(undefined, `The game is a draw.\n${(await this.client.getEndPhrase())}`)
             this.over = true
         }
 
@@ -351,8 +351,8 @@ export default class Chess extends Game {
         } while(!this.over)
     }
 
-    finish(id) {
+    async finish(id) {
         let winner = this.players.find(player => player.id == id)
-        this.end(winner, `${winner.user} has won!\nTo play games with the community, [join our server](${options.serverInvite}?ref=gameEnd)!`)
+        this.end(winner, `${winner.user} has won!\n${(await this.client.getEndPhrase())}`)
     }
 }

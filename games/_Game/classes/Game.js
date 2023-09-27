@@ -894,7 +894,7 @@ export default class Game extends EventEmitter {
      * @param {Object|Array<Object>} winners The game winner
      * @param {String} endPhrase The message to be sent at the end of the game.
      */
-    end(winners, endPhrase) {
+    async end(winners, endPhrase) {
         this.beforeEnd()
         this.ending = true
         this.stage = 'over'
@@ -925,7 +925,8 @@ export default class Game extends EventEmitter {
                 endPhrase = ''
             }
 
-            endPhrase += `\nTo play games with the community, [join our server](${options.serverInvite}?ref=gameEnd)!`
+            // Add game end message
+            endPhrase += `\n${(await this.client.getEndPhrase())}`
         }
 
         const gameEmbed = {
