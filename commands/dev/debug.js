@@ -3,6 +3,7 @@ import options from './../../config/options.js'
 import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 
 import BotCommand from '../../types/command/BotCommand.js'
+import Game from '../../games/_Game/main.js'
 export default new BotCommand({
   name: 'debug',
     aliases: ['db'],
