@@ -9,8 +9,6 @@ import CardDeck from './CardDeck.js';
 
 import logger from 'gamebot/logger'
 
-// 🎉 🎉 🎉 Congrats to the `table.winners()` 🎉 🎉 🎉 
-
 class Poker extends Game {
     constructor(msg, args) {
         super(msg, args)
@@ -29,10 +27,10 @@ class Poker extends Game {
         this.gameOptions = [
             {
                 friendlyName: 'Timer',
-                default: '0',
+                default: 300,
                 type: 'number',
                 filter: m => !isNaN(m.content) && (isBetween(m.content, 20, 500) || m.content === '0'),
-                note: 'The time allowed for an action in seconds. Enter 0 to disable the timer.'
+                note: 'The time allowed for an action in seconds, between 20 and 500. Enter 0 to disable the timer.'
             },
             {
                 friendlyName: 'Small Blind',
@@ -73,14 +71,24 @@ class Poker extends Game {
         ]
 
         this.BUTTON_STYLES = Object.freeze({
-            'fold': ButtonStyle.Danger,
-            'check': ButtonStyle.Secondary,
+            'view hand': ButtonStyle.Secondary,
+            'check': ButtonStyle.Primary,
             'call': ButtonStyle.Primary,
             'bet': ButtonStyle.Success,
             'big bet': ButtonStyle.Success,
             'raise': ButtonStyle.Success,
-            'view hand': ButtonStyle.Secondary,
+            'fold': ButtonStyle.Danger,
         })
+
+        this.BUTTON_ORDER = Object.freeze([
+            'view hand',
+            'check',
+            'call',
+            'bet',
+            'big bet',
+            'raise',
+            'fold',
+        ])
 
         this.HAND_RANKINGS = Object.freeze([
             'high card',
@@ -134,7 +142,7 @@ class Poker extends Game {
     }
 
     getTimer() {
-        this.options['Timer'] === '0' ? null : parseInt(this.options['Timer']) * 1000
+        return this.options['Timer'] === '0' ? null : parseInt(this.options['Timer']) * 1000
     }
 
     getButtonStyle(action) {
@@ -283,6 +291,9 @@ class Poker extends Game {
                     .setStyle(this.getButtonStyle('view hand'))
             )
 
+            // Sort actions
+            actionList.sort((a, b) => this.BUTTON_ORDER.indexOf(a.data.custom_id) - this.BUTTON_ORDER.indexOf(b.data.custom_id))
+
             // Our custom actions must be registered for the collector filter
             validActions.actions.push('big bet', 'view hand')
 
@@ -325,6 +336,7 @@ class Poker extends Game {
             })
 
             actionCollector.on('end', async (collected, reason) => {
+                if(this.ending) return
                 if (reason === 'time') {
                     // If the player didn't select an action in time, fold
                     this.inactiveRounds++
@@ -369,7 +381,8 @@ class Poker extends Game {
         switch(this.options['Betting Limits']) {
             case 'Pot Limit': {
                 minBet = validActions.chipRange.min
-                maxBet = this.table.pots().reduce((acc, pot) => acc + pot.size, 0)
+                // maxBet must always be at least the minimum bet
+                maxBet = Math.max(this.table.pots().reduce((acc, pot) => acc + pot.size, 0), minBet) 
                 break
             }
             case 'Fixed Limit': {
@@ -480,6 +493,7 @@ class Poker extends Game {
             })
 
             betSizeCollector.on('end', async (collected, reason) => {
+                if(this.ending) return
                 if (reason === 'time') {
                     // If the player didn't select a bet size in time, fold
                     resolve(null)
@@ -519,6 +533,7 @@ class Poker extends Game {
                 })
 
                 betSizeCollector.on('end', async (collected, reason) => {
+                    if(this.ending) return
                     if (reason === 'time') {
                         // If the player didn't select an action in time, fold
                         resolve(['fold', null])
@@ -541,6 +556,8 @@ class Poker extends Game {
         table.startHand();
 
         while (table.isHandInProgress()) {
+            if(this.ending) return
+
             this.playersInHand = Array.from(this.players.keys());
             while (table.isBettingRoundInProgress()) {
                 const seatIndex = table.playerToAct();
