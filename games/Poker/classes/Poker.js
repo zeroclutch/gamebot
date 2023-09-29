@@ -27,7 +27,7 @@ class Poker extends Game {
         this.gameOptions = [
             {
                 friendlyName: 'Timer',
-                default: '0',
+                default: 300,
                 type: 'number',
                 filter: m => !isNaN(m.content) && (isBetween(m.content, 20, 500) || m.content === '0'),
                 note: 'The time allowed for an action in seconds, between 20 and 500. Enter 0 to disable the timer.'
