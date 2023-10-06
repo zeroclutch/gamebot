@@ -1,5 +1,5 @@
 import { ButtonStyle, ButtonBuilder, ActionRowBuilder } from 'discord.js';
-import PokerGame from 'poker-ts'
+import PokerGame from '@zeroclutch/poker'
 import Game from '../../_Game/main.js';
 
 import metadata from '../metadata.js';
@@ -239,11 +239,24 @@ class Poker extends Game {
         }
     }
 
+    getWinnersArray(table) {
+        let winners = table.winners().flat(1)
+        
+        // Remove duplicates from winners
+        winners = winners.filter((winner, index) => {
+            const winnerIndex = winners.findIndex(w => w[0] === winner[0])
+            return winnerIndex === index
+        })
+
+        return winners
+    }
+
     renderWinnerMessage(table) {
-        const winners = table.winners()
+        let winners = this.getWinnersArray(table)
+        
         return {
             color: options.colors.info,
-            description: winners[0].map(([seatIndex, { ranking }, cards]) => `${this.resolveIndex(seatIndex).user} won with a ${this.resolveHandRanking(ranking)}!`).join(', '),
+            description: winners.map(([seatIndex, { ranking }, _cards]) => `${this.resolveIndex(seatIndex).user} won with a ${this.resolveHandRanking(ranking)}!`).join(', '),
         }
     }
 
@@ -394,6 +407,12 @@ class Poker extends Game {
             default: {
                 minBet = validActions.chipRange.min
                 maxBet = validActions.chipRange.max
+
+                // If there are only two players, set the maximum bet to the total chips of the player with the least chips
+                if(this.table.handPlayers().filter(p => p).length === 2) {
+                    let players = this.table.handPlayers().filter(p => p)
+                    maxBet = Math.min(players[0].totalChips, players[1].totalChips)
+                }
                 break
             }
         }
@@ -584,6 +603,7 @@ class Poker extends Game {
                 table.showdown()
 
                 // Show what the winner had
+                // TODO make it so that pot works and draws work
                 if(table.winners() && table.winners().length) {
                     await this.channel.send({
                         embeds: [showDownMessage]
