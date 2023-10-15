@@ -47,6 +47,10 @@ client.webUIClient = new WebUIClient(client)
 import Metrics from './types/log/Metrics.js'
 client.metrics = new Metrics()
 
+// Configure RewardsManager
+import RewardsManager from './types/database/RewardsManager.js'
+client.rewards = new RewardsManager(client)
+
 client.setMaxListeners(40)
 
 // initialization

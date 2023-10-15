@@ -21,9 +21,6 @@ export default class DatabaseClient {
 
     // Development mode converts this class to a mock shell to avoid throwing errors without a URI string
     this.developmentMode = this.URI == undefined
-
-    // RewardsManager manages the calculations for determining a user's level and achievement
-    this.rewards = new RewardsManager()
   }
 
   /**
@@ -87,28 +84,29 @@ export default class DatabaseClient {
   }
 
   createDBInfo(userID) {
+    const defaultInfo = {
+      userID,
+      balance: 0,
+      lastClaim: -1000000000000,
+      voteStreak: 0,
+      amountDonated: 0.001,
+      unlockedGames: [],
+      unlockedItems: [],
+      created: Date.now(),
+      goldBalance: 0,
+      wins: [],
+      achievements: [],
+      quests: [],
+      fields: [],
+      lastQuest: -1000000000000,
+      xp: 0,
+      level: -1
+    }
+
     return new Promise((resolve, reject) => {
       if (!this.database || !this.database.collection('users')) {
         reject('Error: Database not found.')
         return
-      }
-
-      const defaultInfo = {
-        userID,
-        balance: 0,
-        lastClaim: -1000000000000,
-        voteStreak: 0,
-        amountDonated: 0.001,
-        unlockedGames: [],
-        unlockedItems: [],
-        created: Date.now(),
-        goldBalance: 0,
-        wins: [],
-        achievements: [],
-        quests: [],
-        lastQuest: -1000000000000,
-        xp: 0,
-        level: -1
       }
 
       this.database.collection('users').findOne({
@@ -121,6 +119,20 @@ export default class DatabaseClient {
           resolve(user)
         }
       }).catch(reject)
+    })
+  }
+
+  updateUserInfo(user) {
+    return new Promise(async (resolve, reject) => {
+      await this.database.collection('users').findOneAndUpdate({
+          userID: user.userID
+        }, {
+          $set: user
+        }, {
+          returnOriginal: false
+        })
+        .then(resolve)
+        .catch(reject)
     })
   }
 
@@ -147,13 +159,10 @@ export default class DatabaseClient {
     })
   }
 
-
-
-
-/**
- * Sees if a user has an item in their inventory.
- * @returns {Boolean}
- */
+  /**
+   * Sees if a user has an item in their inventory.
+   * @returns {Boolean}
+   */
   async hasItem (userID, itemID) {
     let isItemUnlocked = false
     await this.fetchDBInfo(userID)

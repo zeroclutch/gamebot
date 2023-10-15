@@ -72,6 +72,13 @@ export default class Game extends EventEmitter {
         this.startTime = new Date(Date.now())
 
         /**
+         * The end time of this game.
+         * @type {Date|null}
+         * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date|Date}
+         */
+        this.endTime = null
+
+        /**
          * The Discord channel that this game is played in.
          * @type {Discord.TextChannel}
          * @see {@link https://discord.js.org/#/docs/main/11.5.1/class/TextChannel|Discord.TextChannel}
@@ -111,6 +118,12 @@ export default class Game extends EventEmitter {
          * 
          */
         this.playersToKick = []
+
+        /**
+         * The winners of this game
+         * @type {Array|null}
+         */
+        this.winners = null
 
         /**
          * Helper field that notifies collectors that the game is over.
@@ -215,7 +228,15 @@ export default class Game extends EventEmitter {
      * @returns {Discord.User} The game leader.
      * @see {@link https://discord.js.org/#/docs/main/11.5.1/class/User|Discord.User}
      */
-    get leader () { return this.gameMaster }
+    get leader() { return this.gameMaster }
+
+    get duration() {
+        if(this.endTime) {
+            return this.endTime - this.startTime
+        } else {
+            return Date.now() - this.startTime
+        }
+    }
 
     /**
      * Sleeps for a given number of milliseconds
@@ -882,6 +903,14 @@ export default class Game extends EventEmitter {
     }
 
     /**
+     * The method that updates the user fields in the database. This will be custom for each game.
+     * @abstract
+     */
+    async updateUsers() {
+        return
+    }
+
+    /**
      * The method called before the game ends. This will be custom for each game.
      * @abstract 
      */
@@ -898,6 +927,8 @@ export default class Game extends EventEmitter {
         this.beforeEnd()
         this.ending = true
         this.stage = 'over'
+        this.endTime = new Date(Date.now())
+        this.winners = winners
 
         this.client.metrics.log('Game ended', {
             game: this.metadata.game,
@@ -911,6 +942,11 @@ export default class Game extends EventEmitter {
             duration: Date.now() - this.msg.createdTimestamp,
             players: this.players.size,
         }), `Game ${this.constructor.name} ended.`)
+
+        // Update users
+        await this.updateUsers()
+        const awards = await this.client.rewards.awardAchievements(this)
+        console.log(awards)
 
         if(!endPhrase) {
             if(winners instanceof Array && winners.length > 1) {
