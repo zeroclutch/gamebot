@@ -262,6 +262,19 @@ export default class Anagrams extends Game {
         }
     }
 
+    async updateUsers(winners) {
+        const users = this.client.dbClient.database.collection('users')
+        for(let [userID, player] of this.players) {
+            await users.updateOne(
+                { userID },
+                {
+                    // $inc: { 'stats.ana.pangrams': player.words.filter(w => w.length === 7).length },
+                    // $inc: { 'stats.ana.wins': +(winners.find(p => userID === p.id)) },
+                }
+            )
+        }
+    }
+
     finish() {
         let fields = []
         let winner = [{ score: -1 }]

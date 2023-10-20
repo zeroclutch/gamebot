@@ -97,7 +97,7 @@ export default class DatabaseClient {
       wins: [],
       achievements: [],
       quests: [],
-      fields: [],
+      stats: {},
       lastQuest: -1000000000000,
       xp: 0,
       level: -1

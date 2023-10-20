@@ -83,6 +83,10 @@ class RewardsManager {
 
             // Check if user completed any achievements
             for(let [id, achievement] of this.achievements) {
+                console.log(id, achievement)
+
+                // Skip if achievement is malformed validate function
+                if(!achievement?.validate) continue
 
                 // Skip if user already has achievement
                 if(user.achievements.includes(id)) continue
@@ -90,9 +94,9 @@ class RewardsManager {
                 // Skip if achievement is not for this game mode
                 if(achievement.category !== game.metadata.id) continue
 
-                if(achievement.validate(game, player)) {
+                if(achievement.validate({ game, player, user })) {
                     user.achievements.push(id)
-                    change.achievements.push(id)
+                    change.achievements.push(achievement)
                 }
             }
 

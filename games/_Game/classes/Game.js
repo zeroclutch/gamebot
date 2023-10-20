@@ -906,7 +906,7 @@ export default class Game extends EventEmitter {
      * The method that updates the user fields in the database. This will be custom for each game.
      * @abstract
      */
-    async updateUsers() {
+    async updateUsers(_winners) {
         return
     }
 
@@ -943,11 +943,6 @@ export default class Game extends EventEmitter {
             players: this.players.size,
         }), `Game ${this.constructor.name} ended.`)
 
-        // Update users
-        await this.updateUsers()
-        const awards = await this.client.rewards.awardAchievements(this)
-        console.log(awards)
-
         if(!endPhrase) {
             if(winners instanceof Array && winners.length > 1) {
                 // Multiple winners
@@ -971,11 +966,35 @@ export default class Game extends EventEmitter {
             color: options.colors.economy
         }
 
-        if(this.metadata.unlockables) {
+        // Update users
+        await this.updateUsers(winners)
+        const awards = await this.client.rewards.awardAchievements(this)
+
+        if(awards.length > 0) {
+            gameEmbed.fields = gameEmbed.fields ?? []
             gameEmbed.fields = [{
+                name: 'Achievements',
+                value: awards.map(award => {
+                    return `<@${award.change.id}> ${
+                        award.change.level > 0 ? `**leveled up to level ${award.change.level}!**` : `[Level ${award.user.level}]`
+                    } | ${
+                        award.change.xp > 0 ? `+${award.change.xp}xp` : ''
+                    }${
+                        award.change.achievements.map(
+                            achievement => `\n✨ New achievement unlocked! 
+                            ${achievement.emoji} **${achievement.name}**: *${achievement.description}*`
+                        ).join('')
+                    }`
+                }).join('\n\n')
+            }]
+        }
+
+        if(this.metadata.unlockables) {
+            gameEmbed.fields = gameEmbed.fields ?? []
+            gameEmbed.fields.push({
                 name: 'Unlockables',
                 value: `This game contains unlockable content! [Check out the Gamebot shop](${options.links.shop}) to see what you can get!`,
-            }]
+            })
         }
 
         // Send a message in the game channel that the game is over.
