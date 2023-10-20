@@ -3,10 +3,10 @@ import { GAMEBOT_PERMISSIONS } from '../../config/types.js'
 
 export default new BotCommand({
   name: 'forcestop',
-  aliases: ['forceend'],
+  aliases: ['stop'],
   description: 'Description',
   category: 'mod',
-  permissions: [GAMEBOT_PERMISSIONS.MOD],
+  permissions: [GAMEBOT_PERMISSIONS.MOD, GAMEBOT_PERMISSIONS.OWNER],
   dmCommand: false,
   args: [],
   run: function(msg, _args) {
