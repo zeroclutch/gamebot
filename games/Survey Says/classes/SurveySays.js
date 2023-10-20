@@ -77,7 +77,7 @@ export default class SurveySays extends Game {
      * Adjusts the settings from user-friendly values to game-friendly values
      */
     async gameInit() {
-        this.options['Timer'] = parseInt(this.options['Timer']) * 1000
+        this.settings.timeLimit = parseInt(this.options['Timer']) * 1000
     }
 
     async awaitGuesserResponse() {
@@ -94,7 +94,7 @@ export default class SurveySays extends Game {
         await this.channel.sendEmbed(`The current guesser is ${this.guesser.user}! You get +1 point if you're within 10% of the real answer.\n\nYour question is: **${this.question.question}**`)
 
         // Await response
-        let collected = await this.channel.awaitMessages({filter, max: 1, time: this.options['Timer'], errors: ['time']})
+        let collected = await this.channel.awaitMessages({filter, max: 1, time: this.settings.timeLimit, errors: ['time']})
         .catch(err => {
             if(this.ending) return
             this.msg.channel.sendEmbed('You ran out of time. The guess is set to 50%', 'Uh oh...', options.colors.error)
@@ -116,7 +116,7 @@ export default class SurveySays extends Game {
 
         return new Promise((resolve, reject) => {
             try {
-                const collector = submissionList.createMessageComponentCollector({ filter, time: this.options['Timer']})
+                const collector = submissionList.createMessageComponentCollector({ filter, time: this.settings.timeLimit})
 
                 collector.on('collect', i => {
                     if(this.ending) return
