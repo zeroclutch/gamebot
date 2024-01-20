@@ -3,7 +3,7 @@ import logger from 'gamebot/logger'
 
 export default class ShopGenerator {
     constructor(options) {
-        this.client = new DatabaseClient('ShopGenerator')
+        this.client = new DatabaseClient(null, 'ShopGenerator')
         this.itemCache = {
             items: [],
             errors: ['ShopGenerator is still initializing']

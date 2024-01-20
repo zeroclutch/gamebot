@@ -121,7 +121,7 @@ export default class Game extends EventEmitter {
 
         /**
          * The winners of this game
-         * @type {Array|null}
+         * @type {Array<Player>|null}
          */
         this.winners = null
 
@@ -944,13 +944,17 @@ export default class Game extends EventEmitter {
         }), `Game ${this.constructor.name} ended.`)
 
         if(!endPhrase) {
+            // Ensure a single winner is converted to an array
+            if(winners instanceof Object && !(winners instanceof Array)) {
+                winners = [winners]
+            }
+            
             if(winners instanceof Array && winners.length > 1) {
                 // Multiple winners
                 endPhrase = winners.map(winner => winner.user.toString()).join(',') + ' are the winners!'
-            } else if (winners instanceof Object) {
+            } else if (winners instanceof Array && winners.length === 1) {
                 // Single winner
-                if(winners instanceof Array) winners = winners[0]
-                endPhrase = `${winners.user} is the winner!`
+                endPhrase = `${winners[0].user} is the winner!`
             } else {
                 // No winner
                 endPhrase = ''
@@ -963,26 +967,43 @@ export default class Game extends EventEmitter {
         const gameEmbed = {
             title: 'Game over!',
             description: endPhrase,
-            color: options.colors.economy
+            color: options.colors.economy,
+            footer: {
+                text: `To view your profile, type ${options.prefix}profile.`
+            }
         }
 
         // Update users
+        // Grant global stats
+        const users = this.client.dbClient.database.collection('users')
+        for(let [userID, player] of this.players) {
+            await users.updateOne(
+                { userID },
+                {
+                    $inc: {
+                        [`stats.${this.metadata.id}.wins`]: (winners && winners.find(p => userID === p.id) && this.players.size > 1) ? 1 : 0,
+                    },
+                }
+            )
+        }
+        // Grant game-specific stats
         await this.updateUsers(winners)
         const awards = await this.client.rewards.awardAchievements(this)
+        console.log(awards) // NOCOMMIT
 
         if(awards.length > 0) {
             gameEmbed.fields = gameEmbed.fields ?? []
             gameEmbed.fields = [{
-                name: 'Achievements',
+                name: 'XP & Achievements',
                 value: awards.map(award => {
                     return `<@${award.change.id}> ${
-                        award.change.level > 0 ? `**leveled up to level ${award.change.level}!**` : `[Level ${award.user.level}]`
-                    } | ${
-                        award.change.xp > 0 ? `+${award.change.xp}xp` : ''
+                        award.change.level > 0 ? `**leveled up to level ${award.user.level + award.change.level} (+${award.change.level})!**` : `**[Level ${award.user.level}]**`
+                    }${
+                        award.change.xp > 0 ? ` | +${award.change.xp}xp` : ''
                     }${
                         award.change.achievements.map(
                             achievement => `\n✨ New achievement unlocked! 
-                            ${achievement.emoji} **${achievement.name}**: *${achievement.description}*`
+                            ${achievement.emoji ?? ''} **${achievement.name}**: *${achievement.description}*`
                         ).join('')
                     }`
                 }).join('\n\n')

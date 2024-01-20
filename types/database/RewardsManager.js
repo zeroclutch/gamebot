@@ -9,6 +9,12 @@ class RewardsManager {
             new Map(achievements)
         )
 
+        this.constants = Object.freeze({
+            MINIMUM_GAME_LENGTH: 30000, // in milliseconds
+            XP_PER_SECOND: 1,
+            XP_WIN_MULTIPLIER: 1.5
+        })
+
         this.client = client
     }
     
@@ -49,12 +55,17 @@ class RewardsManager {
      * @returns {number} XP earned
      */
     getXP(game, player) {
-        let bonus = 1
+        const { MINIMUM_GAME_LENGTH, XP_PER_SECOND, XP_WIN_MULTIPLIER } = this.constants;
+
+        let bonus = XP_PER_SECOND
         if(game.winners.includes(player.id)) {
-            bonus = 1.5
+            bonus = XP_PER_SECOND * XP_WIN_MULTIPLIER
         }
-        return game.duration
-        // return Math.max(Math.floor((game.duration - 30000) / 1000) * bonus, 0);
+
+        // XP is awarded based on duration and win status
+        return Math.floor(
+            Math.max((game.duration - MINIMUM_GAME_LENGTH) / 1000 * bonus, 0)
+        );
     }
 
     /**
@@ -64,22 +75,24 @@ class RewardsManager {
      */
     async awardAchievements(game) {
         let changes = []
+
+        // TODO: Skip achievements if game ends unexpectedly
+
+
+        // Iterate through players
         for(let [id, player] of game.players) {
             // Award achievements
             const change = {
                 id,
-                xp: 0,
-                level: 0,
                 achievements: []
             }
 
             // Get user from database
-            let user = await this.client.dbClient.fetchDBInfo(player.id);
+            let user = await this.client.dbClient.fetchDBInfo(id);
+            console.log(id)
 
             // Establish user properties if they don't exist
             if(!user.achievements) user.achievements = []
-            if(!user.xp) user.xp = 0
-            if(!user.level) user.level = 0
 
             // Check if user completed any achievements
             for(let [id, achievement] of this.achievements) {
@@ -100,18 +113,35 @@ class RewardsManager {
                 }
             }
 
+            // Update user in database
+            const users = this.client.dbClient.database.collection('users')
+            await users.updateOne(
+                { userID: id },
+                {
+                    $inc: {
+                        [`stats.${game.metadata.id}.games`]: 1,
+                        [`stats.${game.metadata.id}.wins`]: game.winners.find(p => p.user.id === id) ? 1 : 0
+                    },
+                }
+            )
+
             // Award XP
-            let oldLevel = user.level;
-            let xp = this.getXP(game, player);
-            user.xp += xp;
-            user.level = this.calculateLevel(user.xp);
+            const { xp, level } = await this.client.dbClient.updateXP(
+                id,
+                this.getXP(game, player)
+            );
+
+            // Award achievements
+            if(change.achievements.length > 0) {
+                this.client.dbClient.updateAchievements(
+                    id,
+                    change.achievements
+                )
+            }
 
             // Store changes
-            change.xp = xp;
-            change.level = user.level - oldLevel;
-
-            // Update user in database
-            this.client.dbClient.updateUserInfo(user);
+            change.xp = xp - user.xp;
+            change.level = level - user.level;
 
             changes.push({ user, change })
         }

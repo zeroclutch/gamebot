@@ -116,7 +116,7 @@ const moderators = async client => {
 import DatabaseClient from '../types/database/DatabaseClient.js'
 
 const database = async client => {
-    const dbClient = new DatabaseClient('shard ' + client.shard.ids[0])
+    const dbClient = new DatabaseClient(client, 'shard ' + client.shard.ids[0])
     await dbClient.initialize()
     Object.defineProperty(client, 'dbClient', {
         value: dbClient,

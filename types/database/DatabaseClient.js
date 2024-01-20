@@ -6,10 +6,13 @@ export default class DatabaseClient {
   /**
    * Initializes a new instance of a DatabaseClient
    */
-  constructor(label, options = {
+  constructor(client, label, options = {
     useNewUrlParser: true,
     useUnifiedTopology: true
   }, uri) {
+    // The Discord client
+    this.client = client
+
     // A name for the client
     this.label = label
 
@@ -17,7 +20,7 @@ export default class DatabaseClient {
     this.URI = process.env.MONGO_DB_URI || uri
 
     // The MongoClient this belongs to
-    this.client = new MongoClient(this.URI, options)
+    this.mongoClient = new MongoClient(this.URI, options)
 
     // Development mode converts this class to a mock shell to avoid throwing errors without a URI string
     this.developmentMode = this.URI == undefined
@@ -41,7 +44,7 @@ export default class DatabaseClient {
    * Mocks a MongoDB database
    */
   mock() {
-    this.client = {
+    this.mongoClient = {
       connect: () => {},
       database: {
         collection: () => {
@@ -61,14 +64,14 @@ export default class DatabaseClient {
    */
   connect() {
     return new Promise((resolve, reject) => {
-      this.client.connect(err => {
+      this.mongoClient.connect(err => {
         if (err) {
           reject(err)
           return
         }
         resolve(true)
         logger.info(`Database client ${this.label} connected to database`);
-        this.database = this.client.db(process.env.MONGO_DB_NAME)
+        this.database = this.mongoClient.db(process.env.MONGO_DB_NAME)
       })
     })
   }
@@ -100,7 +103,7 @@ export default class DatabaseClient {
       stats: {},
       lastQuest: -1000000000000,
       xp: 0,
-      level: -1
+      level: 0
     }
 
     return new Promise((resolve, reject) => {
@@ -144,8 +147,31 @@ export default class DatabaseClient {
     return this.fetchDBInfo(userID).then(user => {
       xp += isFinite(user.xp) ? user.xp : 0 // If old user doesn't have xp field set, assume they have zero xp
       xp = Math.max(xp, 0) // No negative XP values allowed
-      let level = this.rewards.calculateLevel(xp);
-      this.database.collection('users').updateOne({userID}, { $set: {xp, level} })
+      let level = this.client.rewards.calculateLevel(xp);
+      console.log('cool stuff!!', xp, level)
+      this.database.collection('users').updateOne(
+        { userID },
+        {
+          $set: { xp, level }
+        }
+      )
+      return { xp, level }
+    })
+  }
+
+  updateAchievements(userID, newAchievements) {
+    return this.fetchDBInfo(userID).then(user => {
+      let achievements = user.achievements
+      newAchievements.forEach(achievement => {
+        if(!achievements.includes(achievement.name)) {
+          achievements.push(achievement.name)
+        }
+      })
+
+      this.database.collection('users').updateOne(
+        { userID },
+        { $set: { achievements } }
+      )
     })
   }
 

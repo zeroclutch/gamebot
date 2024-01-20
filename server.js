@@ -17,7 +17,7 @@ import WebUIManager from './types/webui/WebUIManager.js'
 const webUIManager = new WebUIManager(app)
 
 import DatabaseClient from './types/database/DatabaseClient.js'
-const dbClient = new DatabaseClient('server')
+const dbClient = new DatabaseClient(null, 'server')
 dbClient.initialize()
 
 // Create shop manager

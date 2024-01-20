@@ -161,7 +161,7 @@ export default class Anagrams extends Game {
         }).then(() => {
             // create a collector on the main channel
             const filter = m => !m.author.bot  || m.client.isTestingMode
-            const ROUND_LENGTH = 60000
+            const ROUND_LENGTH = 5000 // !!! TODO FIXME NOCOMMIT
             const collector = this.channel.createMessageCollector({filter, time: ROUND_LENGTH})
             const isPangram = word => word.length == this.word.length
 
@@ -268,8 +268,9 @@ export default class Anagrams extends Game {
             await users.updateOne(
                 { userID },
                 {
-                    // $inc: { 'stats.ana.pangrams': player.words.filter(w => w.length === 7).length },
-                    // $inc: { 'stats.ana.wins': +(winners.find(p => userID === p.id)) },
+                    $inc: {
+                        'stats.ana.pangrams': player.words.filter(w => w.length === 7).length
+                    },
                 }
             )
         }

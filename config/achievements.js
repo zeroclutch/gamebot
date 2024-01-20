@@ -122,13 +122,13 @@ const pangrams = ({ player }) => player.words.filter(word => word.length === 7)
 export default [
     /** Anagrams **/
     new AchievementBuilder('500 Club')
-        .setDescription('Get 500 points')
-        .setCategory('ana')
-        .setRarity(RARITIES.COMMON)
-        .setValidate(
-            ({ player, game }) => player.score >= 500 && game.options['Custom Word'] === 'none'
-        )
-        .toEntry(),
+    .setDescription('Get 500 points')
+    .setCategory('ana')
+    .setRarity(RARITIES.COMMON)
+    .setValidate(
+        ({ player, game }) => player.score >= 500 && game.options['Custom Word'] === 'none'
+    )
+    .toEntry(),
 
     new AchievementBuilder('1K Club')
         .setDescription('Get 1000 points')
@@ -171,7 +171,6 @@ export default [
         .setCategory('ana')
         .setRarity(RARITIES.COMMON)
         .setValidate(
-            // !!! TODO FIXME I got this with a 6 letter word!
             ({ player, game }) => pangrams({ player }) && game.options['Custom Word'] === 'none'
         )
         .toEntry(),
@@ -189,7 +188,7 @@ export default [
         .setCategory('ana')
         .setRarity(RARITIES.LEGENDARY)
         .setValidate(
-            ({ user }) => user.stats.pangrams >= 10
+            ({ user }) => user?.stats?.pangrams >= 10
         ).toEntry(),
 
     // new AchievementBuilder('Decoder'),
