@@ -161,8 +161,7 @@ export default class ConnectFour extends Game {
      * Checks to see if there is a winner
      * @returns The winning value, or 0 if there is no winner
      */
-    getWinner () {
-        const MIN_LENGTH = parseInt(this.options['Connect More?'])
+    getWinner(minLength = parseInt(this.options['Connect More?'])) {
         let total = ''
         let flipped = ''
         let diagonalsLeft = new Array(25).fill('')
@@ -190,7 +189,7 @@ export default class ConnectFour extends Game {
 
         let regex = []
         for(let i = 1; i <= this.players.size; i++) {
-            regex.push(`${i}{${MIN_LENGTH}}`)
+            regex.push(`${i}{${minLength}}`)
         }
         regex = regex.join('|')
     

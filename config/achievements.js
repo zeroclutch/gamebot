@@ -1,9 +1,41 @@
-const RARITIES = {
-    COMMON: 'common',
-    RARE: 'rare',
-    EPIC: 'epic',
-    LEGENDARY: 'legendary',
-    MYTHICAL: 'mythical',
+import { choices } from "../types/util/games"
+
+const Rarities = {
+    Common: 'common',
+    Rare: 'rare',
+    Epic: 'epic',
+    Legendary: 'legendary',
+    Mythical: 'mythical',
+}
+
+const CUSTOM_CATEGORIES = {
+    General: 'gen',
+}
+
+// Load games and add custom categories to categories enum
+const Categories = Object.assign(...[
+    CUSTOM_CATEGORIES,
+].concat(choices().map(
+    game => ({
+        [game.name]: game.value,
+    })
+)))
+
+/**
+ * Helper functions
+ */
+const players = ({ game }) => game.players.size
+const pangrams = ({ player }) => player.words.filter(word => word.length === 7)
+
+const validateDefault = (category) => {
+    switch(category) {
+        case Categories['Anagrams']:
+            return ({ game }) => game.options['Custom Word'] === 'none' && players({ game }) >= 2
+        case Categories['Connect 4']:
+            return ({ game }) => game.options['Board Width'] == 7 &&  game.options['Board Height'] == 6
+        default:
+            return () => true
+    }
 }
 
 /**
@@ -55,15 +87,15 @@ class AchievementBuilder {
 
     get emoji() {
         switch(this.rarity) {
-            case RARITIES.COMMON:
+            case Rarities.Common:
                 return '🟢'
-            case RARITIES.RARE:
+            case Rarities.Rare:
                 return '🟡'
-            case RARITIES.EPIC:
+            case Rarities.Epic:
                 return '🔵'
-            case RARITIES.LEGENDARY:
+            case Rarities.Legendary:
                 return '🔴'
-            case RARITIES.MYTHICAL:
+            case Rarities.Mythical:
                 return '🟣'
         }
     }
@@ -89,7 +121,7 @@ class AchievementBuilder {
      * @returns 
      */
     setValidate(validate) {
-        this.validate = validate;
+        this.validate = (...args) => validate(...args) && validateDefault(this.category)(...args)
         return this;
     }
 
@@ -114,87 +146,213 @@ class AchievementBuilder {
     }
 }
 
-/**
- * Helper functions
- */
-const pangrams = ({ player }) => player.words.filter(word => word.length === 7)
-
 export default [
     /** Anagrams **/
     new AchievementBuilder('500 Club')
     .setDescription('Get 500 points')
-    .setCategory('ana')
-    .setRarity(RARITIES.COMMON)
+    .setCategory(Categories['Anagrams'])
+    .setRarity(Rarities.Common)
     .setValidate(
-        ({ player, game }) => player.score >= 500 && game.options['Custom Word'] === 'none'
+        ({ player }) => player.score >= 500
     )
     .toEntry(),
 
     new AchievementBuilder('1K Club')
-        .setDescription('Get 1000 points')
-        .setCategory('ana')
-        .setRarity(RARITIES.RARE)
-        .setValidate(
-            ({ player, game }) => player.score >= 1000 && game.options['Custom Word'] === 'none'
+    .setDescription('Get 1000 points')
+    .setCategory(Categories['Anagrams'])
+    .setRarity(Rarities.Rare)
+    .setValidate(
+        ({ player }) => player.score >= 1000
         )
         .toEntry(),
 
     new AchievementBuilder('2K Club')
         .setDescription('Get 2000 points')
-        .setCategory('ana')
-        .setRarity(RARITIES.EPIC)
+        .setCategory(Categories['Anagrams'])
+        .setRarity(Rarities.Epic)
         .setValidate(
-            ({ player, game }) => player.score >= 2000 && game.options['Custom Word'] === 'none'
+            ({ player }) => player.score >= 2000
         )
         .toEntry(),
 
     new AchievementBuilder('4K Club')
         .setDescription('Get 4000 points')
-        .setCategory('ana')
-        .setRarity(RARITIES.LEGENDARY)
+        .setCategory(Categories['Anagrams'])
+        .setRarity(Rarities.Legendary)
         .setValidate(
-            ({ player, game }) => player.score >= 4000 && game.options['Custom Word'] === 'none'
+            ({ player }) => player.score >= 4000
         )
         .toEntry(),
 
     new AchievementBuilder('Akeelah')
         .setDescription('Get 6000 points')
-        .setCategory('ana')
-        .setRarity(RARITIES.MYTHICAL)
+        .setCategory(Categories['Anagrams'])
+        .setRarity(Rarities.Mythical)
         .setValidate(
-            ({ player, game }) => player.score >= 6000 && game.options['Custom Word'] === 'none'
-        )
-        .toEntry(),
-
-    new AchievementBuilder('Unscrambler')
-        .setDescription('Find a pangram')
-        .setCategory('ana')
-        .setRarity(RARITIES.COMMON)
-        .setValidate(
-            ({ player, game }) => pangrams({ player }) && game.options['Custom Word'] === 'none'
+            ({ player }) => player.score >= 6000
         )
         .toEntry(),
 
     new AchievementBuilder('The Two-Time')
         .setDescription('Find two pangrams in a single game')
-        .setCategory('ana')
-        .setRarity(RARITIES.EPIC)
+        .setCategory(Categories['Anagrams'])
+        .setRarity(Rarities.Epic)
         .setValidate(
-            ({ player, game }) => pangrams({ player }).length >= 2 && game.options['Custom Word'] === 'none'
+            ({ player }) => pangrams({ player }).length >= 2
         ).toEntry(),
+
+    new AchievementBuilder('Unscrambler')
+        .setDescription('Find a pangram')
+        .setCategory(Categories['Anagrams'])
+        .setRarity(Rarities.Common)
+        .setValidate(
+            ({ player }) => pangrams({ player }).length >= 1
+        )
+        .toEntry(),
 
     new AchievementBuilder('Wordsmith')
         .setDescription('Find 10 pangrams')
-        .setCategory('ana')
-        .setRarity(RARITIES.LEGENDARY)
+        .setCategory(Categories['Anagrams'])
+        .setRarity(Rarities.Rare)
         .setValidate(
             ({ user }) => user?.stats?.pangrams >= 10
         ).toEntry(),
 
-    // new AchievementBuilder('Decoder'),
+    new AchievementBuilder('Decoder')
+        .setDescription('Find 50 pangrams')
+        .setCategory(Categories['Anagrams'])
+        .setRarity(Rarities.Epic)
+        .setValidate(
+            ({ user }) => user?.stats?.pangrams >= 50
+        ).toEntry(),
 
-    // new AchievementBuilder('Shakespeare'),
+    new AchievementBuilder('Shakespeare')
+        .setDescription('Find 100 pangrams')
+        .setCategory(Categories['Anagrams'])
+        .setRarity(Rarities.Legendary)
+        .setValidate(
+            ({ user }) => user?.stats?.pangrams >= 100
+        ).toEntry(),
 
-    // new AchievementBuilder('Cunning Linguist'),
+    new AchievementBuilder('Cunning Linguist')
+        .setDescription('Find 500 pangrams')
+        .setCategory(Categories['Anagrams'])
+        .setRarity(Rarities.Mythical)
+        .setValidate(
+            ({ user }) => user?.stats?.pangrams >= 500
+        ).toEntry(),
+    
+    new AchievementBuilder('The Two-Time')
+        .setDescription('Get 2 or more pangrams in a single game')
+        .setCategory(Categories['Anagrams'])
+        .setRarity(Rarities.Epic)
+        .setValidate(
+            ({ player }) => pangrams({ player }).length >= 2
+        ).toEntry(),
+    
+    new AchievementBuilder('Party Night')
+        .setDescription('Play a Cards Against Humanity game that ends with 5 or more players')
+        .setCategory(Categories['Cards Against Humanity'])
+        .setRarity(Rarities.Rare)
+        .setValidate(
+            ({ game }) => game.players.size >= 5
+        ).toEntry(),
+    
+    // TODO FIXME ADD INFRA FOR THIS
+    // new AchievementBuilder('Fancy Pants')
+    //     .setDescription('Purchase your first card back')
+    //     .setCategory(Categories['Cards Against Humanity'])
+    //     .setRarity(Rarities.Common)
+    //     .setValidate(
+    //         ({ user }) => user?.stats?.cardBacksPurchased >= 1
+    //     ).toEntry(),
+    
+    // new AchievementBuilder('Box Set')
+    //     .setDescription('Purchase your first card pack')
+    //     .setCategory(Categories['Cards Against Humanity'])
+    //     .setRarity(Rarities.Common)
+    //     .setValidate(
+    //         ({ user }) => user?.stats?.cardPacksPurchased >= 1
+    //     ).toEntry(),
+    
+    new AchievementBuilder('Aspiring Comic')
+        .setDescription('Win a game of Cards Against Humanity')
+        .setCategory(Categories['Cards Against Humanity'])
+        .setRarity(Rarities.Common)
+        .setValidate(
+            ({ user }) => user?.stats?.cah?.wins >= 1
+        ).toEntry(),    
+    
+    new AchievementBuilder('Certified Comedian')
+        .setDescription('Win 10 games of Cards Against Humanity')
+        .setCategory(Categories['Cards Against Humanity'])
+        .setRarity(Rarities.Rare)
+        .setValidate(
+            ({ user }) => user?.stats?.cah?.wins >= 10
+        ).toEntry(),
+    
+    new AchievementBuilder('Genuine Jokester')
+        .setDescription('Win 50 games of Cards Against Humanity')
+        .setCategory(Categories['Cards Against Humanity'])
+        .setRarity(Rarities.Epic)
+        .setValidate(
+            ({ user }) => user?.stats?.cah?.wins >= 50
+        ).toEntry(),
+    
+    new AchievementBuilder('A Bigger Blacker Winner')
+        .setDescription('Win 100 games of Cards Against Humanity')
+        .setCategory(Categories['Cards Against Humanity'])
+        .setRarity(Rarities.Legendary)
+        .setValidate(
+            ({ user }) => user?.stats?.cah?.wins >= 100
+        ).toEntry(),
+    
+    new AchievementBuilder('Misanthrope')
+        .setDescription('Win 500 games of Cards Against Humanity')
+        .setCategory(Categories['Cards Against Humanity'])
+        .setRarity(Rarities.Mythical)
+        .setValidate(
+            ({ user }) => user?.stats?.cah?.wins >= 500
+        ).toEntry(),
+
+    new AchievementBuilder('Nail Biter')
+        .setDescription('Achieve a win with 2 or fewer pieces remaining')
+        .setCategory(Categories['Chess'])
+        .setRarity(Rarities.Rare)
+        .setValidate(
+            ({ game, player }) => game.winners.has(player.side) && game.status.board.squares.filter(({ piece }) => piece.side === player.side).length <= 2 && game.status.isCheckmate
+        ).toEntry(),
+
+    new AchievementBuilder('Sliced and Diced')
+        .setDescription('Checkmate your opponent in 10 moves or fewer')
+        .setCategory(Categories['Chess'])
+        .setRarity(Rarities.Rare)
+        .setValidate(
+            ({ game, player }) => game.winners.has(player.side) && game.status.board.squares.filter(({ piece }) => piece.side === player.side).length <= 2 && game.status.isCheckmate
+        ).toEntry(),
+
+    new AchievementBuilder('XQC Gambit')
+        .setDescription('Checkmate your opponent in 6 moves or fewer')
+        .setCategory(Categories['Chess'])
+        .setRarity(Rarities.Epic)
+        .setValidate(
+            ({ game, player }) => game.winners.has(player.side) && game.status.board.squares.filter(({ piece }) => piece.side === player.side).length <= 2 && game.status.isCheckmate
+        ).toEntry(),
+
+    new AchievementBuilder('Overachiever')
+        .setDescription('Connect five in a row')
+        .setCategory(Categories['Connect 4'])
+        .setRarity(Rarities.Epic)
+        .setValidate(
+            ({ game, player }) => player.user.id === game.getWinner(5) && players({ game }) >= 2
+        ).toEntry(),
+
+    new AchievementBuilder('Noob')
+        .setDescription('Play a game')
+        .setCategory(Categories['General'])
+        .setRarity(Rarities.Common)
+        .setValidate(
+            () => 1
+        ).toEntry(),
 
 ]
