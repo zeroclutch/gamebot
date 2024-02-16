@@ -3,18 +3,18 @@ export default {
   token: process.env.DISCORD_BOT_TOKEN,
   ownerID: process.env.OWNER_ID,
   activity: {
-    game: process.env.DISCORD_BOT_PREFIX + 'help | gamebot.rocks',
+    game: process.env.DISCORD_BOT_PREFIX + 'help | gamebot.gg',
     type: 'PLAYING',
-    url: 'https://gamebot.rocks'
+    url: 'https://gamebot.gg'
   },
   loggingChannel: process.env.LOGGING_CHANNEL,
   statusChannel: '618344167759675413',
   status: {
     updateInterval: 1000 * 60 * 30, // 30 minutes
   },
-  serverInvite: 'https://gamebot.rocks/discord',
+  serverInvite: 'https://gamebot.gg/discord',
   links: {
-    shop: `https://gamebot.rocks/shop`,
+    shop: `https://gamebot.gg/shop`,
   },
   creditIcon: '<:credit:810656538775650344>',
   goldIcon: '<a:gold:810683680556187668>',

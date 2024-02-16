@@ -14,9 +14,6 @@ Add fun multiplayer games to Discord with Gamebot! **You can invite the bot to y
 * No setup or configuration required to start playing
 * Helpful and responsive support server 
 
-# Contributing and Documentation
-The documentation for game development is available at [https://gamebot.rocks/docs](https://gamebot.rocks/docs). This documentation is currently out of date as of version 3.0.0.
-
 # Current Game List
 ## 1. Cards Against Humanity
 ### *A party game for horrible people.*
@@ -38,11 +35,15 @@ Be the first to checkmate the opponent's king.  To view the full rules, see [thi
 ### *Flip over discs and capture opposing pieces in this classic strategy game.*
 Players take turns placing their pieces on a board. They capture opposing pieces in every direction, flipping them over to their color. The game is over when neither player has a legal move or when the board is full.
 
-## 6. Survey Says
+## 6. Poker
+### *Get straights, flushes, and full houses in this casino card game.*
+Texas Hold'em rules. Each round, players are dealt two cards in their hands. Players can then choose to bet, fold, or raise. Once the betting is over, three community cards are revealed. These cards are shared between all players. Then, a new betting round begins, and another community card is revealed. This repeats until all five community cards are on the table. Whoever has the best hand (best five cards) wins the pot!
+
+## 7. Survey Says
 ### *The wacky game that tells you just how weird people are.*
 We surveyed over 450 people on Reddit. You have to guess what percentage of them answered 'yes' to our questions. Every round, one player guesses a percentage, and everyone else has to figure out whether the real value is higher or lower.
 
-## 7. Wisecracks
+## 8. Wisecracks
 ### *Make the wittiest responses to the silliest prompts.*
 Two players are randomly chosen to face off, and have to submit answers to a given prompt. The rest of the players vote on their favorite, and the winner gets a point. First to a configurable number of points wins.
 
