@@ -1,4 +1,4 @@
-import { choices } from "../types/util/games"
+import { choices } from '../types/util/games.js'
 
 const Rarities = {
     Common: 'common',
@@ -8,18 +8,19 @@ const Rarities = {
     Mythical: 'mythical',
 }
 
-const CUSTOM_CATEGORIES = {
+export const CustomCategories = {
     General: 'gen',
 }
 
 // Load games and add custom categories to categories enum
-const Categories = Object.assign(...[
-    CUSTOM_CATEGORIES,
-].concat(choices().map(
-    game => ({
-        [game.name]: game.value,
-    })
-)))
+export const Categories = Object.assign(
+    CustomCategories, 
+    ...(choices).map(
+        game => ({
+            [game.name]: game.value,
+        })
+    )
+)
 
 /**
  * Helper functions
@@ -131,6 +132,7 @@ class AchievementBuilder {
         if(!this.category) throw new Error(`Achievement category is not set for ${this.name}`)
         if(!this.rarity) throw new Error(`Achievement rarity is not set for ${this.name}`)
         if(!this.validate) throw new Error(`Achievement validate function is not set for ${this.name}`)
+        if(!this.emoji) throw new Error(`Achievement emoji is not set for ${this.name}`)
     }
 
     toEntry() {
@@ -142,6 +144,7 @@ class AchievementBuilder {
             category: this.category,
             rarity: this.rarity,
             validate: this.validate,
+            emoji: this.emoji,
         }]
     }
 }
@@ -163,8 +166,8 @@ export default [
     .setRarity(Rarities.Rare)
     .setValidate(
         ({ player }) => player.score >= 1000
-        )
-        .toEntry(),
+    )
+    .toEntry(),
 
     new AchievementBuilder('2K Club')
         .setDescription('Get 2000 points')
@@ -320,7 +323,7 @@ export default [
         .setCategory(Categories['Chess'])
         .setRarity(Rarities.Rare)
         .setValidate(
-            ({ game, player }) => game.winners.has(player.side) && game.status.board.squares.filter(({ piece }) => piece.side === player.side).length <= 2 && game.status.isCheckmate
+            ({ game, player }) => game.winners.has(player.user.id) && game.status.board.squares.filter(({ piece }) => piece.side === player.side).length <= 2 && game.status.isCheckmate
         ).toEntry(),
 
     new AchievementBuilder('Sliced and Diced')
@@ -328,7 +331,7 @@ export default [
         .setCategory(Categories['Chess'])
         .setRarity(Rarities.Rare)
         .setValidate(
-            ({ game, player }) => game.winners.has(player.side) && game.status.board.squares.filter(({ piece }) => piece.side === player.side).length <= 2 && game.status.isCheckmate
+            ({ game, player }) => game.winners.has(player.user.id) && game.moves.length <= 10 && game.status.isCheckmate
         ).toEntry(),
 
     new AchievementBuilder('XQC Gambit')
@@ -336,7 +339,7 @@ export default [
         .setCategory(Categories['Chess'])
         .setRarity(Rarities.Epic)
         .setValidate(
-            ({ game, player }) => game.winners.has(player.side) && game.status.board.squares.filter(({ piece }) => piece.side === player.side).length <= 2 && game.status.isCheckmate
+            ({ game, player }) => game.winners.has(player.user.id) && game.moves.length <= 6 && game.status.isCheckmate
         ).toEntry(),
 
     new AchievementBuilder('Overachiever')
@@ -352,7 +355,14 @@ export default [
         .setCategory(Categories['General'])
         .setRarity(Rarities.Common)
         .setValidate(
-            () => 1
+            () => true
         ).toEntry(),
 
+    new AchievementBuilder('Iago')
+        .setDescription('Achieve a perfect win')
+        .setCategory(Categories['Othello'])
+        .setRarity(Rarities.Epic)
+        .setValidate(
+            ({ game, player }) => game.winners.has(player.user.id) && game.squares.flat().every(piece => piece._pieceType === player.side.toUpperCase())
+        ).toEntry(),
 ]

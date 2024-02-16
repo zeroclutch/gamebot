@@ -1002,8 +1002,8 @@ export default class Game extends EventEmitter {
                         award.change.xp > 0 ? ` | +${award.change.xp}xp` : ''
                     }${
                         award.change.achievements.map(
-                            achievement => `\n✨ New achievement unlocked! 
-                            ${achievement.emoji ?? ''} **${achievement.name}**: *${achievement.description}*`
+                            achievement => `\n\t✨ New achievement unlocked! \
+                            \n\t${achievement.emoji ?? ''} **${achievement.name}**: *${achievement.description}*`
                         ).join('')
                     }`
                 }).join('\n\n')

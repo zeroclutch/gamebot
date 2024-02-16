@@ -162,6 +162,7 @@ export default class DatabaseClient {
   updateAchievements(userID, newAchievements) {
     return this.fetchDBInfo(userID).then(user => {
       let achievements = user.achievements
+
       newAchievements.forEach(achievement => {
         if(!achievements.includes(achievement.name)) {
           achievements.push(achievement.name)

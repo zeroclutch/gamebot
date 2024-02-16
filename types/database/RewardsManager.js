@@ -1,4 +1,4 @@
-import achievements from "../../config/achievements.js";
+import achievements, { CustomCategories } from "../../config/achievements.js";
 import Game from "../../games/_Game/main.js";
 
 class RewardsManager {
@@ -96,16 +96,17 @@ class RewardsManager {
 
             // Check if user completed any achievements
             for(let [id, achievement] of this.achievements) {
-                console.log(id, achievement)
+                console.log(id, achievement.validate)
 
                 // Skip if achievement is malformed validate function
-                if(!achievement?.validate) continue
+                if(!achievement?.validate) throw new Error(`Achievement ${id} is missing a validate function.`)
 
                 // Skip if user already has achievement
                 if(user.achievements.includes(id)) continue
 
                 // Skip if achievement is not for this game mode
-                if(achievement.category !== game.metadata.id) continue
+                const validCategories = [CustomCategories.General, game.metadata.id]
+                if(!validCategories.includes(achievement.category)) continue
 
                 if(achievement.validate({ game, player, user })) {
                     user.achievements.push(id)

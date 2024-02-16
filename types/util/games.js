@@ -9,11 +9,13 @@ export const games = fs.readdirSync(decodeURIComponent(path.join(__dirname, '..'
 )
 
 // Read metadata from each game
-export const choices = (() => games.map(async game => {
+export const choices = []
+
+for (const game of games) {
     const { default: metadata } = await import(`../../games/${game}/metadata.js`)
 
-    return {
+    choices.push({
       name: metadata.name,
       value: metadata.id,
-    }
-}))();
+    })
+}
