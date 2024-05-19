@@ -13,7 +13,7 @@ export default new BotCommand({
         msg.reply({
             embeds: [{
                 description: `
-                    [**Invite** Gamebot to your server](https://gamebot.rocks/invite?ref=inviteCommand)
+                    [**Invite** Gamebot to your server](https://gamebot.gg/invite?ref=inviteCommand)
                     [**Join** the support server](${options.serverInvite}?ref=inviteCommand)
                     [**Star** Gamebot on Github](https://github.com/zeroclutch/gamebot)
                     **Support** Gamebot - Type \`&donate\` for the link!`,
