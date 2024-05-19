@@ -3,6 +3,9 @@ name: Deploy Production
 run-name: ${{ github.actor }} is deploying Gamebot to production
 
 on:
+  # Run scheduled weekly restarts at 5:30PM Saturday UTC (10:30 PDT)
+  schedule:
+    - cron: "30 17 * * SAT"
   workflow_dispatch:
     inputs:
       branch:
