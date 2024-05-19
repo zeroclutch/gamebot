@@ -138,7 +138,30 @@ const database = async client => {
                     reject(logger.error(err))
                     return
                 }
-                    resolve(data.downtimeStart - Date.now())
+                // We have predictably scheduled downtime every Saturday at 5:30 PM UTC
+                // Use deploy-production.yml for scheduling
+                const day = 6 // Saturday
+                const hour = 17 // 5PM
+                const minute = 30 // 30 past
+
+                const now = new Date(Date.now())
+                const nextScheduledDowntime = new Date()
+                nextScheduledDowntime.setUTCDate(now.getUTCDate() + (7 + day - now.getDay()) % 7)
+                nextScheduledDowntime.setUTCHours(hour)
+                nextScheduledDowntime.setUTCMinutes(minute)
+                nextScheduledDowntime.setUTCSeconds(0)
+                nextScheduledDowntime.setUTCMilliseconds(0)
+
+                const downtimes = [
+                    data.downtimeStart - Date.now(),
+                    nextScheduledDowntime.getTime() - Date.now()
+                ].filter(d => d > 0)
+
+                resolve(
+                    Math.min(
+                        downtimes
+                    )
+                )
             })
         })
     }
