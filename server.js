@@ -5,8 +5,6 @@ import logger from 'gamebot/logger'
 import Discord from './discord_mod.js'
 import options from './config/options.js'
 
-
-
 // Add server dependencies
 import bodyParser from 'body-parser'
 import express from 'express'
@@ -35,6 +33,9 @@ oauth2.initialize()
 // Create logger
 import Metrics from './types/log/Metrics.js'
 const metrics = new Metrics()
+
+// Import reward information
+import { LEVEL_REWARDS, getReward } from './server/services/rewards.js'
 
 import fs from 'fs'
 const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'))
@@ -567,6 +568,84 @@ app.post('/api/checkout/confirmHostedPage', async (req, res) => {
     }
   });
   
+})
+
+app.get('/api/rewards', async (req, res) => {
+  return LEVEL_REWARDS
+})
+
+// Handle REWARDS endpoints
+app.post('/api/rewards/claim', async (req, res) => {
+  let userID = req.user.userID
+  let validated = await oauth2.validate(userID, req.header('authorization'))
+  if(validated !== true) {
+    res.status(401)
+    res.send({
+      error: 'Invalid authorization, log in and try again.',
+      redirect: '/login'
+    })
+    return
+  }
+
+  // Get information about rewards
+  const { level } = req.body
+  const reward = getReward(level)
+
+  // Check if user has reached the required level
+  if(user.level < level) {
+    res.status(403)
+    res.send({
+      error: 'Rewards not yet available.'
+    })
+    return
+  }
+
+  // Check if user has premium subscription
+  let user = await dbClient.fetchDBInfo(userID)
+  if(!user.premium) {
+    res.status(402)
+    res.send({
+      error: 'Gamebot Plus required for purchase'
+    })
+    return
+  }
+
+  // Check if user has already claimed rewards for this level
+  if(user.rewardsClaimed.includes(level)) {
+    res.status(403)
+    res.send({
+      error: 'Rewards already claimed.'
+    })
+    return
+  }
+
+  // Add rewards to user
+  await dbClient.database.collection('users').updateOne(
+    { userID },
+    { $push: { rewardsClaimed: level } }
+  )
+
+  // Add rewards to user
+  let update = {}
+  switch(reward.type) {
+    case 'credits':
+      update = { $inc: { balance: reward.value } }
+      break
+    case 'gold':
+      update = { $inc: { goldBalance: reward.value } }
+      break
+    case 'item':
+      update = { $push: { unlockedItems: reward.value } }
+      break
+    case 'randomItem':
+      update = { $push: { unlockedItems: await dbClient.fetchRandomItem(reward.value) } }
+      break
+  }
+
+  await dbClient.database.collection('users').updateOne(
+    { userID },
+    update
+  )
 })
 
 

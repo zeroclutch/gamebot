@@ -103,7 +103,9 @@ export default class DatabaseClient {
       stats: {},
       lastQuest: -1000000000000,
       xp: 0,
-      level: 0
+      level: 0,
+      premium: false,
+      rewardsClaimed: []
     }
 
     return new Promise((resolve, reject) => {
@@ -148,7 +150,7 @@ export default class DatabaseClient {
       xp += isFinite(user.xp) ? user.xp : 0 // If old user doesn't have xp field set, assume they have zero xp
       xp = Math.max(xp, 0) // No negative XP values allowed
       let level = this.client.rewards.calculateLevel(xp);
-      console.log('cool stuff!!', xp, level)
+
       this.database.collection('users').updateOne(
         { userID },
         {
@@ -182,6 +184,19 @@ export default class DatabaseClient {
           itemID
         })
         .then(resolve)
+        .catch(reject)
+    })
+  }
+
+  fetchRandomItem(rarity) {
+    return new Promise(async (resolve, reject) => {
+      await this.database.collection('items').find({
+          rarity
+        })
+        .toArray()
+        .then(items => {
+          resolve(items[Math.floor(Math.random() * items.length)])
+        })
         .catch(reject)
     })
   }
