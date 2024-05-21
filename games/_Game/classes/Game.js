@@ -247,7 +247,7 @@ export default class Game extends EventEmitter {
                 this.msg.channel.sendEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Games cannot be started right now. For more information, [see our support server.](${options.serverInvite}?ref=downtimeError)`, 'Error!', options.colors.error)
                 this.end()
                 return
-            } else if(timeToDowntime > 0) {
+            } else if(timeToDowntime > 0 && timeToDowntime <= 30 * 60000) {
                 this.msg.channel.sendEmbed(`Gamebot is going to be temporarily offline for maintenance in ${downtime} minute${downtime == 1 ? '': 's'}. Any active games will be automatically ended. For more information, [see our support server.](${options.serverInvite}?ref=downtimeWarning)`, 'Warning!', options.colors.warning)
             }
 
