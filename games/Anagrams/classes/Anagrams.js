@@ -5,16 +5,23 @@ import logger from 'gamebot/logger'
 import fs from 'fs'
 import { time } from 'discord.js'
 
-let words = fs.readFileSync('./gameData/WordGames/Collins_Scrabble_Dictionary.txt', { encoding: 'utf-8' }, err => {
-    logger.error(err)
-})
+const createDictionary = (path) => {
+    let words = fs.readFileSync(path, { encoding: 'utf-8' }, err => {
+        logger.error(err)
+    })
+    
+    let dict = {}
+    
+    words = words.split('\n')
+    words.splice(0,1)
+    
+    words.forEach(word => dict[word] = true)
+    return dict
+}
 
-let wordRegistry = {}
+const wordRegistry = createDictionary('./gameData/WordGames/Collins_Scrabble_Dictionary.txt')
+const commonWordRegistry = createDictionary('./gameData/WordGames/Common_Words.txt')
 
-words = words.split('\n')
-words.splice(0,1)
-
-words.forEach(word => wordRegistry[word] = true)
 
 export default class Anagrams extends Game {
     constructor(msg, settings) {
