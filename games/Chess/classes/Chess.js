@@ -291,11 +291,11 @@ export default class Chess extends Game {
             return (val.length == 1 ? '0' : '') + val
         }
         let pgn = `pgn=[Event "Gamebot Online Match"]
-        [Site "Discord"]
-        [Date "${_f(today.getUTCFullYear())}.${_f(today.getUTCMonth() + 1)}.${_f(today.getUTCDate())}"]
-        [Result "${winner}"]
-        [White "${this.getPlayer('White').user.tag}"]
-        [Black "${this.getPlayer('Black').user.tag}"]\n\n`
+[Site "Discord"]
+[Date "${_f(today.getUTCFullYear())}.${_f(today.getUTCMonth() + 1)}.${_f(today.getUTCDate())}"]
+[Result "${winner}"]
+[White "${this.getPlayer('White').user.tag}"]
+[Black "${this.getPlayer('Black').user.tag}"]\n\n`
         for(let i = 0; i < this.moves.length; i+=1) {
             if(i % 2 === 0) {
                 pgn += (i / 2 + 1) + '. '
@@ -307,13 +307,17 @@ export default class Chess extends Game {
     }
 
     importGameToLichess(winner) {
-        this.lichessClient.importGame(this.getPGN(winner)).then(res => this.channel.send({
-            embeds: [{
-                title: 'View the computer analysis and game recap.',
-                description: `The moves and computer analysis are available at ${res.data.url}.`,
-                color: options.colors.info
-            }]
-        }))
+        this.lichessClient.importGame(this.getPGN(winner)).then(res => 
+            this.channel.send({
+                embeds: [{
+                    title: 'View the computer analysis and game recap.',
+                    description: `The moves and computer analysis are available at ${res.data.url}.`,
+                    color: options.colors.info
+                }]
+            })
+        ).catch(err => {
+            logger.error(err)
+        })
     }
 
     async analyzeBoard(side) {
