@@ -211,7 +211,7 @@ export default class ConnectFour extends Game {
             let column = -1
             do {
                 if(this.ending) return
-                await this.channel.sendEmbed(`First to ${this.options['Connect More?']} in a row wins!\n${this.renderBoard()}\n\n${player.user} ${ICONS[player.id]}, select a column between 1-${this.board[0].length} ${time(Math.round((Date.now() + this.timeLimit) / 1000), 'R')} seconds!`).catch(logger.error.bind(logger))
+                await this.channel.sendEmbed(`First to ${this.options['Connect More?']} in a row wins!\n${this.renderBoard()}\n\n${player.user} ${ICONS[player.id]}, select a column between 1-${this.board[0].length} ${time(Math.round((Date.now() + this.timeLimit) / 1000), 'R')}!`).catch(logger.error.bind(logger))
                 column = await this.allowSelection(player).catch(logger.error.bind(logger))
             } while(this.columnIsFull(column))
             this.dropTile(player.id, column)
