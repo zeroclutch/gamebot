@@ -145,6 +145,47 @@ export default class DatabaseClient {
     return this.createDBInfo(userID)
   }
 
+  async fetchStats(userID) {
+    let dbInfo = await this.fetchDBInfo(userID)
+
+    /**
+       * @returns {
+    *   mostPlayed: [{ id: string, played: number }]
+    *   totalWins: number
+    *   totalGames: number
+    *   winrate: number
+    * },
+    */
+    if(!dbInfo || !dbInfo.stats) {
+        return {
+          mostPlayed: [],
+          totalWins: 0,
+          totalGames: 0,
+          winrate: 0
+        }
+    }
+
+    let mostPlayed = []
+    let totalWins = 0
+    let totalGames = 0
+    const games = dbInfo.stats
+
+    for(const id in games) {
+      totalWins += games[id].wins
+      totalGames += games[id].games
+      mostPlayed.push({ id, played: games[id].games })
+    }
+    
+    mostPlayed = mostPlayed.sort((a, b) => b.played - a.played).slice(0, 3)
+
+    return {
+      mostPlayed,
+      totalWins,
+      totalGames,
+      winrate: (totalWins / totalGames * 100).toFixed(2)
+    }
+  }
+
   updateXP(userID, xp) {
     return this.fetchDBInfo(userID).then(user => {
       xp += isFinite(user.xp) ? user.xp : 0 // If old user doesn't have xp field set, assume they have zero xp

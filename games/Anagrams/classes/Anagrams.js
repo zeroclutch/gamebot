@@ -161,7 +161,7 @@ export default class Anagrams extends Game {
         }).then(() => {
             // create a collector on the main channel
             const filter = m => !m.author.bot  || m.client.isTestingMode
-            const ROUND_LENGTH = 5000 // !!! TODO FIXME NOCOMMIT
+            const ROUND_LENGTH = 60000 // !!! TODO FIXME NOCOMMIT
             const collector = this.channel.createMessageCollector({filter, time: ROUND_LENGTH})
             const isPangram = word => word.length == this.word.length
 

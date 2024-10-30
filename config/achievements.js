@@ -31,9 +31,9 @@ const pangrams = ({ player }) => player.words.filter(word => word.length === 7)
 const validateDefault = (category) => {
     switch(category) {
         case Categories['Anagrams']:
-            return ({ game }) => game.options['Custom Word'] === 'none' && players({ game }) >= 2
+            return ({ game }) => game.options['Custom Word'] === 'none' && players({ game }) >= 1
         case Categories['Connect 4']:
-            return ({ game }) => game.options['Board Width'] == 7 &&  game.options['Board Height'] == 6
+            return ({ game }) => game.options['Board Width'] == 7 && game.options['Board Height'] == 6
         default:
             return () => true
     }
@@ -151,6 +151,20 @@ class AchievementBuilder {
 
 export default [
     /** Anagrams **/
+    // TESTING ONLY!!!
+    new AchievementBuilder('1 Club')
+    .setDescription('Get 1 point')
+    .setCategory(Categories['Anagrams'])
+    .setRarity(Rarities.Epic)
+    .setValidate(
+        ({ player, game }) => {
+            console.log('Game winners', game.winners)
+            console.log("Is the player score above 1?", player.score >= 1)
+            return player.score >= 1
+        }
+    )
+    .toEntry(),
+
     new AchievementBuilder('500 Club')
     .setDescription('Get 500 points')
     .setCategory(Categories['Anagrams'])
@@ -323,7 +337,7 @@ export default [
         .setCategory(Categories['Chess'])
         .setRarity(Rarities.Rare)
         .setValidate(
-            ({ game, player }) => game.winners.has(player.user.id) && game.status.board.squares.filter(({ piece }) => piece.side === player.side).length <= 2 && game.status.isCheckmate
+            ({ game, player }) => game.winners && game.winners.includes(player.user.id) && game.status.board.squares.filter(({ piece }) => piece.side === player.side).length <= 2 && game.status.isCheckmate
         ).toEntry(),
 
     new AchievementBuilder('Sliced and Diced')
@@ -331,7 +345,7 @@ export default [
         .setCategory(Categories['Chess'])
         .setRarity(Rarities.Rare)
         .setValidate(
-            ({ game, player }) => game.winners.has(player.user.id) && game.moves.length <= 10 && game.status.isCheckmate
+            ({ game, player }) => game.winners && game.winners.includes(player.user.id) && game.moves.length <= 10 && game.status.isCheckmate
         ).toEntry(),
 
     new AchievementBuilder('XQC Gambit')
@@ -339,7 +353,7 @@ export default [
         .setCategory(Categories['Chess'])
         .setRarity(Rarities.Epic)
         .setValidate(
-            ({ game, player }) => game.winners.has(player.user.id) && game.moves.length <= 6 && game.status.isCheckmate
+            ({ game, player }) => game.winners && game.winners.includes(player.user.id) && game.moves.length <= 6 && game.status.isCheckmate
         ).toEntry(),
 
     new AchievementBuilder('Overachiever')
@@ -363,6 +377,6 @@ export default [
         .setCategory(Categories['Othello'])
         .setRarity(Rarities.Epic)
         .setValidate(
-            ({ game, player }) => game.winners.has(player.user.id) && game.squares.flat().every(piece => piece._pieceType === player.side.toUpperCase())
+            ({ game, player }) => game?.winners.has(player.user.id) && game.squares.flat().every(piece => piece._pieceType === player.side.toUpperCase())
         ).toEntry(),
 ]

@@ -289,6 +289,7 @@ app.get('/api/fetchCommands', (req, res) => {
   res.send(commands)
 })
 
+// Authenticated endpoint for own stats
 app.get('/api/userInfo', async (req, res) => {
   const userID = req.query.userID
   // validate request
@@ -308,6 +309,30 @@ app.get('/api/userInfo', async (req, res) => {
     res.status(401)
     res.send({
       error: 'Invalid authorization, user info could not be fetched.'
+    })
+  }
+})
+
+// Authenticated endpoint to retrieve public user stats
+app.get('/api/userStats', async (req, res) => {
+  const userID = req.query.userID
+  // validate request
+  let validated = await oauth2.validate(userID, req.header('authorization')).catch(logger.error.bind(logger))
+  if(validated === true) {
+    try {
+      let info = await dbClient.fetchStats(userID)
+      res.status(200)
+      res.send(info.stats)
+    } catch (err) {
+      res.status(500)
+      res.send({
+        error: err.message
+      })
+    }
+  } else {
+    res.status(401)
+    res.send({
+      error: 'Invalid authorization, user stats could not be fetched.'
     })
   }
 })

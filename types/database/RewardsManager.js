@@ -1,5 +1,6 @@
 import achievements, { CustomCategories } from "../../config/achievements.js";
 import Game from "../../games/_Game/main.js";
+import { XP_LEVELS } from "../../server/services/rewards.js";
 
 class RewardsManager {
     constructor(client) {
@@ -8,7 +9,7 @@ class RewardsManager {
         )
 
         this.constants = Object.freeze({
-            MINIMUM_GAME_LENGTH: 30000, // in milliseconds
+            MINIMUM_GAME_LENGTH: 1000, // in milliseconds
             XP_PER_SECOND: 1,
             XP_WIN_MULTIPLIER: 1.5
         })
@@ -25,11 +26,11 @@ class RewardsManager {
 
         // Binary search to find lowest level with experience <= xp
         let lo = 0;
-        let hi = this.XP_LEVELS.length - 1;
+        let hi = XP_LEVELS.length - 1;
 
         while(lo <= hi) {
             let mid = lo + Math.floor((hi - lo) / 2)
-            let currLevelXP = this.XP_LEVELS[mid];
+            let currLevelXP = XP_LEVELS[mid];
 
             if (currLevelXP > xp) {
                 hi = mid - 1;
@@ -94,8 +95,6 @@ class RewardsManager {
 
             // Check if user completed any achievements
             for(let [id, achievement] of this.achievements) {
-                console.log(id, achievement.validate)
-
                 // Skip if achievement is malformed validate function
                 if(!achievement?.validate) throw new Error(`Achievement ${id} is missing a validate function.`)
 
@@ -107,6 +106,7 @@ class RewardsManager {
                 if(!validCategories.includes(achievement.category)) continue
 
                 if(achievement.validate({ game, player, user })) {
+                    console.log('Achievement granted!', id, achievement)
                     user.achievements.push(id)
                     change.achievements.push(achievement)
                 }

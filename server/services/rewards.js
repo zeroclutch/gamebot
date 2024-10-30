@@ -1,3 +1,5 @@
+// this file should be kept in sync with website/src/assets/js/rewards.js
+
 // Define the rewards for each level
 export const REWARD_TYPES = Object.freeze({
     Credits: 'credits',
@@ -6,7 +8,16 @@ export const REWARD_TYPES = Object.freeze({
     Item: 'item'
 })
 
+export const RARITY_TYPES = Object.freeze({
+    Common: 'common',
+    Rare: 'rare',
+    Epic: 'epic',
+    Legendary: 'legendary',
+    Mythical: 'mythical'
+})
+
 const { Credits, Gold, RandomItem, Item } = REWARD_TYPES
+const { Common, Rare, Epic, Legendary, Mythical } = RARITY_TYPES
 
 export const XP_LEVELS = Object.freeze(
     Object.values({
@@ -94,7 +105,7 @@ export const LEVEL_REWARDS = Object.freeze(
         "6": {
             "type": RandomItem,
             "premium": true,
-            "value": "common"
+            "value": Common
         },
         "7": {
             "type": Credits,
@@ -124,7 +135,7 @@ export const LEVEL_REWARDS = Object.freeze(
         "12": {
             "type": RandomItem,
             "premium": true,
-            "value": "rare"
+            "value": Rare
         },
         "13": {
             "type": Credits,
@@ -154,7 +165,7 @@ export const LEVEL_REWARDS = Object.freeze(
         "18": {
             "type": RandomItem,
             "premium": true,
-            "value": "rare"
+            "value": Rare
         },
         "19": {
             "type": Credits,
@@ -184,7 +195,7 @@ export const LEVEL_REWARDS = Object.freeze(
         "24": {
             "type": RandomItem,
             "premium": true,
-            "value": "rare"
+            "value": Rare
         },
         "25": {
             "type": Credits,
@@ -214,7 +225,7 @@ export const LEVEL_REWARDS = Object.freeze(
         "30": {
             "type": RandomItem,
             "premium": false,
-            "value": "epic"
+            "value": Epic
         },
         "31": {
             "type": Credits,
@@ -244,7 +255,7 @@ export const LEVEL_REWARDS = Object.freeze(
         "36": {
             "type": RandomItem,
             "premium": true,
-            "value": "epic"
+            "value": Epic
         },
         "37": {
             "type": Credits,
@@ -274,7 +285,7 @@ export const LEVEL_REWARDS = Object.freeze(
         "42": {
             "type": RandomItem,
             "premium": true,
-            "value": "legendary"
+            "value": Legendary
         },
         "43": {
             "type": Credits,
@@ -309,17 +320,17 @@ export const LEVEL_REWARDS = Object.freeze(
         "49": {
             "type": RandomItem,
             "premium": false,
-            "value": "epic"
+            "value": Epic
         },
         "50": {
             "type": Item,
             "premium": true,
-            "value": "mythical"
+            "value": Mythical
         }
     })
 )
 
 // Getter function to retrieve the reward for a specific level
 export function getReward(level) {
-  return rewards[level];
+  return LEVEL_REWARDS[level];
 }
