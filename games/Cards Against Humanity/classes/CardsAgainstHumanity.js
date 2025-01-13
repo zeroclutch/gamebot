@@ -584,7 +584,7 @@ export default class CardsAgainstHumanity extends Game {
         // Only select single-blanks
         do {
             this.blackCard = new BlackCard(this.cardDeck.draw('black')[0])
-        } while(this.blackCard.responses > 1 || !this.blackCard.text || this.blackCard.text.length == 0)
+        } while(!this.blackCard.text || this.blackCard.text.length == 0)
         if(!this.blackCard.text) {
             logger.error('Error: card loaded with no text')
         }
@@ -679,8 +679,7 @@ export default class CardsAgainstHumanity extends Game {
         // await X messages, depending on how many white cards are needed
         let selectionCollector = this.channel.createMessageCollector({ filter: messageFilter, time: this.settings.timeLimit });
 
-        let lastSubmissionStatus = this.renderSubmissionStatus()
-
+        this.czar.submitted = true
         selectionCollector.on('collect', async m => {
             if(this.ending) return
 
@@ -692,17 +691,26 @@ export default class CardsAgainstHumanity extends Game {
                 m.delete().catch(logger.error.bind(logger))
             }
 
-            // save selection for one card
-            this.submittedCards.push({
-                player,
-                card: [player.cards[cardRemoved]]
-            })
-            player.submitted = true
+            // Add player submissions to the list
+            let submission = this.submittedCards.find(submission => submission.player.user.id == player.user.id)
+            if(!submission) {
+                submission = {
+                    player,
+                    card: [player.cards[cardRemoved]]
+                }
+                this.submittedCards.push(submission)
+            } else {
+                submission.card.push(player.cards[cardRemoved])
+            }
+
+            if(submission.card.length == this.blackCard.responses) {
+                player.submitted = true
+            }
 
             // remove cards from hand
             player.cards.splice(cardRemoved, 1, '')
 
-            if(this.submittedCards.length == this.players.size - 1) {
+            if(this.players.every(p => p.submitted)) {
                 selectionCollector.stop()
 
                 // Clean up submission status message
