@@ -43,5 +43,5 @@ jobs:
     with:
       environment: staging
       log_level:  ${{ inputs.log_level }}
-      branch: ${{ inputs.branch }}
+      branch: ${{ inputs.branch || 'staging' }}
     secrets: inherit
