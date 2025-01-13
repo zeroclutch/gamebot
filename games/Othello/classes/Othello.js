@@ -278,7 +278,7 @@ export default class Othello extends Game {
                 let collector = this.channel.createMessageCollector({ filter, time: parseInt(this.options['Timer']) * 1000 })
                 collector.on('collect', m => {
                     if(this.ending || this.over) return
-                    let move = m.content.replace(this.channel.prefix, '')
+                    let move = m.content.replace(this.channel.prefix, '').toLowerCase()
                     const columns = 'hgfedcba'
                     const rows = '12345678'
                     let column = columns.indexOf(move[0])
